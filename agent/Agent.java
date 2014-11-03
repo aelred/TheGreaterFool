@@ -6,6 +6,9 @@ import se.sics.tac.util.ArgEnumerator;
 public class Agent extends AgentImpl {
 
     public static final int NUM_DAYS = 5;
+    public static final int NUM_CLIENTS = 8;
+
+    private Client[] clients;
 
     // The plane agent monitors and buys plane tickets
     private FlightAgent flightAgent = new FlightAgent();
@@ -42,6 +45,10 @@ public class Agent extends AgentImpl {
     }
 
     public void gameStarted() {
+        clients = new Client[NUM_CLIENTS];
+        for (int i = 0; i < clients.length; i++) {
+            clients[i] = new Client(agent, i);
+        }
     }
 
     public void gameStopped() {
