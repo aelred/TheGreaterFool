@@ -9,9 +9,9 @@ public class FlightAgent {
 
     public FlightAgent() {
         // create a price monitor for every flight auction
-        for (int day = 0; day < Agent.DAYS; day ++) {
-            ticketOut = new PlaneTicket(day, true);
-            ticketIn = new PlaneTicket(day, false);
+        for (int day = 0; day < Agent.NUM_DAYS; day ++) {
+            PlaneTicket ticketOut = new PlaneTicket(day, true);
+            PlaneTicket ticketIn = new PlaneTicket(day, false);
             monitors.put(ticketOut, new PriceMonitor(ticketOut));
             monitors.put(ticketIn, new PriceMonitor(ticketIn));
         }
