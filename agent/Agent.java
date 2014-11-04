@@ -11,7 +11,7 @@ public class Agent extends AgentImpl {
     private Client[] clients;
 
     // The plane agent monitors and buys plane tickets
-    private FlightAgent flightAgent = new FlightAgent();
+    private FlightAgent flightAgent;
 
     protected void init(ArgEnumerator args) {
     }
@@ -45,6 +45,8 @@ public class Agent extends AgentImpl {
     }
 
     public void gameStarted() {
+        flightAgent = new FlightAgent();
+
         clients = new Client[NUM_CLIENTS];
         for (int i = 0; i < clients.length; i++) {
             clients[i] = new Client(agent, i);
