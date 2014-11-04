@@ -220,7 +220,7 @@ public class TACAgent implements Task, TACMessageReceiver {
     // Auction and ownership information
     private int[] auctionIDs = new int[NO_AUCTIONS];
     private int[] owns = new int[NO_AUCTIONS];
-    private Bid[] bids = new Bid[NO_AUCTIONS];
+    private BidString[] bids = new BidString[NO_AUCTIONS];
     private Quote[] quotes = new Quote[NO_AUCTIONS];
     private float[] costs = new float[NO_AUCTIONS];
 
@@ -677,7 +677,7 @@ public class TACAgent implements Task, TACMessageReceiver {
 
     // What might be owned in addition  to "getOwn"
     public int getProbablyOwn(int auctionID) {
-        Bid bid = getBid(auctionID);
+        BidString bid = getBid(auctionID);
         if (bid == null)
             return 0;
         Quote quote = getQuote(auctionID);
@@ -687,7 +687,7 @@ public class TACAgent implements Task, TACMessageReceiver {
         return bid.getQuantity();
     }
 
-    public synchronized Bid getBid(int auctionID) {
+    public synchronized BidString getBid(int auctionID) {
         return bids[auctionID];
     }
 
@@ -737,7 +737,7 @@ public class TACAgent implements Task, TACMessageReceiver {
         }
     }
 
-    public void submitBid(Bid bid) {
+    public void submitBid(BidString bid) {
         if (getGameID() < 0) {
             throw new IllegalStateException("No game playing");
         }
@@ -749,7 +749,7 @@ public class TACAgent implements Task, TACMessageReceiver {
         sendMessage(msg, this);
     }
 
-    public void replaceBid(Bid oldBid, Bid bid) {
+    public void replaceBid(BidString oldBid, BidString bid) {
         if (getGameID() < 0) {
             throw new IllegalStateException("No game playing");
         }
@@ -763,8 +763,8 @@ public class TACAgent implements Task, TACMessageReceiver {
         }
         bid.submitted();
         if (oldBid != bids[auction]) {
-            bid.setRejectReason(Bid.ACTIVE_BID_CHANGED);
-            bid.setProcessingState(Bid.REJECTED);
+            bid.setRejectReason(BidString.ACTIVE_BID_CHANGED);
+            bid.setProcessingState(BidString.REJECTED);
             try {
                 agent.bidRejected(bid);
             } catch (Exception e) {
@@ -806,7 +806,7 @@ public class TACAgent implements Task, TACMessageReceiver {
                           StringBuffer sb) {
         sb.append(type).append('(');
         for (int i = startAuction; i < endAuction; i++) {
-            Bid bid = getBid(i);
+            BidString bid = getBid(i);
             Quote q = getQuote(i);
             sb.append("(").append(getAllocation(i)).append('-')
                     .append(getOwn(i)).append('|')
@@ -1001,15 +1001,15 @@ public class TACAgent implements Task, TACMessageReceiver {
                 try {
                     TACMessage msg = new TACMessage("getQuote");
                     msg.setParameter("auctionID", auctionID);
-                    Bid bid = bids[auction];
+                    BidString bid = bids[auction];
                     msg.setUserData(quote);
                     if (bid != null) {
                         int id;
-                        if ((id = bid.getID()) != Bid.NO_ID) {
+                        if ((id = bid.getID()) != BidString.NO_ID) {
                             msg.setParameter("bidID", id);
                             msg.setUserData(bid);
                         } else if (((bid = bid.getReplacing()) != null)
-                                && ((id = bid.getID()) != Bid.NO_ID)) {
+                                && ((id = bid.getID()) != BidString.NO_ID)) {
                             // Request HQW for previous bid if it currently is being
                             // replaced (in case the new bid is rejected)
                             msg.setParameter("bidID", id);
@@ -1028,12 +1028,12 @@ public class TACAgent implements Task, TACMessageReceiver {
     }
 
     private void requestBidInfos(TACConnection conn) {
-        Bid bid;
+        BidString bid;
         int bidID;
         try {
             for (int i = 0; i < NO_AUCTIONS; i++) {
                 bid = bids[i];
-                if (bid != null && ((bidID = bid.getID()) != Bid.NO_ID)
+                if (bid != null && ((bidID = bid.getID()) != BidString.NO_ID)
                         && !quotes[i].isAuctionClosed()) {
                     TACMessage msg = new TACMessage("bidInfo");
                     msg.setParameter("bidID", bidID);
@@ -1078,7 +1078,7 @@ public class TACAgent implements Task, TACMessageReceiver {
         }
     }
 
-    private void prepareBidMsg(TACMessage msg, Bid bid) {
+    private void prepareBidMsg(TACMessage msg, BidString bid) {
         int auction = bid.getAuction();
         msg.setParameter("auctionID", auctionIDs[auction]);
         msg.setParameter("bidString", bid.getBidString());
@@ -1172,21 +1172,21 @@ public class TACAgent implements Task, TACMessageReceiver {
     }
 
     private void handleBidSubmission(TACMessage msg) {
-        Bid bid = (Bid) msg.getUserData();
+        BidString bid = (BidString) msg.getUserData();
         int status = NO_ERROR;
 
         while (msg.nextTag()) {
             if (msg.isTag("bidID")) {
-                int id = msg.getValueAsInt(Bid.NO_ID);
+                int id = msg.getValueAsInt(BidString.NO_ID);
                 bid.setID(id);
             } else if (msg.isTag("bidHash")) {
                 String hash = msg.getValue();
                 bid.setBidHash(hash);
             } else if (msg.isTag("rejectReason")) {
-                int reject = msg.getValueAsInt(Bid.NOT_REJECTED);
+                int reject = msg.getValueAsInt(BidString.NOT_REJECTED);
                 bid.setRejectReason(reject);
-                if (reject != Bid.NOT_REJECTED) {
-                    bid.setProcessingState(Bid.REJECTED);
+                if (reject != BidString.NOT_REJECTED) {
+                    bid.setProcessingState(BidString.REJECTED);
                 }
             } else if (msg.isTag("commandStatus")) {
                 status = mapCommandStatus(msg.getValueAsInt(NO_ERROR));
@@ -1204,7 +1204,7 @@ public class TACAgent implements Task, TACMessageReceiver {
             fatalError("Can not handle bid submission: "
                     + commandStatusToString(status), 5000);
         } else {
-            // Request Bid info
+            // Request BidString info
             TACMessage msg2 = new TACMessage("bidInfo");
             msg2.setParameter("bidID", bid.getID());
             msg2.setUserData(bid);
@@ -1219,10 +1219,10 @@ public class TACAgent implements Task, TACMessageReceiver {
     // the bid "bid" has been rejected/ or in error
     // ensure that the information about active bid, etc is correct
     // call agent
-    private synchronized void revertBid(Bid bid, int status) {
+    private synchronized void revertBid(BidString bid, int status) {
         int auction = bid.getAuction();
 
-        Bid activeBid = getBid(auction);
+        BidString activeBid = getBid(auction);
 
         if (bid.same(activeBid)) {
             activeBid = bid.getReplacing();
@@ -1232,7 +1232,7 @@ public class TACAgent implements Task, TACMessageReceiver {
                 bids[auction] = null;
             }
         } else if (activeBid != null) {
-            Bid child;
+            BidString child;
             while ((child = activeBid.getReplacing()) != null && !child.same(bid)) {
                 activeBid = child;
             }
@@ -1422,7 +1422,7 @@ public class TACAgent implements Task, TACMessageReceiver {
             quote = (Quote) obj;
             auction = quote.getAuction();
         } else {
-            Bid bid = (Bid) obj;
+            BidString bid = (BidString) obj;
             auction = bid.getAuction();
             quote = quotes[auction];
             quote.setHQW(-1);
@@ -1495,11 +1495,11 @@ public class TACAgent implements Task, TACMessageReceiver {
     }
 
     private void handleBidInfo(TACMessage msg) {
-        Bid bid = (Bid) msg.getUserData();
+        BidString bid = (BidString) msg.getUserData();
         String bidHash = null;
         String bidString = null;
-        int rejectReason = Bid.NOT_REJECTED;
-        int processingState = Bid.UNPROCESSED;
+        int rejectReason = BidString.NOT_REJECTED;
+        int processingState = BidString.UNPROCESSED;
         long timeClosed = 0L;
         long timeProcessed = 0L;
         int commandStatus = NO_ERROR;
@@ -1510,10 +1510,10 @@ public class TACAgent implements Task, TACMessageReceiver {
             } else if (msg.isTag("bidHash")) {
                 bidHash = msg.getValue();
             } else if (msg.isTag("rejectReason")) {
-                rejectReason = Bid.mapRejectReason(msg.getValueAsInt(rejectReason));
+                rejectReason = BidString.mapRejectReason(msg.getValueAsInt(rejectReason));
             } else if (msg.isTag("processingState")) {
                 processingState =
-                        Bid.mapProcessingState(msg.getValueAsInt(processingState));
+                        BidString.mapProcessingState(msg.getValueAsInt(processingState));
             } else if (msg.isTag("timeClosed")) {
                 timeClosed = msg.getValueAsLong(0);
             } else if (msg.isTag("timeProcessed")) {
@@ -1527,12 +1527,12 @@ public class TACAgent implements Task, TACMessageReceiver {
         // 1. BidInfo is sent by return of submitBid
         // 2. BidInfo is sent pga 45 second period bid info requesting
         // 3. BidInfo is received with changed bidHash
-        // 4. BidInfo is received with same bidHash as 3 but different from msg.Bid
+        // 4. BidInfo is received with same bidHash as 3 but different from msg.BidString
 
         // Potential problem 2:
-        // 1. Bid is submitted with submitBid
+        // 1. BidString is submitted with submitBid
         // 2. BidInfo is requested
-        // 3. Bid is submitted with submitBid
+        // 3. BidString is submitted with submitBid
         // 4. BidInfo for 2 is received
 
         if (commandStatus != NO_ERROR) {
@@ -1540,7 +1540,7 @@ public class TACAgent implements Task, TACMessageReceiver {
                     + " in auction " + bid.getAuction() + ": "
                     + commandStatusToString(commandStatus));
         } else {
-            // Bid is ok (not preliminary or rejected)!
+            // BidString is ok (not preliminary or rejected)!
             bid.setReplacing(null);
             bid.setProcessingState(processingState);
             bid.setRejectReason(rejectReason);
@@ -1578,13 +1578,13 @@ public class TACAgent implements Task, TACMessageReceiver {
         int auction = transID & 31;
         int clearID = transID >> 5;
 
-        Bid activeBid = getBid(auction);
+        BidString activeBid = getBid(auction);
         while (activeBid != null) {
             if (activeBid.getClearID() == clearID) {
                 String bidString = activeBid.getClearString();
-                Bid newBid = new Bid(activeBid, bidString, activeBid.getClearHash());
+                BidString newBid = new BidString(activeBid, bidString, activeBid.getClearHash());
                 boolean isActiveBid = activeBid == getBid(auction);
-                if (bidString.equals(Bid.EMPTY_BID_STRING)) {
+                if (bidString.equals(BidString.EMPTY_BID_STRING)) {
                     removeBid(auction, activeBid);
                 } else {
                     changeBid(auction, activeBid, newBid);
@@ -1607,7 +1607,7 @@ public class TACAgent implements Task, TACMessageReceiver {
         }
     }
 
-    private synchronized void recoverBid(Bid bid) {
+    private synchronized void recoverBid(BidString bid) {
         int auction = bid.getAuction();
         if (bids[auction] != null) {
             log.warning("bid already exist for auction "
@@ -1620,19 +1620,19 @@ public class TACAgent implements Task, TACMessageReceiver {
         }
     }
 
-    private synchronized void updateBid(Bid bid) {
+    private synchronized void updateBid(BidString bid) {
         int auction = bid.getAuction();
         bid.setReplacing(bids[auction]);
         bids[auction] = bid;
     }
 
-    private synchronized void changeBid(int auction, Bid bid, Bid newBid) {
-        Bid activeBid = getBid(auction);
+    private synchronized void changeBid(int auction, BidString bid, BidString newBid) {
+        BidString activeBid = getBid(auction);
         if (activeBid != null) {
             if (activeBid.same(bid)) {
                 bids[auction] = newBid;
             } else {
-                Bid child;
+                BidString child;
                 while ((child = activeBid.getReplacing()) != null && !child.same(bid)) {
                     activeBid = child;
                 }
@@ -1643,7 +1643,7 @@ public class TACAgent implements Task, TACMessageReceiver {
         }
     }
 
-    private void removeBid(int auction, Bid bid) {
+    private void removeBid(int auction, BidString bid) {
         changeBid(auction, bid, null);
     }
 
@@ -1822,7 +1822,7 @@ public class TACAgent implements Task, TACMessageReceiver {
                     } else if (msg.isTag("/auctionBidIDsTuple")) {
                         if (auctionID != -1 && bidID != -1) {
                             int auction = getAuctionPos(auctionID);
-                            Bid bid = new Bid(auction);
+                            BidString bid = new BidString(auction);
                             bid.setID(bidID);
 
                             // Request information about this bid
@@ -2048,7 +2048,7 @@ public class TACAgent implements Task, TACMessageReceiver {
     private class AgentTableModel extends AbstractTableModel {
 
         private final String[] columnName = new String[]{
-                "ID", "Type", "Ask Price", "Bid Price", "Status", "PS",
+                "ID", "Type", "Ask Price", "BidString Price", "Status", "PS",
                 "BidString", "HQW", "Allocation", "Own", "Cost"
         };
 
@@ -2077,12 +2077,12 @@ public class TACAgent implements Task, TACMessageReceiver {
                 case 4:
                     return quotes[row].getAuctionStatusAsString();
                 case 5:
-                    Bid bd = bids[row];
+                    BidString bd = bids[row];
                     return (bd != null)
                             ? bd.getProcessingStateAsString()
                             : "no bid";
                 case 6:
-                    Bid bid = bids[row];
+                    BidString bid = bids[row];
                     if (bid != null) {
                         return bid.getBidString();
                     }

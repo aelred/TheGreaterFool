@@ -45,7 +45,7 @@ public class Quote {
 
   private float askPrice;
   private float bidPrice;
-  private Bid bid;
+  private BidString bid;
 
   Quote(int auctionNo) {
     auction = auctionNo;
@@ -89,7 +89,7 @@ public class Quote {
     return hqw;
   }
 
-  public boolean hasHQW(Bid bid) {
+  public boolean hasHQW(BidString bid) {
     return (this.bid != null && bid == this.bid && hqw >= 0);
   }
 
@@ -125,11 +125,11 @@ public class Quote {
     this.lastQuoteTime = lastQuoteTime;
   }
 
-  void setBid(Bid bid) {
+  void setBid(BidString bid) {
     this.bid = bid;
   }
 
-  public Bid getBid() {
+  public BidString getBid() {
     return bid;
   }
 

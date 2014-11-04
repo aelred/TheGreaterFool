@@ -35,13 +35,13 @@ public class Agent extends AgentImpl {
         }
     }
 
-    public void bidUpdated(Bid bid) {
+    public void bidUpdated(BidString bid) {
     }
 
-    public void bidRejected(Bid bid) {
+    public void bidRejected(BidString bid) {
     }
 
-    public void bidError(Bid bid, int error) {
+    public void bidError(BidString bid, int error) {
     }
 
     public void gameStarted() {

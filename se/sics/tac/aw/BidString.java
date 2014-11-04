@@ -26,7 +26,7 @@
 package se.sics.tac.aw;
 import java.util.StringTokenizer;
 
-public class Bid {
+public class BidString {
 
   public final static String EMPTY_BID_STRING = "()";
 
@@ -99,7 +99,7 @@ public class Bid {
   private int[] quantity;
   private float[] price;
 
-  private Bid replacing;
+  private BidString replacing;
   private long timeSubmitted = 0L;
 
   // Transaction clearing
@@ -108,15 +108,15 @@ public class Bid {
   private String clearString;
   private int clearQuantity;
 
-  public Bid(int auction) {
+  public BidString(int auction) {
     this.auction = auction;
   }
 
-  public Bid(Bid oldBid) {
+  public BidString(BidString oldBid) {
     this.auction = oldBid.auction;
   }
 
-  Bid(Bid oldBid, String bidString, String bidHash) {
+  BidString(BidString oldBid, String bidString, String bidHash) {
     this.id = oldBid.id;
     this.auction = oldBid.auction;
     this.bidString = bidString;
@@ -136,14 +136,14 @@ public class Bid {
 
   void submitted() {
     if (timeSubmitted > 0) {
-      throw new IllegalStateException("Bid already submitted");
+      throw new IllegalStateException("BidString already submitted");
     }
     timeSubmitted = System.currentTimeMillis();
   }
 
   void setID(int bidID) {
     if (id != NO_ID) {
-      throw new IllegalStateException("Bid ID already set " + id);
+      throw new IllegalStateException("BidString ID already set " + id);
     }
     id = bidID;
   }
@@ -155,11 +155,11 @@ public class Bid {
   // This bid is replacing the included bid
   // It is not neccesary so that this bid is replaced by replaceBid
   // - it can also be a submitBid
-  void setReplacing(Bid bid) {
+  void setReplacing(BidString bid) {
     replacing = bid;
   }
 
-  public Bid getReplacing() {
+  public BidString getReplacing() {
     return replacing;
   }
 
@@ -235,7 +235,7 @@ public class Bid {
 
   public synchronized void addBidPoint(int quantity, float unitPrice) {
     if (isSubmitted()) {
-      throw new IllegalStateException("Bid already submitted");
+      throw new IllegalStateException("BidString already submitted");
     }
     if (unitPrice < 0) {
       throw new IllegalArgumentException("Negative price not allowed");
@@ -305,7 +305,7 @@ public class Bid {
     parseBidString(bidString);
   }
 
-  public boolean same(Bid bid) {
+  public boolean same(BidString bid) {
     return this == bid || ((bid != null && id == bid.id) && (id != NO_ID));
   }
 

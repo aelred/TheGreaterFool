@@ -72,14 +72,14 @@
  *
  * Submitting Bids
  * ---------------------------------------------
- * void submitBid(Bid)
+ * void submitBid(BidString)
  *  - submits a bid to the tac server
  *
- * void replaceBid(OldBid, Bid)
+ * void replaceBid(OldBid, BidString)
  *  - replaces the old bid (the current active bid) in the tac server
  *
  *   Bids have the following important methods:
- *    - create a bid with new Bid(AuctionID)
+ *    - create a bid with new BidString(AuctionID)
  *
  *   void addBidPoint(int quantity, float price)
  *    - adds a bid point in the bid
@@ -94,12 +94,12 @@
  *
  * Callbacks from the TACAgent (caused via interaction with server)
  *
- * bidUpdated(Bid bid)
+ * bidUpdated(BidString bid)
  *  - there are TACAgent have received an answer on a bid query/submission
  *   (new information about the bid is available)
- * bidRejected(Bid bid)
+ * bidRejected(BidString bid)
  *  - the bid has been rejected (reason is bid.getRejectReason())
- * bidError(Bid bid, int error)
+ * bidError(BidString bid, int error)
  *  - the bid contained errors (error represent error status - commandStatus)
  *
  * quoteUpdated(Quote quote)
@@ -151,7 +151,7 @@ public class DummyAgent extends AgentImpl {
             int alloc = agent.getAllocation(auction);
             if (alloc > 0 && quote.hasHQW(agent.getBid(auction)) &&
                     quote.getHQW() < alloc) {
-                Bid bid = new Bid(auction);
+                BidString bid = new BidString(auction);
                 // Can not own anything in hotel auctions...
                 prices[auction] = quote.getAskPrice() + 50;
                 bid.addBidPoint(alloc, prices[auction]);
@@ -165,7 +165,7 @@ public class DummyAgent extends AgentImpl {
         } else if (auctionCategory == TACAgent.CAT_ENTERTAINMENT) {
             int alloc = agent.getAllocation(auction) - agent.getOwn(auction);
             if (alloc != 0) {
-                Bid bid = new Bid(auction);
+                BidString bid = new BidString(auction);
                 if (alloc < 0)
                     prices[auction] = 200f - (agent.getGameTime() * 120f) / 720000;
                 else
@@ -187,21 +187,21 @@ public class DummyAgent extends AgentImpl {
                 + " has been updated");
     }
 
-    public void bidUpdated(Bid bid) {
-        log.fine("Bid Updated: id=" + bid.getID() + " auction="
+    public void bidUpdated(BidString bid) {
+        log.fine("BidString Updated: id=" + bid.getID() + " auction="
                 + bid.getAuction() + " state="
                 + bid.getProcessingStateAsString());
         log.fine("       Hash: " + bid.getBidHash());
     }
 
-    public void bidRejected(Bid bid) {
-        log.warning("Bid Rejected: " + bid.getID());
+    public void bidRejected(BidString bid) {
+        log.warning("BidString Rejected: " + bid.getID());
         log.warning("      Reason: " + bid.getRejectReason()
                 + " (" + bid.getRejectReasonAsString() + ')');
     }
 
-    public void bidError(Bid bid, int status) {
-        log.warning("Bid Error in auction " + bid.getAuction() + ": " + status
+    public void bidError(BidString bid, int status) {
+        log.warning("BidString Error in auction " + bid.getAuction() + ": " + status
                 + " (" + agent.commandStatusToString(status) + ')');
     }
 
@@ -249,7 +249,7 @@ public class DummyAgent extends AgentImpl {
                     break;
             }
             if (price > 0) {
-                Bid bid = new Bid(i);
+                BidString bid = new BidString(i);
                 bid.addBidPoint(alloc, price);
                 if (DEBUG) {
                     log.finest("submitting bid with alloc=" + agent.getAllocation(i)

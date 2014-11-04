@@ -67,9 +67,9 @@ public abstract class AgentImpl {
   public void quoteUpdated(int auctionCategory) {
   }
 
-  public abstract void bidUpdated(Bid bid);
-  public abstract void bidRejected(Bid bid);
-  public abstract void bidError(Bid bid, int error);
+  public abstract void bidUpdated(BidString bid);
+  public abstract void bidRejected(BidString bid);
+  public abstract void bidError(BidString bid, int error);
 
   public abstract void gameStarted();
 

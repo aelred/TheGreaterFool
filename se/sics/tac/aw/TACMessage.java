@@ -111,8 +111,8 @@ public class TACMessage {
       int auction = -1;
       if (data instanceof Quote) {
 	auction = ((Quote) data).getAuction();
-      } else if (data instanceof Bid) {
-	auction = ((Bid) data).getAuction();
+      } else if (data instanceof BidString) {
+	auction = ((BidString) data).getAuction();
       }
       if (auction >= 0) {
 	log.finest("requesting quotes for auction " + auction + " ("
@@ -120,8 +120,8 @@ public class TACMessage {
       }
     } else if ("submitBid".equals(type) || "replaceBid".equals(type)) {
       Object data = userData;
-      if (data instanceof Bid) {
-	int auction = ((Bid) data).getAuction();
+      if (data instanceof BidString) {
+	int auction = ((BidString) data).getAuction();
 	log.finest("submitting bid (" + type
 		   + ") to auction " + auction + " ("
 		   + TACAgent.getAuctionTypeAsString(auction) + ')');
