@@ -49,7 +49,7 @@ public class Agent extends AgentImpl {
 
         clients = new Client[NUM_CLIENTS];
         for (int i = 0; i < clients.length; i++) {
-            clients[i] = new Client(agent, i);
+            clients[i] = new ClientFromTAC(agent, i);
         }
     }
 
