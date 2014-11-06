@@ -11,4 +11,9 @@ public class EntertainmentTicket extends Buyable {
         super(day);
         this.type = type;
     }
+
+    @Override
+    public String toString() {
+        return String.format("Ticket to %s on day %d", type, day);
+    }
 }
