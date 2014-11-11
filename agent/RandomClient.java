@@ -22,8 +22,8 @@ public class RandomClient extends Client {
 
     public RandomClient() {
         Random rnd = new Random();
-        preferredArrivalDay = rnd.nextInt(5);
-        preferredDepartureDay = rnd.nextInt(5 - preferredArrivalDay) + preferredArrivalDay;
+        preferredArrivalDay = rnd.nextInt(4) + 1;
+        preferredDepartureDay = rnd.nextInt(6 - preferredArrivalDay) + preferredArrivalDay;
 
         hotelPremium = rnd.nextInt(100) + 50;
 
