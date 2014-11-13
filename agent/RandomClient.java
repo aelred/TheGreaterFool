@@ -23,7 +23,7 @@ public class RandomClient extends Client {
     public RandomClient() {
         Random rnd = new Random();
         preferredArrivalDay = rnd.nextInt(4) + 1;
-        preferredDepartureDay = rnd.nextInt(6 - preferredArrivalDay) + preferredArrivalDay;
+        preferredDepartureDay = rnd.nextInt(6 - (preferredArrivalDay + 1)) + (preferredArrivalDay + 1);
 
         hotelPremium = rnd.nextInt(100) + 50;
 
