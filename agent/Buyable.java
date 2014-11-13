@@ -13,4 +13,14 @@ public abstract class Buyable {
   		}
   		this.day = day;
   	}
+
+    @Override
+    public boolean equals(Object obj) {
+      return (getClass() == obj.getClass()) && (day == ((Buyable)obj).day);
+    }
+
+    @Override
+    public int hashCode() {
+      return day;
+    }
 }

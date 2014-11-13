@@ -10,9 +10,7 @@ public class Agent extends AgentImpl {
     public static final int NUM_CLIENTS = 8;
 
     private Client[] clients;
-    private List<Set<Auction>> flightAuctions;
-    private List<Set<Auction>> hotelAuctions;
-    private List<Set<Auction>> entertainmentAuctions;
+    private Map<Buyable, Auction> auctions;
 
     // The plane agent monitors and buys plane tickets
     private FlightAgent flightAgent;
@@ -68,31 +66,33 @@ public class Agent extends AgentImpl {
     }
 
     private void createAuctions() {
-        flightAuctions = new ArrayList<Set<Auction>>(NUM_DAYS);
-        hotelAuctions = new ArrayList<Set<Auction>>(NUM_DAYS);
-        entertainmentAuctions = new ArrayList<Set<Auction>>(NUM_DAYS);
+        // Make a list of every buyable
+        List<Buyable> buyables = new ArrayList<Buyable>();
 
         for (int day = 0; day < NUM_DAYS; day ++) {
-            flightAuctions.add(new HashSet<Auction>());
-            hotelAuctions.add(new HashSet<Auction>());
-            entertainmentAuctions.add(new HashSet<Auction>());
 
             if (day > 0) {
                 // No in-flights on first day
-                flightAuctions.get(day).add(new Auction(new PlaneTicket(day, false)));
+                buyables.add(new PlaneTicket(day, false));
             }
             if (day < NUM_DAYS-1) {
                 // No out-flights, hotels or entertainment on last day
-                flightAuctions.get(day).add(new Auction(new PlaneTicket(day, true)));
+                buyables.add(new PlaneTicket(day, true));
 
-                hotelAuctions.get(day).add(new Auction(new HotelBooking(day, false)));
-                hotelAuctions.get(day).add(new Auction(new HotelBooking(day, true)));
+                buyables.add(new HotelBooking(day, false));
+                buyables.add(new HotelBooking(day, true));
 
                 for (EntertainmentType type : EntertainmentType.values()) {
-                    entertainmentAuctions.get(day).add(new Auction(
-                        new EntertainmentTicket(day, type)));
+                    buyables.add(new EntertainmentTicket(day, type));
                 }
             }
+        }
+
+        // Make an auction for every buyable
+        auctions = new HashMap<Buyable, Auction>();
+
+        for (Buyable buyable : buyables) {
+            auctions.put(buyable, new Auction(buyable));
         }
     }
 }

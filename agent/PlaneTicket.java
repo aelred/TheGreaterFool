@@ -15,7 +15,17 @@ public class PlaneTicket extends Buyable {
         if ((outgoing && day > Agent.NUM_DAYS-2) || (!outgoing && day < 1)) {
             throw new IllegalArgumentException("Day not within expected range.");
         }
-        
+
         this.outgoing = outgoing;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj) && (outgoing == ((PlaneTicket)obj).outgoing);
+    }
+
+    @Override
+    public int hashCode() {
+        return day * 2 + (outgoing? 1 : 0);
     }
 }
