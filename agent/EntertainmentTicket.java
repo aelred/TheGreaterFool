@@ -24,6 +24,6 @@ public class EntertainmentTicket extends Buyable {
 
     @Override
     public int hashCode() {
-        return day * 3 + type.value - 1;
+        return day * 3 + type.getValue() - 1;
     }
 }
