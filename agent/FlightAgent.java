@@ -17,16 +17,3 @@ public class FlightAgent {
         }
     }
 }
-
-class PriceMonitor {
-
-    // The plane ticket price to monitor
-    private PlaneTicket ticket;
-
-    // Historic prices
-    private List<Integer> prices = new ArrayList<Integer>();
-
-    public PriceMonitor(PlaneTicket ticket) {
-        this.ticket = ticket;
-    }
-}
