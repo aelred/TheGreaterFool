@@ -38,6 +38,27 @@ public class FlightPriceMonitor {
     public PlaneTicket getTicket() {
         return ticket;
     }
+    
+    public void addQuote(float quote) throws IllegalArgumentException {
+        // Test quote is within expected range
+        float min = PRICE_MIN;
+        float max = PRICE_MAX;
+        if (prices.size() == 0) {
+            min = START_MIN;
+            max = START_MAX;
+        }
+
+        if (quote < min || quote > max) {
+            throw new IllegalArgumentException(
+                "Price quote outside expected range");
+        }
+
+        // Take change in prices to update estimate
+        if (prices.size() != 0) {
+            updateEstimate(quote - prices.get(prices.size()-1));
+        }
+        prices.add(quote);
+    }
 
     private int time() {
         return prices.size();
@@ -80,26 +101,5 @@ public class FlightPriceMonitor {
         for (float x = X_MIN; x < X_MAX; x += X_DIV) {
             probX.put(x, probDiff.get(x) / probDiffAll);
         }
-    }
-
-    public void addQuote(float quote) throws IllegalArgumentException {
-        // Test quote is within expected range
-        float min = PRICE_MIN;
-        float max = PRICE_MAX;
-        if (prices.size() == 0) {
-            min = START_MIN;
-            max = START_MAX;
-        }
-
-        if (quote < min || quote > max) {
-            throw new IllegalArgumentException(
-                "Price quote outside expected range");
-        }
-
-        // Take change in prices to update estimate
-        if (prices.size() != 0) {
-            updateEstimate(quote - prices.get(prices.size()-1));
-        }
-        prices.add(quote);
     }
 }
