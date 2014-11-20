@@ -1,3 +1,7 @@
+package agent;
+
+import java.util.*;
+
 public class FlightPriceMonitor {
 
     private static final float START_MIN = 250;
@@ -20,7 +24,7 @@ public class FlightPriceMonitor {
     // Estimates of the X constant affecting prices
     private final Map<Float, Float> probX = new HashMap<Float, Float>();
 
-    public PriceMonitor(PlaneTicket ticket) {
+    public FlightPriceMonitor(PlaneTicket ticket) {
         this.ticket = ticket;
 
         // Set initial probabilities using probability density
@@ -78,9 +82,24 @@ public class FlightPriceMonitor {
         }
     }
 
-    public void addQuote(float quote) {
+    public void addQuote(float quote) throws IllegalArgumentException {
+        // Test quote is within expected range
+        float min = PRICE_MIN;
+        float max = PRICE_MAX;
+        if (prices.size() == 0) {
+            min = START_MIN;
+            max = START_MAX;
+        }
+
+        if (quote < min || quote > max) {
+            throw new IllegalArgumentException(
+                "Price quote outside expected range");
+        }
+
         // Take change in prices to update estimate
-        updateEstimate(quote - prices.get(prices.size()-1));
+        if (prices.size() != 0) {
+            updateEstimate(quote - prices.get(prices.size()-1));
+        }
         prices.add(quote);
     }
 }
