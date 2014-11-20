@@ -8,37 +8,50 @@ import java.util.Random;
  * Manages allocation of {@link agent.EntertainmentTicket}s to {@link agent.Client}s.
  */
 public class EntertainmentAgent {
-    private List<Client> clients;
+    private List<Package> packages;
     private List<EntertainmentTicket> tickets;
 
-    public EntertainmentAgent(List<Client> clients, List<EntertainmentTicket> tickets) {
-        this.clients = clients;
+    public EntertainmentAgent(List<Package> packages, List<EntertainmentTicket> tickets) {
+        this.packages = packages;
         this.tickets = tickets;
     }
 
     protected class Allocation implements Comparable<Allocation> {
-        public final Client client;
+        public final Package pkg;
         public final EntertainmentTicket ticket;
 
-        public Allocation(Client client, EntertainmentTicket ticket) {
-            this.client = client;
+        public Allocation(Package pkg, EntertainmentTicket ticket) {
+            this.pkg = pkg;
             this.ticket = ticket;
         }
 
         public int getValue() {
-            return client.getEntertainmentPremium(ticket.getType());
+            return pkg.getClient().getEntertainmentPremium(ticket.getType());
         }
 
         public int compareTo(Allocation o) {
             return Integer.compare(this.getValue(), o.getValue());
+        }
+
+        /**
+         * Checks for conflicts between the two allocations. A conflict is where it would not make sense for both
+         * allocations to be made (i.e. a client would hold two tickets for the same day or entertainment).
+         * @return true if the given allocation conflicts with the current allocation; else false.
+         */
+        public boolean conflictsWith(Allocation other) {
+            return (this.pkg == other.pkg && (
+                        this.ticket.getDay() == other.ticket.getDay()
+                        || this.ticket.getType() == other.ticket.getType()
+                    ))
+                    || this.ticket == other.ticket;
         }
     }
 
     private void displayProblem() {
         System.out.println("Clients:");
         System.out.println("Day\tAW\tAP\tMU");
-        for (int i = 0; i < clients.size(); i++) {
-            Client client = clients.get(i);
+        for (int i = 0; i < packages.size(); i++) {
+            Client client = packages.get(i).getClient();
             System.out.printf("%d-%d\t%3d\t%3d\t%3d\n",
                     client.getPreferredArrivalDay(), client.getPreferredDepartureDay(),
                     client.getEntertainmentPremium(EntertainmentType.ALLIGATOR_WRESTLING),
@@ -54,11 +67,8 @@ public class EntertainmentAgent {
     private List<Allocation> removeMatchingAllocations(List<Allocation> allocations, Allocation addedAllocation) {
         List<Allocation> newAllocations = new ArrayList<Allocation>();
 
-        // TODO: also remove allocations to clients who already have that entertainment
         for (Allocation allocation : allocations) {
-            if (!((allocation.client == addedAllocation.client
-                        && allocation.ticket.getDay() == addedAllocation.ticket.getDay())
-                    || (allocation.ticket == addedAllocation.ticket))) {
+            if (!addedAllocation.conflictsWith(allocation)) {
                 newAllocations.add(allocation);
             }
         }
@@ -71,12 +81,12 @@ public class EntertainmentAgent {
 
         // Build list of possible Allocations
         List<Allocation> allocations = new ArrayList<Allocation>();
-        for (Client client : clients) {
+        for (Package pkg : packages) {
             for (EntertainmentTicket ticket : tickets) {
-                if (client.getPreferredArrivalDay() <= ticket.getDay()
-                        && ticket.getDay() < client.getPreferredDepartureDay()) {
+                if (pkg.getArrivalDay() <= ticket.getDay()
+                        && ticket.getDay() < pkg.getDepartureDay()) {
                     // TODO: use the days we intend to give the client, not their preferences
-                    allocations.add(new Allocation(client, ticket));
+                    allocations.add(new Allocation(pkg, ticket));
                 }
             }
         }
@@ -119,9 +129,9 @@ public class EntertainmentAgent {
      * {@link agent.EntertainmentTicket}s assigned according to the spec. */
     public static void main(String[] args) {
         // Create random clients
-        List<Client> clients = new ArrayList<Client>(8);
+        List<Package> packages = new ArrayList<Package>(8);
         for (int i = 0; i < 8; i++) {
-            clients.add(new RandomClient());
+            packages.add(new Package(new RandomClient()));
         }
 
         // Generate tickets
@@ -130,7 +140,7 @@ public class EntertainmentAgent {
         addRandomTickets(rnd, tickets, 1, 4);
         addRandomTickets(rnd, tickets, 2, 3);
 
-        EntertainmentAgent entertainmentAgent = new EntertainmentAgent(clients, tickets);
+        EntertainmentAgent entertainmentAgent = new EntertainmentAgent(packages, tickets);
         entertainmentAgent.allocateTickets();
     }
 }
