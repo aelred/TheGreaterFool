@@ -52,6 +52,19 @@ public class EntertainmentAgent {
         }
     }
 
+    private List<Allocation> possibleAllocations() {
+        List<Allocation> allocations = new ArrayList<Allocation>();
+        for (Package pkg : packages) {
+            for (EntertainmentTicket ticket : tickets) {
+                if (pkg.getArrivalDay() <= ticket.getDay()
+                        && ticket.getDay() < pkg.getDepartureDay()) {
+                    allocations.add(new Allocation(pkg, ticket));
+                }
+            }
+        }
+        return allocations;
+    }
+
     private List<Allocation> removeMatchingAllocations(List<Allocation> allocations, Allocation addedAllocation) {
         List<Allocation> newAllocations = new ArrayList<Allocation>();
 
@@ -64,31 +77,26 @@ public class EntertainmentAgent {
         return newAllocations;
     }
 
-    public void allocateTickets() {
-        // Build list of possible Allocations
-        List<Allocation> allocations = new ArrayList<Allocation>();
-        for (Package pkg : packages) {
-            for (EntertainmentTicket ticket : tickets) {
-                if (pkg.getArrivalDay() <= ticket.getDay()
-                        && ticket.getDay() < pkg.getDepartureDay()) {
-                    allocations.add(new Allocation(pkg, ticket));
-                }
-            }
-        }
-
-        // Choose the best Allocations
+    private List<Allocation> chooseBestAllocations(List<Allocation> allocations) {
         java.util.Collections.sort(allocations);
         java.util.Collections.reverse(allocations);
 
-        List<Allocation> finalAllocations = new ArrayList<Allocation>();
+        List<Allocation> bestAllocations = new ArrayList<Allocation>();
         while (allocations.size() > 0) {
             Allocation addedAllocation = allocations.remove(0);
-            finalAllocations.add(addedAllocation);
+            bestAllocations.add(addedAllocation);
             allocations = removeMatchingAllocations(allocations, addedAllocation);
         }
 
-        System.out.println("Final allocations:");
-        for (Allocation allocation : finalAllocations) {
+        return bestAllocations;
+    }
+
+    public void allocateTickets() {
+        List<Allocation> allocations = possibleAllocations();
+        List<Allocation> bestAllocations = chooseBestAllocations(allocations);
+
+        System.out.println("Best allocations:");
+        for (Allocation allocation : bestAllocations) {
             allocation.perform();
             System.out.printf("\t%s for $%d\n", allocation.ticket, allocation.getValue());
         }
