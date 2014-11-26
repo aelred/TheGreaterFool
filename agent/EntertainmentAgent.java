@@ -91,6 +91,21 @@ public class EntertainmentAgent {
         return bestAllocations;
     }
 
+    public void sellUnusedTickets() {
+        List<EntertainmentTicket> unusedTickets = new ArrayList<EntertainmentTicket>();
+        for (EntertainmentTicket ticket : tickets) {
+            if (ticket.getAssociatedPackage() == null) {
+                unusedTickets.add(ticket);
+            }
+        }
+
+        // TODO: sell the tickets
+        System.out.println("Tickets to be sold:");
+        for (EntertainmentTicket ticket : unusedTickets) {
+            System.out.println("\t" + ticket);
+        }
+    }
+
     public void allocateTickets() {
         List<Allocation> allocations = possibleAllocations();
         List<Allocation> bestAllocations = chooseBestAllocations(allocations);
@@ -100,6 +115,8 @@ public class EntertainmentAgent {
             allocation.perform();
             System.out.printf("\t%s for $%d\n", allocation.ticket, allocation.getValue());
         }
+
+        sellUnusedTickets();
     }
 
     // Static test methods //
