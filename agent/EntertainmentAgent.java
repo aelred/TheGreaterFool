@@ -45,6 +45,11 @@ public class EntertainmentAgent {
                     ))
                     || this.ticket == other.ticket;
         }
+
+        public void perform() {
+            pkg.getEntertainmentTickets().add(ticket);
+            ticket.setAssociatedPackage(pkg);
+        }
     }
 
     private void displayProblem() {
@@ -85,7 +90,6 @@ public class EntertainmentAgent {
             for (EntertainmentTicket ticket : tickets) {
                 if (pkg.getArrivalDay() <= ticket.getDay()
                         && ticket.getDay() < pkg.getDepartureDay()) {
-                    // TODO: use the days we intend to give the client, not their preferences
                     allocations.add(new Allocation(pkg, ticket));
                 }
             }
@@ -94,11 +98,6 @@ public class EntertainmentAgent {
         // Choose the best Allocations
         java.util.Collections.sort(allocations);
         java.util.Collections.reverse(allocations);
-
-        System.out.println("Possible allocations:");
-        for (Allocation allocation : allocations) {
-            System.out.printf("\t%s for $%d\n", allocation.ticket, allocation.getValue());
-        }
 
         List<Allocation> finalAllocations = new ArrayList<Allocation>();
         while (allocations.size() > 0) {
@@ -109,6 +108,7 @@ public class EntertainmentAgent {
 
         System.out.println("Final allocations:");
         for (Allocation allocation : finalAllocations) {
+            allocation.perform();
             System.out.printf("\t%s for $%d\n", allocation.ticket, allocation.getValue());
         }
     }

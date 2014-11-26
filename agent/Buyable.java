@@ -2,9 +2,17 @@ package agent;
 
 public abstract class Buyable {
     protected final int day;
+    protected Package associatedPackage;
 
     public int getDay() {
         return day;
+    }
+
+    public Package getAssociatedPackage() {
+        return associatedPackage;
+    }
+    public void setAssociatedPackage(Package associatedPackage) {
+        this.associatedPackage = associatedPackage;
     }
 
   	public Buyable(int day) throws IllegalArgumentException {
