@@ -52,23 +52,6 @@ public class EntertainmentAgent {
         }
     }
 
-    private void displayProblem() {
-        System.out.println("Clients:");
-        System.out.println("Day\tAW\tAP\tMU");
-        for (int i = 0; i < packages.size(); i++) {
-            Client client = packages.get(i).getClient();
-            System.out.printf("%d-%d\t%3d\t%3d\t%3d\n",
-                    client.getPreferredArrivalDay(), client.getPreferredDepartureDay(),
-                    client.getEntertainmentPremium(EntertainmentType.ALLIGATOR_WRESTLING),
-                    client.getEntertainmentPremium(EntertainmentType.AMUSEMENT),
-                    client.getEntertainmentPremium(EntertainmentType.MUSEUM)
-            );
-        }
-
-        System.out.println("Tickets:");
-        for (int i = 0; i < tickets.size(); i++) { System.out.println("\t" + tickets.get(i)); }
-    }
-
     private List<Allocation> removeMatchingAllocations(List<Allocation> allocations, Allocation addedAllocation) {
         List<Allocation> newAllocations = new ArrayList<Allocation>();
 
@@ -82,8 +65,6 @@ public class EntertainmentAgent {
     }
 
     public void allocateTickets() {
-        displayProblem();
-
         // Build list of possible Allocations
         List<Allocation> allocations = new ArrayList<Allocation>();
         for (Package pkg : packages) {
@@ -113,6 +94,8 @@ public class EntertainmentAgent {
         }
     }
 
+    // Static test methods //
+
     private static void addTickets(List<EntertainmentTicket> tickets, int count, int day, EntertainmentType type) {
         for (int i = 0; i < count; i++) {
             tickets.add(new EntertainmentTicket(day, type));
@@ -140,6 +123,21 @@ public class EntertainmentAgent {
         addRandomTickets(rnd, tickets, 1, 4);
         addRandomTickets(rnd, tickets, 2, 3);
 
+        // Display the problem
+        System.out.println("Clients:");
+        System.out.println("Day\tAW\tAP\tMU");
+        for (int i = 0; i < packages.size(); i++) {
+            Client client = packages.get(i).getClient();
+            System.out.printf("%d-%d\t%3d\t%3d\t%3d\n",
+                    client.getPreferredArrivalDay(), client.getPreferredDepartureDay(),
+                    client.getEntertainmentPremium(EntertainmentType.ALLIGATOR_WRESTLING),
+                    client.getEntertainmentPremium(EntertainmentType.AMUSEMENT),
+                    client.getEntertainmentPremium(EntertainmentType.MUSEUM)
+            );
+        }
+
+        System.out.println("Tickets:");
+        for (int i = 0; i < tickets.size(); i++) { System.out.println("\t" + tickets.get(i)); }
         EntertainmentAgent entertainmentAgent = new EntertainmentAgent(packages, tickets);
         entertainmentAgent.allocateTickets();
     }
