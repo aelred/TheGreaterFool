@@ -5,7 +5,8 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-	FlightPriceMonitorTest.class
+	FlightPriceMonitorTest.class,
+	ClientTest.class
 })
 public class TestSuite {
 
