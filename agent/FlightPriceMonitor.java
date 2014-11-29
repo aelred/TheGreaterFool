@@ -15,8 +15,8 @@ public class FlightPriceMonitor {
 
     private static final int MAX_TIME = 54;
 
-    // The plane ticket price to monitor
-    private final FlightTicket ticket;
+    // The plane ticket auction to monitor
+    private final FlightAuction auction;
 
     // Historic prices
     private final List<Double> prices = new ArrayList<Double>();
@@ -24,8 +24,8 @@ public class FlightPriceMonitor {
     // Estimates of the X constant affecting prices
     private final Map<Integer, Double> probX = new HashMap<Integer, Double>();
 
-    public FlightPriceMonitor(FlightTicket ticket) {
-        this.ticket = ticket;
+    public FlightPriceMonitor(FlightAuction auction) {
+        this.auction = auction;
 
         // Set initial probabilities using probability density
         double initX = 1d / (double)(X_MAX - X_MIN);
@@ -35,8 +35,8 @@ public class FlightPriceMonitor {
         }
     }
 
-    public FlightTicket getTicket() {
-        return ticket;
+    public FlightAuction getAuction() {
+        return auction;
     }
 
     public void addQuote(double quote) throws IllegalArgumentException {

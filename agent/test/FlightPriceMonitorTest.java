@@ -1,7 +1,7 @@
 package agent.test;
 
 import agent.FlightPriceMonitor;
-import agent.FlightTicket;
+import agent.FlightAuction;
 
 import java.util.*;
 import org.junit.Test;
@@ -16,10 +16,10 @@ public class FlightPriceMonitorTest {
 
 	@Test
 	public void testPriceMonitor() {
-		FlightTicket ticket = new FlightTicket(3, true);
-		FlightPriceMonitor monitor = new FlightPriceMonitor(ticket);
+		FlightAuction auction = new FlightAuction(3, true);
+		FlightPriceMonitor monitor = new FlightPriceMonitor(auction);
 
-		assertEquals(ticket, monitor.getTicket());
+		assertEquals(auction, monitor.getAuction());
 	}
 
 	@Test
@@ -29,10 +29,10 @@ public class FlightPriceMonitorTest {
 		Double[] invalidStarts = {-100d, 0d, 100d, 249d, 401d, 450d};
 		Double[] invalidQuotes = {-42d, 0d, 40d, 149d, 801d, 1293d};
 
-		FlightTicket ticket = new FlightTicket(3, true);
+		FlightAuction auction = new FlightAuction(3, true);
 
 		for (double start : validStarts) {
-			FlightPriceMonitor monitor = new FlightPriceMonitor(ticket);
+			FlightPriceMonitor monitor = new FlightPriceMonitor(auction);
 
 			// Assert valid starting quotes are accepted
 			monitor.addQuote(start);
@@ -55,7 +55,7 @@ public class FlightPriceMonitorTest {
 		}
 
 		for (double start : invalidStarts) {
-			FlightPriceMonitor monitor = new FlightPriceMonitor(ticket);
+			FlightPriceMonitor monitor = new FlightPriceMonitor(auction);
 
 			boolean thrown = false;
 			try {
@@ -71,7 +71,7 @@ public class FlightPriceMonitorTest {
 	public void testPredictMinimum() {
 		int repeats = 3;
 
-		FlightTicket ticket = new FlightTicket(2, false);
+		FlightAuction auction = new FlightAuction(2, false);
 
 		double overallTimeAcc = 0d;
 		double overallPriceAcc = 0d;
@@ -82,7 +82,7 @@ public class FlightPriceMonitorTest {
 
 			for (int i = 0; i < repeats; i ++) {
 				FlightPriceMonitor monitor = 
-					new FlightPriceMonitor(ticket);
+					new FlightPriceMonitor(auction);
 				PriceGenerator gen = new PriceGenerator(x);
 
 				// Test prediction with no quotes given.

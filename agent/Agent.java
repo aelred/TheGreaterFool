@@ -30,7 +30,7 @@ public class Agent extends AgentImpl {
     }
 
     public void gameStarted() {
-        flightAgent = new FlightAgent();
+        flightAgent = new FlightAgent(this, flightTickets);
         createAuctions();
 
         packages = new ArrayList<Package>();
