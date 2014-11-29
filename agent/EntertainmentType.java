@@ -14,13 +14,17 @@ public enum EntertainmentType {
         this.value = value;
     }
 
-    public static EntertainmentType randomType(Random rnd) {
-        switch (rnd.nextInt(3) + 1) {
+    public static EntertainmentType fromValue(int value) {
+        switch (value) {
             case 1: return ALLIGATOR_WRESTLING;
             case 2: return AMUSEMENT;
             case 3: return MUSEUM;
-            default: throw new AssertionError("Random value not in range.");
+            default: throw new AssertionError("Value not in range.");
         }
+    }
+
+    public static EntertainmentType randomType(Random rnd) {
+        return fromValue(rnd.nextInt(3) + 1);
     }
 
     public static EntertainmentType randomType(Random rnd, EntertainmentType exclude) {

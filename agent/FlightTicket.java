@@ -19,14 +19,4 @@ public class FlightTicket extends Buyable {
 
         this.arrival = arrival;
     }
-
-    @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj) && (arrival == ((FlightTicket)obj).arrival);
-    }
-
-    @Override
-    public int hashCode() {
-        return day * 2 + (arrival? 1 : 0);
-    }
 }

@@ -7,12 +7,13 @@ import se.sics.tac.aw.Transaction;
 
 import java.util.Set;
 
-public class Auction {
-    public final int auctionID;
+public abstract class Auction {
+    protected int day;
+
     private Set<Watcher> watchers;
 
-    public Auction(TACAgent agent, int auctionID) {
-        this.auctionID = auctionID;
+    public Auction(int day) {
+        this.day = day;
     }
 
     public void addWatcher(Watcher watcher) {

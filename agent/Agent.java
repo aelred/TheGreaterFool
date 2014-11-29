@@ -47,33 +47,66 @@ public class Agent extends AgentImpl {
 
     // Auctions //
 
-    private Map<Integer, Auction> auctions;
-
-    private void addAuction(int category, int type, int day) {
-        int auctionID = agent.getAuctionFor(category, type, day);
-        auctions.put(auctionID, new Auction(agent, auctionID));
-    }
+    private Map<Integer, Map<Boolean, FlightAuction>> flightAuctions;
+    private Map<Integer, Map<Boolean, HotelAuction>> hotelAuctions;
+    private Map<Integer, Map<EntertainmentType, EntertainmentAuction>> 
+        entertainmentAuctions;
 
     private void createAuctions() {
-        auctions = new HashMap<Integer, Auction>();
+        flightAuctions = new HashMap<Integer, Map<Boolean, FlightAuction>>();
+        hotelAuctions = new HashMap<Integer, Map<Boolean, HotelAuction>>();
+        entertainmentAuctions = 
+            new HashMap<Integer, Map<EntertainmentType, EntertainmentAuction>>();
 
         for (int day = 1; day <= NUM_DAYS; day++) {
-            if (day > 0) addAuction(TACAgent.CAT_FLIGHT, TACAgent.TYPE_INFLIGHT, day);
+            flightAuctions.put(day, new HashMap<Boolean, FlightAuction>());
+            hotelAuctions.put(day, new HashMap<Boolean, HotelAuction>());
+            entertainmentAuctions.put(day,
+                new HashMap<EntertainmentType, EntertainmentAuction>());
+
+            if (day > 1) {
+                flightAuctions.get(day).put(false, new FlightAuction(day, false));
+            }
 
             if (day < NUM_DAYS) {
-                addAuction(TACAgent.CAT_FLIGHT, TACAgent.TYPE_OUTFLIGHT,   day);
-                addAuction(TACAgent.CAT_HOTEL,  TACAgent.TYPE_CHEAP_HOTEL, day);
-                addAuction(TACAgent.CAT_HOTEL,  TACAgent.TYPE_GOOD_HOTEL,  day);
+                flightAuctions.get(day).put(true, new FlightAuction(day, true));
+                hotelAuctions.get(day).put(false, new HotelAuction(day, false));
+                hotelAuctions.get(day).put(true, new HotelAuction(day, true));
 
                 for (EntertainmentType type : EntertainmentType.values()) {
-                    addAuction(TACAgent.CAT_ENTERTAINMENT, type.getValue(), day);
+                    entertainmentAuctions.get(day).put(type, 
+                        new EntertainmentAuction(day, type));
                 }
             }
         }
     }
 
-    public Auction getAuctionByID(int auctionID) {
-        return auctions.get(auctionID);
+    private Auction getAuctionByID(int auctionID) {
+        int day = TACAgent.getAuctionDay(auctionID);
+        int type = TACAgent.getAuctionType(auctionID);
+        switch (TACAgent.getAuctionCategory(auctionID)) {
+            case TACAgent.CAT_FLIGHT:
+                return getFlightAuction(day, type==TACAgent.TYPE_INFLIGHT);
+            case TACAgent.CAT_HOTEL:
+                return getHotelAuction(day, type==TACAgent.TYPE_GOOD_HOTEL);
+            case TACAgent.CAT_ENTERTAINMENT:
+                return getEntertainmentAuction(day, 
+                    EntertainmentType.fromValue(type));
+            default:
+                throw new IllegalArgumentException("auctionID is invalid");
+        }
+    }
+
+    public Auction getFlightAuction(int day, boolean arrival) {
+        return flightAuctions.get(day).get(arrival);
+    }
+
+    public Auction getHotelAuction(int day, boolean towers) {
+        return hotelAuctions.get(day).get(towers);
+    }
+
+    public Auction getEntertainmentAuction(int day, EntertainmentType type) {
+        return entertainmentAuctions.get(day).get(type);
     }
 
     /** Called when new information about the quotes on the auction (quote.getAuction()) arrives. */

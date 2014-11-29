@@ -13,14 +13,4 @@ public class HotelBooking extends Buyable {
 
 		this.towers = towers;
 	}
-
-	@Override
-	public boolean equals(Object obj) {
-		return super.equals(obj) && (towers == ((HotelBooking)obj).towers);
-	}
-
-	@Override
-	public int hashCode() {
-		return day * 2 + (towers? 1 : 0);
-	}
 }

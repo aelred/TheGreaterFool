@@ -16,14 +16,4 @@ public class EntertainmentTicket extends Buyable {
     public String toString() {
         return String.format("Ticket to %s on day %d", type, day);
     }
-
-    @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj) && (type == ((EntertainmentTicket)obj).type);
-    }
-
-    @Override
-    public int hashCode() {
-        return day * 3 + type.getValue() - 1;
-    }
 }
