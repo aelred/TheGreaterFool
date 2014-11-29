@@ -12,13 +12,6 @@ public abstract class SubAgent<T extends Buyable> {
 		this.stock = stock;
 	}
 
-	// Fullfill the given list of packages
-	public void fullfillPackages(List<Package> packages) {
-		for (Package pack : packages) {
-			fullfillPackage(pack);
-		}
-	}
-
-	// Buy all components of a particular package
-	public abstract void fullfillPackage(Package pack);
+	// Fulfill the given list of packages
+	public abstract void fulfillPackages(List<Package> packages);
 }
