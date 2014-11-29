@@ -4,15 +4,14 @@ import java.util.*;
 
 public class FlightPriceMonitor {
 
-    private static final float START_MIN = 250;
-    private static final float START_MAX = 400;
-    private static final float PRICE_MIN = 150;
-    private static final float PRICE_MAX = 800;
-    private static final float PRICE_DIV = 1;
+    private static final double START_MIN = 250;
+    private static final double START_MAX = 400;
+    private static final double PRICE_MIN = 150;
+    private static final double PRICE_MAX = 800;
+    private static final double PRICE_DIV = 1;
 
-    private static final float X_MIN = -10;
-    private static final float X_MAX = 30;
-    private static final float X_DIV = 1;
+    private static final int X_MIN = -10;
+    private static final int X_MAX = 30;
 
     private static final int MAX_TIME = 54;
 
@@ -20,18 +19,18 @@ public class FlightPriceMonitor {
     private final PlaneTicket ticket;
 
     // Historic prices
-    private final List<Float> prices = new ArrayList<Float>();
+    private final List<Double> prices = new ArrayList<Double>();
 
     // Estimates of the X constant affecting prices
-    private final Map<Float, Double> probX = new HashMap<Float, Double>();
+    private final Map<Integer, Double> probX = new HashMap<Integer, Double>();
 
     public FlightPriceMonitor(PlaneTicket ticket) {
         this.ticket = ticket;
 
         // Set initial probabilities using probability density
-        double initX = 1f / (X_MAX - X_MIN);
+        double initX = 1d / (double)(X_MAX - X_MIN);
 
-        for (float x = X_MIN; x <= X_MAX; x += X_DIV) {
+        for (int x = X_MIN; x <= X_MAX; x ++) {
             probX.put(x, initX);
         }
     }
@@ -40,10 +39,10 @@ public class FlightPriceMonitor {
         return ticket;
     }
 
-    public void addQuote(float quote) throws IllegalArgumentException {
+    public void addQuote(double quote) throws IllegalArgumentException {
         // Test quote is within expected range
-        float min = PRICE_MIN;
-        float max = PRICE_MAX;
+        double min = PRICE_MIN;
+        double max = PRICE_MAX;
         if (prices.size() == 0) {
             min = START_MIN;
             max = START_MAX;
@@ -62,11 +61,11 @@ public class FlightPriceMonitor {
     }
 
     public int predictMinimumTime() {
-        List<Float> projection = projectPrices();
+        List<Double> projection = projectPrices();
         return projection.indexOf(Collections.min(projection));
     }
 
-    public float predictMinimumPrice() {
+    public double predictMinimumPrice() {
         return Collections.min(projectPrices());
     }
 
@@ -74,19 +73,19 @@ public class FlightPriceMonitor {
         return prices.size();
     }
 
-    private float xFunc(float x) {
+    private double xFunc(int x) {
         return xFunc(x, time());
     }
 
-    private float xFunc(float x, int t) {
-        return 10f + ((float)t - (float)MAX_TIME) * (x - 10f);
+    private double xFunc(int x, int t) {
+        return 10d + ((double)t - (double)MAX_TIME) * ((double)x - 10d);
     }
 
-    private double probDiffGivenX(float diff, float x) {
-        float f = xFunc(x);
+    private double probDiffGivenX(double diff, int x) {
+        double f = xFunc(x);
 
-        float dmin = f;
-        float dmax = f;
+        double dmin = f;
+        double dmax = f;
 
         if (f >= 0) dmin = -10;
         if (f <= 0) dmax = 10;
@@ -94,50 +93,50 @@ public class FlightPriceMonitor {
         if (dmin <= diff && diff <= dmax) {
             return 1d / (dmax - dmin);  // Probability density
         } else {
-            return 0f;  // Out of range, impossible
+            return 0d;  // Out of range, impossible
         }
     }
 
-    private void updateEstimate(float diff) {
+    private void updateEstimate(double diff) {
         // Use Baye's theorem to improve estimates
 
         // Find probability of quote occuring for every x
-        Map<Float, Double> probDiff = new HashMap<Float, Double>();
-        double probDiffAll = 0f;
+        Map<Integer, Double> probDiff = new HashMap<Integer, Double>();
+        double probDiffAll = 0d;
 
-        for (float x = X_MIN; x <= X_MAX; x += X_DIV) {
+        for (int x = X_MIN; x <= X_MAX; x ++) {
             double prob = probDiffGivenX(diff, x) * probX.get(x);
             probDiff.put(x, prob);
             probDiffAll += prob;
         }
 
         // Update probabilities
-        for (float x = X_MIN; x <= X_MAX; x += X_DIV) {
+        for (int x = X_MIN; x <= X_MAX; x ++) {
             probX.put(x, probDiff.get(x) / probDiffAll);
         }
     }
 
-    private float averagePriceDiff(float x, int t) {
-        float f = xFunc(x, t);
-        if (f > 0) return (f - 10f) / 2f;
-        else return (f + 10f) / 2f;
+    private double averagePriceDiff(int x, int t) {
+        double f = xFunc(x, t);
+        if (f > 0) return (f - 10d) / 2d;
+        else return (f + 10d) / 2d;
     }
 
-    private List<Float> projectPrices(float x) {
+    private List<Double> projectPrices(int x) {
         // project future price given x
-        List<Float> futPrices = new ArrayList<Float>(prices);
+        List<Double> futPrices = new ArrayList<Double>(prices);
 
-        float last;
+        double last;
         if (time() != 0) {
             last = futPrices.get(futPrices.size()-1);
         } else {
             // Predict initial price
-            last = (START_MAX - START_MIN) / 2f;
+            last = (START_MAX - START_MIN) / 2d;
             futPrices.add(last);
         }
 
         for (int t = time(); t < MAX_TIME; t ++) {
-            float price = last + averagePriceDiff(x, t);
+            double price = last + averagePriceDiff(x, t);
             futPrices.add(price);
             last = price;
         }
@@ -145,19 +144,19 @@ public class FlightPriceMonitor {
         return futPrices;
     }
 
-    private List<Float> projectPrices() {
+    private List<Double> projectPrices() {
         // project future prices over all x
-        List<Float> futPrices = new ArrayList<Float>();
+        List<Double> futPrices = new ArrayList<Double>();
         for (int t = 0; t < MAX_TIME; t ++) {
-            futPrices.add(0f);
+            futPrices.add(0d);
         }
 
-        for (float x : probX.keySet()) {
-            List<Float> pricesX = projectPrices(x);
+        for (int x : probX.keySet()) {
+            List<Double> pricesX = projectPrices(x);
             // add prediction for this x, weighted by prob of x
             for (int t = 0; t < MAX_TIME; t ++) {
-                float weighted = 
-                    (float)((double)pricesX.get(t) * probX.get(x));
+                double weighted = 
+                    (double)pricesX.get(t) * (double)probX.get(x);
                 futPrices.set(t, futPrices.get(t) + weighted);
             }
         }

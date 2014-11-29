@@ -11,9 +11,8 @@ import static org.junit.Assert.*;
 
 public class FlightPriceMonitorTest {
 
-	private static final float X_MIN = -10;
-	private static final float X_MAX = 30;
-	private static final float X_DIV = 1;
+	private static final int X_MIN = -10;
+	private static final int X_MAX = 30;
 
 	@Test
 	public void testPriceMonitor() {
@@ -25,26 +24,26 @@ public class FlightPriceMonitorTest {
 
 	@Test
 	public void testAddQuote() {
-		Float[] validStarts = {250f, 251f, 301f, 399f, 400f};
-		Float[] validQuotes = {150f, 151f, 250f, 342f, 400f, 799f, 800f};
-		Float[] invalidStarts = {-100f, 0f, 100f, 249f, 401f, 450f};
-		Float[] invalidQuotes = {-42f, 0f, 40f, 149f, 801f, 1293f};
+		Double[] validStarts = {250d, 251d, 301d, 399d, 400d};
+		Double[] validQuotes = {150d, 151d, 250d, 342d, 400d, 799d, 800d};
+		Double[] invalidStarts = {-100d, 0d, 100d, 249d, 401d, 450d};
+		Double[] invalidQuotes = {-42d, 0d, 40d, 149d, 801d, 1293d};
 
 		PlaneTicket ticket = new PlaneTicket(3, true);
 
-		for (float start : validStarts) {
+		for (double start : validStarts) {
 			FlightPriceMonitor monitor = new FlightPriceMonitor(ticket);
 
 			// Assert valid starting quotes are accepted
 			monitor.addQuote(start);
 
 			// Assert valid quotes are accepted
-			for (float quote : validQuotes) {
+			for (double quote : validQuotes) {
 				monitor.addQuote(quote);
 			}
 
 			// Assert invalid quotes throw an exception
-			for (float quote : invalidQuotes) {
+			for (double quote : invalidQuotes) {
 				boolean thrown = false;
 				try {
 					monitor.addQuote(quote);
@@ -55,7 +54,7 @@ public class FlightPriceMonitorTest {
 			}
 		}
 
-		for (float start : invalidStarts) {
+		for (double start : invalidStarts) {
 			FlightPriceMonitor monitor = new FlightPriceMonitor(ticket);
 
 			boolean thrown = false;
@@ -74,12 +73,12 @@ public class FlightPriceMonitorTest {
 
 		PlaneTicket ticket = new PlaneTicket(2, false);
 
-		float overallTimeAcc = 0f;
-		float overallPriceAcc = 0f;
+		double overallTimeAcc = 0d;
+		double overallPriceAcc = 0d;
 
-		for (float x = X_MIN; x <= X_MAX; x += X_DIV) {
-			float timeAcc = 0f;
-			float priceAcc = 0f;
+		for (int x = X_MIN; x <= X_MAX; x ++) {
+			double timeAcc = 0d;
+			double priceAcc = 0d;
 
 			for (int i = 0; i < repeats; i ++) {
 				FlightPriceMonitor monitor = 
@@ -92,13 +91,13 @@ public class FlightPriceMonitorTest {
 				monitor.predictMinimumPrice();
 
 				List<Integer> timePredictions = new ArrayList<Integer>();
-				List<Float> pricePredictions = new ArrayList<Float>();
-				float minPrice = PriceGenerator.PRICE_MAX;
+				List<Double> pricePredictions = new ArrayList<Double>();
+				double minPrice = PriceGenerator.PRICE_MAX;
 				int minTime = 0;
 				int time = 0;
 
 				while (gen.hasNext()) {
-					float quote = gen.next();
+					double quote = gen.next();
 
 					if (quote < minPrice) {
 						minPrice = quote;
@@ -110,25 +109,25 @@ public class FlightPriceMonitorTest {
 					int timePrediction = monitor.predictMinimumTime();
 					timePredictions.add(timePrediction);
 
-					float pricePrediction = monitor.predictMinimumPrice();
+					double pricePrediction = monitor.predictMinimumPrice();
 					pricePredictions.add(pricePrediction);
 
 					time ++;
 				}
 
 				// Calculate overall accuracy from predictions
-				float thisTimeAcc = 0f;
+				double thisTimeAcc = 0d;
 				for (int timePrediction : timePredictions) {
-					thisTimeAcc += 1.0f - 
-						((float)Math.abs(timePrediction - minTime) / 
-						(float)PriceGenerator.MAX_TIME);
+					thisTimeAcc += 1.0d - 
+						((double)Math.abs(timePrediction - minTime) / 
+						(double)PriceGenerator.MAX_TIME);
 				}
 				thisTimeAcc /= PriceGenerator.MAX_TIME;
 				timeAcc += thisTimeAcc;
 
-				float thisPriceAcc = 0f;
-				for (float pricePrediction : pricePredictions) {
-					thisPriceAcc += 1.0f - 
+				double thisPriceAcc = 0d;
+				for (double pricePrediction : pricePredictions) {
+					thisPriceAcc += 1.0d - 
 						(Math.abs(pricePrediction - minPrice) / 
 						(PriceGenerator.PRICE_MAX - 
 						 PriceGenerator.PRICE_MIN));
@@ -163,20 +162,20 @@ public class FlightPriceMonitorTest {
 	}
 }
 
-class PriceGenerator implements Iterator<Float> {
+class PriceGenerator implements Iterator<Double> {
 
-	private static final float START_MIN = 250;
-	private static final float START_MAX = 400;
-	public static final float PRICE_MIN = 150;
-	public static final float PRICE_MAX = 800;
-	public static final float MAX_TIME = 54;
+	private static final double START_MIN = 250;
+	private static final double START_MAX = 400;
+	public static final double PRICE_MIN = 150;
+	public static final double PRICE_MAX = 800;
+	public static final double MAX_TIME = 54;
 
-	private final float x;
+	private final int x;
 	private int time = -1;
-	private float lastPrice;
+	private double lastPrice;
 	private final Random random = new Random();
 
-	public PriceGenerator(float x) {
+	public PriceGenerator(int x) {
 		this.x = x;
 	}
 
@@ -184,7 +183,7 @@ class PriceGenerator implements Iterator<Float> {
 		return (time < MAX_TIME - 1);
 	}
 
-	public Float next() {
+	public Double next() {
 		if (time == -1) {
 			// generate initial price
 			time = 0;
@@ -193,11 +192,11 @@ class PriceGenerator implements Iterator<Float> {
 		} else {
 			// perturb last price
 			time ++;
-			float f = xFunc();
-			float diff = 0;
-			if (f > 0) diff = randRange(-10f, f);
-			else if (f < 0) diff = randRange(f, 10f);
-			else diff = randRange(-10f, 10f);
+			double f = xFunc();
+			double diff = 0;
+			if (f > 0) diff = randRange(-10d, f);
+			else if (f < 0) diff = randRange(f, 10d);
+			else diff = randRange(-10d, 10d);
 
 			lastPrice += diff;
 			if (lastPrice < PRICE_MIN) lastPrice = PRICE_MIN;
@@ -210,11 +209,11 @@ class PriceGenerator implements Iterator<Float> {
 		throw new UnsupportedOperationException();
 	}
 
- 	private float xFunc() {
-		return 10f + ((float)time / (float)MAX_TIME) * (x - 10f);
+ 	private double xFunc() {
+		return 10d + ((double)time / (double)MAX_TIME) * ((double)x - 10d);
 	}
 
-	private float randRange(float min, float max) {
-		return min + (max - min) * random.nextFloat();
+	private double randRange(double min, double max) {
+		return min + (max - min) * random.nextDouble();
 	}
 }
