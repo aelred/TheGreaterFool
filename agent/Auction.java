@@ -1,22 +1,70 @@
 package agent;
 
-import java.util.*;
+import se.sics.tac.aw.BidString;
+import se.sics.tac.aw.Quote;
+import se.sics.tac.aw.TACAgent;
+import se.sics.tac.aw.Transaction;
+
+import java.util.Set;
 
 public class Auction {
-	private final Buyable item;
-	private float askPrice;
-	private List<Bid> sellBids = new ArrayList<Bid>();
-	private List<Bid> buyBids = new ArrayList<Bid>();
+    public final int auctionID;
+    private Set<Watcher> watchers;
 
-	public Buyable getItem() {
-		return item;
-	}
+    public Auction(TACAgent agent, int auctionID) {
+        this.auctionID = auctionID;
+    }
 
-	public float getAskPrice() {
-		return askPrice;
-	}
+    public void addWatcher(Watcher watcher) {
+        watchers.add(watcher);
+    }
 
-	public Auction(Buyable item) {
-		this.item = item;
-	}
+    public void removeWatcher(Watcher watcher) {
+        watchers.remove(watcher);
+    }
+
+    public void fireQuoteUpdated(Quote quote) {
+        for (Watcher watcher : watchers) {
+            watcher.auctionQuoteUpdated(this, quote);
+        }
+    }
+
+    public void fireBidUpdated(BidString bidString) {
+        for (Watcher watcher : watchers) {
+            watcher.auctionBidUpdated(this, bidString);
+        }
+    }
+
+    public void fireBidRejected(BidString bidString) {
+        for (Watcher watcher : watchers) {
+            watcher.auctionBidRejected(this, bidString);
+        }
+    }
+
+    public void fireBidError(BidString bidString, int error) {
+        for (Watcher watcher : watchers) {
+            watcher.auctionBidError(this, bidString, error);
+        }
+    }
+
+    public void fireTransaction(Transaction transaction) {
+        for (Watcher watcher : watchers) {
+            watcher.auctionTransaction(this, transaction);
+        }
+    }
+
+    public void fireClosed() {
+        for (Watcher watcher : watchers) {
+            watcher.auctionClosed(this);
+        }
+    }
+
+    public interface Watcher {
+        public void auctionQuoteUpdated(Auction auction, Quote quote);
+        public void auctionBidUpdated(Auction auction, BidString bidString);
+        public void auctionBidRejected(Auction auction, BidString bidString);
+        public void auctionBidError(Auction auction, BidString bidString, int error);
+        public void auctionTransaction(Auction auction, Transaction transaction);
+        public void auctionClosed(Auction auction);
+    }
 }
