@@ -1,10 +1,17 @@
 package agent;
 
+import se.sics.tac.aw.TACAgent;
+
 public class EntertainmentAuction extends Auction {
 	private EntertainmentType type;
 
-	public EntertainmentAuction(int day, EntertainmentType type) {
-		super(day);
+	public EntertainmentAuction(
+			TACAgent agent, int day, EntertainmentType type) {
+		super(agent, day);
 		this.type = type;
+	}
+
+	protected int getAuctionID() {
+		return getAuctionID(TACAgent.CAT_ENTERTAINMENT, type.getValue());
 	}
 }

@@ -16,7 +16,7 @@ public class FlightPriceMonitorTest {
 
 	@Test
 	public void testPriceMonitor() {
-		FlightAuction auction = new FlightAuction(3, true);
+		FlightAuction auction = new FlightAuction(null, 3, true);
 		FlightPriceMonitor monitor = new FlightPriceMonitor(auction);
 
 		assertEquals(auction, monitor.getAuction());
@@ -29,7 +29,7 @@ public class FlightPriceMonitorTest {
 		Double[] invalidStarts = {-100d, 0d, 100d, 249d, 401d, 450d};
 		Double[] invalidQuotes = {-42d, 0d, 40d, 149d, 801d, 1293d};
 
-		FlightAuction auction = new FlightAuction(3, true);
+		FlightAuction auction = new FlightAuction(null, 3, true);
 
 		for (double start : validStarts) {
 			FlightPriceMonitor monitor = new FlightPriceMonitor(auction);
@@ -71,7 +71,7 @@ public class FlightPriceMonitorTest {
 	public void testPredictMinimum() {
 		int repeats = 3;
 
-		FlightAuction auction = new FlightAuction(2, false);
+		FlightAuction auction = new FlightAuction(null, 2, false);
 
 		double overallTimeAcc = 0d;
 		double overallPriceAcc = 0d;

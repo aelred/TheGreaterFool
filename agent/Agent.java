@@ -65,17 +65,17 @@ public class Agent extends AgentImpl {
                 new HashMap<EntertainmentType, EntertainmentAuction>());
 
             if (day > 1) {
-                flightAuctions.get(day).put(false, new FlightAuction(day, false));
+                flightAuctions.get(day).put(false, new FlightAuction(agent, day, false));
             }
 
             if (day < NUM_DAYS) {
-                flightAuctions.get(day).put(true, new FlightAuction(day, true));
-                hotelAuctions.get(day).put(false, new HotelAuction(day, false));
-                hotelAuctions.get(day).put(true, new HotelAuction(day, true));
+                flightAuctions.get(day).put(true, new FlightAuction(agent, day, true));
+                hotelAuctions.get(day).put(false, new HotelAuction(agent, day, false));
+                hotelAuctions.get(day).put(true, new HotelAuction(agent, day, true));
 
                 for (EntertainmentType type : EntertainmentType.values()) {
                     entertainmentAuctions.get(day).put(type, 
-                        new EntertainmentAuction(day, type));
+                        new EntertainmentAuction(agent, day, type));
                 }
             }
         }
