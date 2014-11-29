@@ -1,7 +1,7 @@
 package agent;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Represents the actual package being given to a client, as opposed to their preferences.
@@ -10,8 +10,9 @@ public class Package {
     private final Client client;
     private int arrivalDay, departureDay;
     private PlaneTicket arrivalTicket, departureTicket;
-    private final List<HotelBooking> hotelBookings = new ArrayList<HotelBooking>(4);
-    private final List<EntertainmentTicket> entertainmentTickets = new ArrayList<EntertainmentTicket>(3);
+    private final HotelBooking[] hotelBookings = new HotelBooking[4];
+    private final Map<EntertainmentType, EntertainmentTicket> entertainmentTickets = new TreeMap<EntertainmentType,
+                EntertainmentTicket>();
 
     public Client getClient() { return client; }
 
@@ -37,8 +38,19 @@ public class Package {
         this.departureTicket = departureTicket;
     }
 
-    public List<HotelBooking> getHotelBookings() { return hotelBookings; }
-    public List<EntertainmentTicket> getEntertainmentTickets() { return entertainmentTickets; }
+    public HotelBooking getHotelBooking(int day) { return hotelBookings[day]; }
+    public void setHotelBooking(int day, HotelBooking booking) {
+        // TODO: do something if there's already a booking in that slot
+        hotelBookings[day] = booking;
+    }
+
+    public EntertainmentTicket getEntertainmentTicket(EntertainmentType type) {
+        return entertainmentTickets.get(type);
+    }
+    public void setEntertainmentTicket(EntertainmentTicket ticket) {
+        // TODO: do something if there's already a booking in that slot
+        entertainmentTickets.put(ticket.getType(), ticket);
+    }
 
     /** Create a new Package with the given {@link agent.Client}, using the client's preferred dates. */
     public Package(Client client) {
@@ -51,5 +63,58 @@ public class Package {
         this.departureDay = departureDay;
     }
 
-    // TODO: validate and calculateProfit functions
+    // TODO: `validate` function
+
+    public boolean isFeasible() {
+        if (getArrivalTicket() == null || getDepartureTicket() == null) {
+            return false;
+        }
+
+        for (int day = arrivalDay; day < departureDay; day++) {
+            if (getHotelBooking(day) == null) return false;
+        }
+
+        return true;
+    }
+
+    public boolean isEntertainmentPackageFeasible() {
+        for (EntertainmentTicket ticket : entertainmentTickets.values()) {
+            if (!(arrivalDay <= ticket.getDay() && ticket.getDay() < departureDay)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public boolean hasTampaTowersBonus() {
+        for (int day = arrivalDay; day < departureDay; day++) {
+            if (getHotelBooking(day) == null || !getHotelBooking(day).towers) return false;
+        }
+
+        return true;
+    }
+
+    // Utility calculation //
+
+    public int travelPenalty() {
+        return 100 * (  Math.abs(arrivalDay   - client.getPreferredArrivalDay())
+                      + Math.abs(departureDay - client.getPreferredDepartureDay()));
+    }
+
+    public int hotelBonus() {
+        return hasTampaTowersBonus() ? client.getHotelPremium() : 0;
+    }
+
+    public int funBonus() {
+        int funBonus = 0;
+        for (EntertainmentTicket ticket : entertainmentTickets.values()) {
+            funBonus += client.getEntertainmentPremium(ticket.getType());
+        }
+        return funBonus;
+    }
+
+    public int clientUtility() {
+        return isFeasible() ? 1000 - travelPenalty() + hotelBonus() + funBonus() : 0;
+    }
 }

@@ -47,7 +47,7 @@ public class EntertainmentAgent {
         }
 
         public void perform() {
-            pkg.getEntertainmentTickets().add(ticket);
+            pkg.setEntertainmentTicket(ticket);
             ticket.setAssociatedPackage(pkg);
         }
     }

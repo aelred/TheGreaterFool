@@ -1,7 +1,7 @@
 package agent;
 
 public class HotelBooking extends Buyable {
-	private final boolean towers;
+	public final boolean towers;
 
 	public HotelBooking(int day, boolean towers) throws IllegalArgumentException {
 		super(day);
