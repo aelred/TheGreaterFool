@@ -16,7 +16,7 @@ public abstract class Buyable {
     }
 
   	public Buyable(int day) throws IllegalArgumentException {
-  		if (day < 0 || day > Agent.NUM_DAYS-1) {
+  		if (day < 1 || day > Agent.NUM_DAYS) {
   			throw new IllegalArgumentException("Day not within expected range.");
   		}
   		this.day = day;

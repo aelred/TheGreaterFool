@@ -12,7 +12,7 @@ import static org.junit.Assert.*;
 public class ClientTest {
 	@Test
 	public void testAllPossiblePackages() {
-		Client client = new DummyClient(1, 3, 100);
+		Client client = new DummyClient(2, 4, 100);
 
 		int lastUtility = Integer.MAX_VALUE;
 		for (Package pack : client.allPossiblePackages()) {

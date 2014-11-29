@@ -25,8 +25,8 @@ public abstract class Client {
     public List<Package> allPossiblePackages() {
     	List<Package> packages = new ArrayList<Package>();
 
-    	for (int in = 0; in < Agent.NUM_DAYS; in ++) {
-    		for (int out = in + 1; out < Agent.NUM_DAYS; out ++) {
+    	for (int in = 1; in <= Agent.NUM_DAYS; in ++) {
+    		for (int out = in + 1; out <= Agent.NUM_DAYS; out ++) {
     			packages.add(possiblePackage(in, out, false));
     			packages.add(possiblePackage(in, out, true));
     		}
