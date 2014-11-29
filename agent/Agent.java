@@ -49,34 +49,29 @@ public class Agent extends AgentImpl {
 
     // Auctions //
 
-    private Map<Integer, Map<Boolean, FlightAuction>> flightAuctions;
-    private Map<Integer, Map<Boolean, HotelAuction>> hotelAuctions;
-    private Map<Integer, Map<EntertainmentType, EntertainmentAuction>> 
-        entertainmentAuctions;
+    private Map<Pair<Boolean>, FlightAuction> flightAuctions;
+    private Map<Pair<Boolean>, HotelAuction> hotelAuctions;
+    private Map<Pair<EntertainmentType>, EntertainmentAuction> entertainmentAuctions;
 
     private void createAuctions() {
-        flightAuctions = new HashMap<Integer, Map<Boolean, FlightAuction>>();
-        hotelAuctions = new HashMap<Integer, Map<Boolean, HotelAuction>>();
+        flightAuctions = new HashMap<Pair<Boolean>, FlightAuction>();
+        hotelAuctions = new HashMap<Pair<Boolean>, HotelAuction>();
         entertainmentAuctions = 
-            new HashMap<Integer, Map<EntertainmentType, EntertainmentAuction>>();
+            new HashMap<Pair<EntertainmentType>, EntertainmentAuction>();
 
         for (int day = 1; day <= NUM_DAYS; day++) {
-            flightAuctions.put(day, new HashMap<Boolean, FlightAuction>());
-            hotelAuctions.put(day, new HashMap<Boolean, HotelAuction>());
-            entertainmentAuctions.put(day,
-                new HashMap<EntertainmentType, EntertainmentAuction>());
-
+            
             if (day > 1) {
-                flightAuctions.get(day).put(false, new FlightAuction(agent, day, false));
+                flightAuctions.put(new Pair<Boolean>(day,false), new FlightAuction(agent, day, false));
             }
 
             if (day < NUM_DAYS) {
-                flightAuctions.get(day).put(true, new FlightAuction(agent, day, true));
-                hotelAuctions.get(day).put(false, new HotelAuction(agent, day, false));
-                hotelAuctions.get(day).put(true, new HotelAuction(agent, day, true));
+                flightAuctions.put(new Pair<Boolean>(day,true), new FlightAuction(agent, day, true));
+                hotelAuctions.put(new Pair<Boolean>(day,false), new HotelAuction(agent, day, false));
+                hotelAuctions.put(new Pair<Boolean>(day,true), new HotelAuction(agent, day, true));
 
                 for (EntertainmentType type : EntertainmentType.values()) {
-                    entertainmentAuctions.get(day).put(type, 
+                    entertainmentAuctions.put(new Pair<EntertainmentType>(day,type), 
                         new EntertainmentAuction(agent, day, type));
                 }
             }
@@ -100,15 +95,15 @@ public class Agent extends AgentImpl {
     }
 
     public FlightAuction getFlightAuction(int day, boolean arrival) {
-        return flightAuctions.get(day).get(arrival);
+        return flightAuctions.get(new Pair<Boolean>(day,arrival));
     }
 
-    public HotelAuction getHotelAuction(int day, boolean towers) {
-        return hotelAuctions.get(day).get(towers);
+    public HotelAuction getHotelAuction(int day, boolean tt) {
+        return hotelAuctions.get(new Pair<Boolean>(day,tt));
     }
 
     public EntertainmentAuction getEntertainmentAuction(int day, EntertainmentType type) {
-        return entertainmentAuctions.get(day).get(type);
+        return entertainmentAuctions.get(new Pair<EntertainmentType>(day,type));
     }
 
     /** Called when new information about the quotes on the auction (quote.getAuction()) arrives. */
@@ -167,6 +162,11 @@ class Pair<T> {
 		if (getClass() != o.getClass())
 			return false;
 		return (this.i == ((Pair<T>)o).i) && (this.t.equals(((Pair<T>)o).t));
+	}
+	
+	@Override
+	public int hashCode() {
+		return (t.hashCode() * Agent.NUM_DAYS + i);
 	}
 
 }
