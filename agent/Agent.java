@@ -8,8 +8,11 @@ public class Agent extends AgentImpl {
 
     public static final int NUM_DAYS = 5;
     public static final int NUM_CLIENTS = 8;
+    
+    private HotelAgent hotelAgent;
 
     private Client[] clients;
+    private List<Package> packages;
     private Map<Buyable, Auction> auctions;
 
     // The plane agent monitors and buys plane tickets
@@ -31,10 +34,19 @@ public class Agent extends AgentImpl {
             case TACAgent.CAT_FLIGHT:
                 break;
             case TACAgent.CAT_HOTEL:
+            	hotelAgent.quoteUpdated();
                 break;
             case TACAgent.CAT_ENTERTAINMENT:
                 break;
         }
+    }
+    
+    public void quoteUpdated(int auctionCategory) {
+    	switch (auctionCategory) {
+    	case TACAgent.CAT_HOTEL:
+    		hotelAgent.allQuotesUpdated();
+    		break;
+    	}
     }
 
     public void bidUpdated(BidString bid) {
@@ -50,16 +62,26 @@ public class Agent extends AgentImpl {
         flightAgent = new FlightAgent();
         createAuctions();
 
+        packages = new ArrayList<Package>();
+        
         clients = new Client[NUM_CLIENTS];
         for (int i = 0; i < clients.length; i++) {
             clients[i] = new ClientFromTAC(agent, i);
+            packages.add(new Package(clients[i]));
         }
+        
+    	this.hotelAgent = new HotelAgent(packages);
     }
 
     public void gameStopped() {
     }
 
     public void auctionClosed(int auction) {
+    	switch (TACAgent.getAuctionCategory(auction)) {
+    	case TACAgent.CAT_HOTEL:
+    		hotelAgent.auctionClosed(auction);
+    		break;
+    	}
     }
 
     public void transaction(Transaction transaction) {

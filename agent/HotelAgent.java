@@ -12,6 +12,14 @@ public class HotelAgent {
 		this.packages = packages;
 	}
 
+	public void quoteUpdated() {
+		
+	}
+	
+	public void allQuotesUpdated() {
+		
+	}
+	
 	public void updateOffers() {
 	}
 
