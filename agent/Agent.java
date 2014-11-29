@@ -97,15 +97,15 @@ public class Agent extends AgentImpl {
         }
     }
 
-    public Auction getFlightAuction(int day, boolean arrival) {
+    public FlightAuction getFlightAuction(int day, boolean arrival) {
         return flightAuctions.get(day).get(arrival);
     }
 
-    public Auction getHotelAuction(int day, boolean towers) {
+    public HotelAuction getHotelAuction(int day, boolean towers) {
         return hotelAuctions.get(day).get(towers);
     }
 
-    public Auction getEntertainmentAuction(int day, EntertainmentType type) {
+    public EntertainmentAuction getEntertainmentAuction(int day, EntertainmentType type) {
         return entertainmentAuctions.get(day).get(type);
     }
 
