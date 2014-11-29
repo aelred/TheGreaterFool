@@ -40,8 +40,6 @@ public class Agent extends AgentImpl {
             clients[i] = new ClientFromTAC(agent, i);
             packages.add(new Package(clients[i]));
         }
-        
-    	this.hotelAgent = new HotelAgent(packages, agent);
     }
 
     public void gameStopped() {
@@ -82,25 +80,11 @@ public class Agent extends AgentImpl {
     public void quoteUpdated(Quote quote) {
         int auction = quote.getAuction();
         getAuctionByID(auction).fireQuoteUpdated(quote);
-
-        int auctionCategory = agent.getAuctionCategory(auction);
-
-        // Give info to respective sub-agent
-        switch (auctionCategory) {
-            case TACAgent.CAT_HOTEL:
-                hotelAgent.quoteUpdated(quote);
-                break;
-        }
     }
 
     /** Called when new information about the quotes on all auctions for the auction
      * category has arrived (quotes for a specific type of auctions are often requested at once). */
     public void quoteUpdated(int auctionCategory) {
-        switch (auctionCategory) {
-            case TACAgent.CAT_HOTEL:
-                hotelAgent.allQuotesUpdated();
-                break;
-        }
     }
 
     /** Called when the TACAgent has received an answer on a bid query/submission
@@ -128,12 +112,6 @@ public class Agent extends AgentImpl {
     /** Called when the auction with ID "auction" closes. */
     public void auctionClosed(int auction) {
         getAuctionByID(auction).fireClosed();
-
-        switch (TACAgent.getAuctionCategory(auction)) {
-            case TACAgent.CAT_HOTEL:
-                hotelAgent.auctionClosed(auction);
-                break;
-        }
     }
 
 }
