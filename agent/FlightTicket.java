@@ -1,32 +1,32 @@
 package agent;
 
 public class FlightTicket extends Buyable {
-    private final boolean outgoing;
+    private final boolean arrival;
 
-    public boolean getOutgoing() {
-        return outgoing;
+    public boolean isArrival() {
+        return arrival;
     }
 
-    public FlightTicket(int day, boolean outgoing) throws IllegalArgumentException {
+    public FlightTicket(int day, boolean arrival) throws IllegalArgumentException {
         super(day);
 
-        // Day must be between 1st and 2nd-to-last day if outgoing
+        // Day must be between 1st and 2nd-to-last day if arrival
         // or between 2nd and last day if incoming
-        if ((outgoing && day > Agent.NUM_DAYS-1) || (!outgoing && day < 2)) {
+        if ((arrival && day > Agent.NUM_DAYS-1) || (!arrival && day < 2)) {
             throw new IllegalArgumentException(
                 "Day not within expected range: " + day);
         }
 
-        this.outgoing = outgoing;
+        this.arrival = arrival;
     }
 
     @Override
     public boolean equals(Object obj) {
-        return super.equals(obj) && (outgoing == ((FlightTicket)obj).outgoing);
+        return super.equals(obj) && (arrival == ((FlightTicket)obj).arrival);
     }
 
     @Override
     public int hashCode() {
-        return day * 2 + (outgoing? 1 : 0);
+        return day * 2 + (arrival? 1 : 0);
     }
 }
