@@ -83,7 +83,7 @@ public class Agent extends AgentImpl {
         // Give info to respective sub-agent
         switch (auctionCategory) {
             case TACAgent.CAT_HOTEL:
-                hotelAgent.quoteUpdated();
+                hotelAgent.quoteUpdated(quote);
                 break;
         }
     }
