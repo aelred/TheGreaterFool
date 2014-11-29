@@ -39,9 +39,9 @@ public class Package {
     }
 
     public HotelBooking getHotelBooking(int day) { return hotelBookings[day]; }
-    public void setHotelBooking(int day, HotelBooking booking) {
+    public void setHotelBooking(HotelBooking booking) {
         // TODO: do something if there's already a booking in that slot
-        hotelBookings[day] = booking;
+        hotelBookings[booking.getDay()] = booking;
     }
 
     public EntertainmentTicket getEntertainmentTicket(EntertainmentType type) {
