@@ -2,44 +2,20 @@ package agent;
 
 import java.util.List;
 
-import se.sics.tac.aw.Quote;
-import se.sics.tac.aw.TACAgent;
+public class HotelAgent extends SubAgent<HotelBooking> {
 
-public class HotelAgent {
+	private boolean[] auctionsClosed = new boolean[8];
+	private int[] held = new int[8];
+	private int[] allocated = new int[8];
+	private int[] intentions = new int[8];
 
-	protected List<Package> packages;
-	protected boolean[] auctionsClosed = new boolean[10];
-	protected int[] ticketsHeld = new int[10];
-	
-	private int[] minimumPremiumPerDay = new int[4];
-
-	public HotelAgent(List<Package> packages, TACAgent agent) {
-		this.packages = packages;
-		Client c;
-		int premiumPerDay, pArrive, pDepart, hotelPremium, auctionID;
-		boolean tt;
-		for (Package p : packages) {
-			c = p.getClient();
-			pArrive = c.getPreferredArrivalDay();
-			pDepart = c.getPreferredDepartureDay();
-			hotelPremium = c.getHotelPremium();
-			premiumPerDay = hotelPremium / (pDepart-pArrive);
-			tt = premiumPerDay > 35; //TODO this is where the initial hotel choice is decided
-			auctionID = getAuctionID(tt,pArrive);
-			if (tt) {
-				agent.setAllocation(auctionID, agent.getAllocation(auctionID) + 1);
-				
-			}
-			//TODO migrate this functionality to main Agent
-		}
+	public HotelAgent(Agent agent, List<HotelBooking> hotelStock) {
+		super(agent, hotelStock);
 	}
 
-	public void clearRequests() {
-		
-	}
-	
-	public void addRequest(int beginDay, int endDay, boolean tt, int premiumPerDay) {
-		
+	public void clearIntentions() {
+		intentions = new int[8];
+		allocated = new int[8];
 	}
 	
 	/**
@@ -51,21 +27,60 @@ public class HotelAgent {
 	public int getAuctionID(boolean tt, int day) {
 		return 7 + day + (tt ? 4 : 0);
 	}
+
+	@Override
+	public void fulfillPackages(List<Package> packages) {
+		// TODO Auto-generated method stub
+		clearIntentions();
+		boolean tt, err;
+		int prefArrive, prefDepart, hotelPremium, errCount, day, i;
+		int[] tempIntentions, tempAllocations;
+		Client c;
+		for (Package p : packages) {
+			c = p.getClient();
+			prefArrive = c.getPreferredArrivalDay();
+			prefDepart = c.getPreferredDepartureDay();
+			hotelPremium = c.getHotelPremium();
+			tt = hotelPremium / (prefDepart - prefArrive) > 35; // identify if tt is worth aiming for
+			errCount = 0;
+			do {
+				err = false;
+				tempIntentions = new int[8];
+				tempAllocations = new int[8];
+				for (day = prefArrive; day <= prefDepart; day++) {
+					i = hashForIndex(day, tt);
+					if (!auctionsClosed[i]) {
+						tempIntentions[i]++;
+					} else {
+						if (allocated[i] < held[i]) {
+							tempAllocations[i]++;
+						} else {
+							// infeasible package, try other hotel
+							errCount++;
+							err = true;
+							tt = !tt;
+							break;
+						}
+					}
+				}
+			} while (errCount == 1 && err);
+			if (!err) {
+				// push changes to main intention and allocation arrays
+				for (i = 1; i <= 8; i++) {
+					allocated[i] = allocated[i] + tempAllocations[i];
+					intentions[i] = intentions[i] + tempIntentions[i];
+				}
+			}
+		}
+		updateBids();
+	}
 	
-	public void quoteUpdated(Quote quote) {
+	private void updateBids() {
 		
 	}
 	
-	public void allQuotesUpdated() {
-		
-	}
-	
-	public void updateOffers() {
+	private static int hashForIndex(int day, boolean tt) {
+		return day + (tt ? 4 : 0) - 1;
 	}
 
-	public void auctionClosed(int aucID) {
-	}
-
-	public void makeBid(int aucID, int[] offers) {
-	}
 }
