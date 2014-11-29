@@ -8,6 +8,8 @@ import java.util.Random;
  * Manages allocation of {@link agent.EntertainmentTicket}s to {@link agent.Client}s.
  */
 public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
+    private boolean firstRun = true;
+
     public EntertainmentAgent(Agent agent, List<EntertainmentTicket> stock) {
         super(agent, stock);
     }
@@ -103,6 +105,17 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
     }
 
     public void fulfillPackages(List<Package> packages) {
+        if (firstRun) {
+            for (Package pkg : packages) {
+                pkg.clearEntertainmentTickets();
+            }
+            for (EntertainmentTicket ticket : stock) {
+                ticket.clearAssociatedPackage();
+            }
+            // TODO: clear any untaken sell bids
+            firstRun = false;
+        }
+
         List<Allocation> allocations = possibleAllocations(packages);
         List<Allocation> bestAllocations = chooseBestAllocations(allocations);
 

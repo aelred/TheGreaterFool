@@ -51,6 +51,9 @@ public class Package {
         // TODO: do something if there's already a booking in that slot
         entertainmentTickets.put(ticket.getType(), ticket);
     }
+    public void clearEntertainmentTickets() {
+        entertainmentTickets.clear();
+    }
 
     /** Create a new Package with the given {@link agent.Client}, using the client's preferred dates. */
     public Package(Client client) {

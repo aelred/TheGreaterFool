@@ -14,6 +14,9 @@ public abstract class Buyable {
     public void setAssociatedPackage(Package associatedPackage) {
         this.associatedPackage = associatedPackage;
     }
+    public void clearAssociatedPackage() {
+        this.associatedPackage = null;
+    }
 
   	public Buyable(int day) throws IllegalArgumentException {
   		if (day < 1 || day > Agent.NUM_DAYS) {
