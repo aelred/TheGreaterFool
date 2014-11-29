@@ -7,7 +7,7 @@ public class HotelBooking extends Buyable {
 		super(day);
 
 		// No bookings allowed on last night
-		if (day > Agent.NUM_DAYS-2) {
+		if (day > Agent.NUM_DAYS-1) {
 			throw new IllegalArgumentException("Day not within expected range.");
 		}
 

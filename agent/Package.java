@@ -38,10 +38,10 @@ public class Package {
         this.departureTicket = departureTicket;
     }
 
-    public HotelBooking getHotelBooking(int day) { return hotelBookings[day]; }
-    public void setHotelBooking(int day, HotelBooking booking) {
+    public HotelBooking getHotelBooking(int day) { return hotelBookings[day - 1]; }
+    public void setHotelBooking(HotelBooking booking) {
         // TODO: do something if there's already a booking in that slot
-        hotelBookings[day] = booking;
+        hotelBookings[booking.getDay() - 1] = booking;
     }
 
     public EntertainmentTicket getEntertainmentTicket(EntertainmentType type) {

@@ -91,13 +91,13 @@ public class Agent extends AgentImpl {
         // Make a list of every buyable
         List<Buyable> buyables = new ArrayList<Buyable>();
 
-        for (int day = 0; day < NUM_DAYS; day ++) {
+        for (int day = 1; day <= NUM_DAYS; day ++) {
 
-            if (day > 0) {
+            if (day > 1) {
                 // No in-flights on first day
                 buyables.add(new PlaneTicket(day, false));
             }
-            if (day < NUM_DAYS-1) {
+            if (day < NUM_DAYS) {
                 // No out-flights, hotels or entertainment on last day
                 buyables.add(new PlaneTicket(day, true));
 
