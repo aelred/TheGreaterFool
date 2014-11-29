@@ -34,7 +34,7 @@ public class Agent extends AgentImpl {
             case TACAgent.CAT_FLIGHT:
                 break;
             case TACAgent.CAT_HOTEL:
-            	hotelAgent.quoteUpdated();
+            	hotelAgent.quoteUpdated(quote);
                 break;
             case TACAgent.CAT_ENTERTAINMENT:
                 break;
