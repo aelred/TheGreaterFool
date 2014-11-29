@@ -7,13 +7,9 @@ import java.util.Random;
 /**
  * Manages allocation of {@link agent.EntertainmentTicket}s to {@link agent.Client}s.
  */
-public class EntertainmentAgent {
-    private List<Package> packages;
-    private List<EntertainmentTicket> tickets;
-
-    public EntertainmentAgent(List<Package> packages, List<EntertainmentTicket> tickets) {
-        this.packages = packages;
-        this.tickets = tickets;
+public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
+    public EntertainmentAgent(Agent agent, List<EntertainmentTicket> stock) {
+        super(agent, stock);
     }
 
     protected class Allocation implements Comparable<Allocation> {
@@ -52,10 +48,10 @@ public class EntertainmentAgent {
         }
     }
 
-    private List<Allocation> possibleAllocations() {
+    private List<Allocation> possibleAllocations(List<Package> packages) {
         List<Allocation> allocations = new ArrayList<Allocation>();
         for (Package pkg : packages) {
-            for (EntertainmentTicket ticket : tickets) {
+            for (EntertainmentTicket ticket : stock) {
                 if (pkg.getArrivalDay() <= ticket.getDay()
                         && ticket.getDay() < pkg.getDepartureDay()) {
                     allocations.add(new Allocation(pkg, ticket));
@@ -93,7 +89,7 @@ public class EntertainmentAgent {
 
     public void sellUnusedTickets() {
         List<EntertainmentTicket> unusedTickets = new ArrayList<EntertainmentTicket>();
-        for (EntertainmentTicket ticket : tickets) {
+        for (EntertainmentTicket ticket : stock) {
             if (ticket.getAssociatedPackage() == null) {
                 unusedTickets.add(ticket);
             }
@@ -106,8 +102,8 @@ public class EntertainmentAgent {
         }
     }
 
-    public void allocateTickets() {
-        List<Allocation> allocations = possibleAllocations();
+    public void fulfillPackages(List<Package> packages) {
+        List<Allocation> allocations = possibleAllocations(packages);
         List<Allocation> bestAllocations = chooseBestAllocations(allocations);
 
         System.out.println("Best allocations:");
@@ -163,7 +159,7 @@ public class EntertainmentAgent {
 
         System.out.println("Tickets:");
         for (int i = 0; i < tickets.size(); i++) { System.out.println("\t" + tickets.get(i)); }
-        EntertainmentAgent entertainmentAgent = new EntertainmentAgent(packages, tickets);
-        entertainmentAgent.allocateTickets();
+        EntertainmentAgent entertainmentAgent = new EntertainmentAgent(new Agent(), tickets);
+        entertainmentAgent.fulfillPackages(packages);
     }
 }
