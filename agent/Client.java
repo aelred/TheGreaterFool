@@ -2,6 +2,8 @@ package agent;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 public abstract class Client {
     public abstract int getPreferredArrivalDay();
@@ -19,7 +21,7 @@ public abstract class Client {
 		return pack;
     }
 
-    // Returns all possible packages for this client
+    // Returns all possible packages for this client, sorted by utility
     public List<Package> allPossiblePackages() {
     	List<Package> packages = new ArrayList<Package>();
 
@@ -30,6 +32,14 @@ public abstract class Client {
     		}
     	}
 
-    	return packages;
+    	Collections.sort(packages, new PackageUtilityComparator());
+        return packages;
+    }
+}
+
+// Compare packages by utility
+class PackageUtilityComparator implements Comparator<Package> {
+    public int compare(Package p1, Package p2) {
+        return p2.clientUtility() - p1.clientUtility();
     }
 }

@@ -14,8 +14,11 @@ public class ClientTest {
 	public void testAllPossiblePackages() {
 		Client client = new DummyClient(1, 3, 100);
 
+		int lastUtility = Integer.MAX_VALUE;
 		for (Package pack : client.allPossiblePackages()) {
 			assertTrue(pack.isFeasible());
+			assertTrue(pack.clientUtility() <= lastUtility);
+			lastUtility = pack.clientUtility();
 		}
 	}
 }
