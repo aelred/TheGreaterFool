@@ -9,7 +9,7 @@ import java.util.TreeMap;
 public class Package {
     private final Client client;
     private int arrivalDay, departureDay;
-    private PlaneTicket arrivalTicket, departureTicket;
+    private FlightTicket arrivalTicket, departureTicket;
     private final HotelBooking[] hotelBookings = new HotelBooking[4];
     private final Map<EntertainmentType, EntertainmentTicket> entertainmentTickets = new TreeMap<EntertainmentType,
                 EntertainmentTicket>();
@@ -22,16 +22,16 @@ public class Package {
     public int getDepartureDay() { return departureDay; }
     public void setDepartureDay(int departureDay) { this.departureDay = departureDay; }
 
-    public PlaneTicket getArrivalTicket() { return arrivalTicket; }
-    public PlaneTicket getDepartureTicket() { return departureTicket; }
+    public FlightTicket getArrivalTicket() { return arrivalTicket; }
+    public FlightTicket getDepartureTicket() { return departureTicket; }
 
-    public void setArrivalTicket(PlaneTicket arrivalTicket) {
+    public void setArrivalTicket(FlightTicket arrivalTicket) {
         if (arrivalTicket.getDay() != arrivalDay) {
             throw new IllegalArgumentException("The given arrival ticket does not match the package arrival day.");
         }
         this.arrivalTicket = arrivalTicket;
     }
-    public void setDepartureTicket(PlaneTicket departureTicket) {
+    public void setDepartureTicket(FlightTicket departureTicket) {
         if (departureTicket.getDay() != departureDay) {
             throw new IllegalArgumentException("The given departure ticket does not match the package departure day.");
         }

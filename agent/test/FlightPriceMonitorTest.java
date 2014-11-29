@@ -1,7 +1,7 @@
 package agent.test;
 
 import agent.FlightPriceMonitor;
-import agent.PlaneTicket;
+import agent.FlightTicket;
 
 import java.util.*;
 import org.junit.Test;
@@ -16,7 +16,7 @@ public class FlightPriceMonitorTest {
 
 	@Test
 	public void testPriceMonitor() {
-		PlaneTicket ticket = new PlaneTicket(3, true);
+		FlightTicket ticket = new FlightTicket(3, true);
 		FlightPriceMonitor monitor = new FlightPriceMonitor(ticket);
 
 		assertEquals(ticket, monitor.getTicket());
@@ -29,7 +29,7 @@ public class FlightPriceMonitorTest {
 		Double[] invalidStarts = {-100d, 0d, 100d, 249d, 401d, 450d};
 		Double[] invalidQuotes = {-42d, 0d, 40d, 149d, 801d, 1293d};
 
-		PlaneTicket ticket = new PlaneTicket(3, true);
+		FlightTicket ticket = new FlightTicket(3, true);
 
 		for (double start : validStarts) {
 			FlightPriceMonitor monitor = new FlightPriceMonitor(ticket);
@@ -71,7 +71,7 @@ public class FlightPriceMonitorTest {
 	public void testPredictMinimum() {
 		int repeats = 3;
 
-		PlaneTicket ticket = new PlaneTicket(2, false);
+		FlightTicket ticket = new FlightTicket(2, false);
 
 		double overallTimeAcc = 0d;
 		double overallPriceAcc = 0d;

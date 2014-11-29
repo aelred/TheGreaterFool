@@ -4,14 +4,14 @@ import java.util.*;
 
 public class FlightAgent {
 
-    private Set<PlaneTicket> tickets = new HashSet<PlaneTicket>();
-    private Map<PlaneTicket, FlightPriceMonitor> monitors = new HashMap<PlaneTicket, FlightPriceMonitor>();
+    private Set<FlightTicket> tickets = new HashSet<FlightTicket>();
+    private Map<FlightTicket, FlightPriceMonitor> monitors = new HashMap<FlightTicket, FlightPriceMonitor>();
 
     public FlightAgent() {
         // create a price monitor for every flight auction
         for (int day = 1; day <= Agent.NUM_DAYS; day ++) {
-            PlaneTicket ticketOut = new PlaneTicket(day, true);
-            PlaneTicket ticketIn = new PlaneTicket(day, false);
+            FlightTicket ticketOut = new FlightTicket(day, true);
+            FlightTicket ticketIn = new FlightTicket(day, false);
             monitors.put(ticketOut, new FlightPriceMonitor(ticketOut));
             monitors.put(ticketIn, new FlightPriceMonitor(ticketIn));
         }

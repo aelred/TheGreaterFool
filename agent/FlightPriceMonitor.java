@@ -16,7 +16,7 @@ public class FlightPriceMonitor {
     private static final int MAX_TIME = 54;
 
     // The plane ticket price to monitor
-    private final PlaneTicket ticket;
+    private final FlightTicket ticket;
 
     // Historic prices
     private final List<Double> prices = new ArrayList<Double>();
@@ -24,7 +24,7 @@ public class FlightPriceMonitor {
     // Estimates of the X constant affecting prices
     private final Map<Integer, Double> probX = new HashMap<Integer, Double>();
 
-    public FlightPriceMonitor(PlaneTicket ticket) {
+    public FlightPriceMonitor(FlightTicket ticket) {
         this.ticket = ticket;
 
         // Set initial probabilities using probability density
@@ -35,7 +35,7 @@ public class FlightPriceMonitor {
         }
     }
 
-    public PlaneTicket getTicket() {
+    public FlightTicket getTicket() {
         return ticket;
     }
 

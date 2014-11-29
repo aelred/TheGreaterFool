@@ -1,13 +1,13 @@
 package agent;
 
-public class PlaneTicket extends Buyable {
+public class FlightTicket extends Buyable {
     private final boolean outgoing;
 
     public boolean getOutgoing() {
         return outgoing;
     }
 
-    public PlaneTicket(int day, boolean outgoing) throws IllegalArgumentException {
+    public FlightTicket(int day, boolean outgoing) throws IllegalArgumentException {
         super(day);
 
         // Day must be between 1st and 2nd-to-last day if outgoing
@@ -22,7 +22,7 @@ public class PlaneTicket extends Buyable {
 
     @Override
     public boolean equals(Object obj) {
-        return super.equals(obj) && (outgoing == ((PlaneTicket)obj).outgoing);
+        return super.equals(obj) && (outgoing == ((FlightTicket)obj).outgoing);
     }
 
     @Override

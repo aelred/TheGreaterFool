@@ -13,8 +13,8 @@ public abstract class Client {
 
     private Package possiblePackage(int in, int out, boolean towers) {
     	Package pack = new Package(this, in, out);
-		pack.setArrivalTicket(new PlaneTicket(in, true));
-		pack.setDepartureTicket(new PlaneTicket(out, false));
+		pack.setArrivalTicket(new FlightTicket(in, true));
+		pack.setDepartureTicket(new FlightTicket(out, false));
 		for (int day = in; day < out; day ++) {
 			pack.setHotelBooking(new HotelBooking(day, towers));
 		}

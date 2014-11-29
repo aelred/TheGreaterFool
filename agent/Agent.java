@@ -15,7 +15,7 @@ public class Agent extends AgentImpl {
     private List<Package> packages;
 
     // Current stock
-    private List<PlaneTicket> planeTickets = new ArrayList<PlaneTicket>();
+    private List<FlightTicket> flightTickets = new ArrayList<FlightTicket>();
     private List<HotelBooking> hotelBookings = new ArrayList<HotelBooking>();
     private List<EntertainmentTicket> entertainmentTickets = new ArrayList<EntertainmentTicket>();
 
