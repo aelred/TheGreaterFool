@@ -32,7 +32,7 @@ public class Agent extends AgentImpl {
     }
 
     public void gameStarted() {
-        flightAgent = new FlightAgent();
+        flightAgent = new FlightAgent(this, flightTickets);
         createAuctions();
 
         packages = new ArrayList<Package>();
@@ -67,17 +67,17 @@ public class Agent extends AgentImpl {
                 new HashMap<EntertainmentType, EntertainmentAuction>());
 
             if (day > 1) {
-                flightAuctions.get(day).put(false, new FlightAuction(day, false));
+                flightAuctions.get(day).put(false, new FlightAuction(agent, day, false));
             }
 
             if (day < NUM_DAYS) {
-                flightAuctions.get(day).put(true, new FlightAuction(day, true));
-                hotelAuctions.get(day).put(false, new HotelAuction(day, false));
-                hotelAuctions.get(day).put(true, new HotelAuction(day, true));
+                flightAuctions.get(day).put(true, new FlightAuction(agent, day, true));
+                hotelAuctions.get(day).put(false, new HotelAuction(agent, day, false));
+                hotelAuctions.get(day).put(true, new HotelAuction(agent, day, true));
 
                 for (EntertainmentType type : EntertainmentType.values()) {
                     entertainmentAuctions.get(day).put(type, 
-                        new EntertainmentAuction(day, type));
+                        new EntertainmentAuction(agent, day, type));
                 }
             }
         }
@@ -99,15 +99,15 @@ public class Agent extends AgentImpl {
         }
     }
 
-    public Auction getFlightAuction(int day, boolean arrival) {
+    public FlightAuction getFlightAuction(int day, boolean arrival) {
         return flightAuctions.get(day).get(arrival);
     }
 
-    public Auction getHotelAuction(int day, boolean towers) {
+    public HotelAuction getHotelAuction(int day, boolean towers) {
         return hotelAuctions.get(day).get(towers);
     }
 
-    public Auction getEntertainmentAuction(int day, EntertainmentType type) {
+    public EntertainmentAuction getEntertainmentAuction(int day, EntertainmentType type) {
         return entertainmentAuctions.get(day).get(type);
     }
 

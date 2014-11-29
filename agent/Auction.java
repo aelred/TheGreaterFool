@@ -8,7 +8,6 @@ import se.sics.tac.aw.Transaction;
 import java.util.*;
 
 public abstract class Auction {
-    private final int auctionID;
     private Set<Watcher> watchers;
     private BidMap workingBids, activeBids; // Integer 1 is price, Integer 2 is quantity
     private boolean awaitingConfirmation = false;
@@ -16,11 +15,16 @@ public abstract class Auction {
     
     protected int day;
     
-    public Auction(TACAgent agent, int auctionID, int day) {
+    public Auction(TACAgent agent, int day) {
         this.agent = agent;
-    	this.auctionID = auctionID;
         this.day = day;
         workingBids = new BidMap();
+    }
+
+    protected abstract int getAuctionID();
+
+    protected int getAuctionID(int category, int type) {
+        return agent.getAuctionFor(category, type, day);
     }
 
     public void addWatcher(Watcher watcher) {
@@ -105,7 +109,7 @@ public abstract class Auction {
     }
     
     private BidString generateBidString() {
-    	BidString bid = new BidString(auctionID);
+    	BidString bid = new BidString(getAuctionID());
     	for (Float price : workingBids.keySet()) {
     		bid.addBidPoint(workingBids.get(price), price);
     	}
