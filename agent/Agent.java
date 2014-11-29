@@ -70,7 +70,7 @@ public class Agent extends AgentImpl {
             packages.add(new Package(clients[i]));
         }
         
-    	this.hotelAgent = new HotelAgent(packages);
+    	this.hotelAgent = new HotelAgent(packages, agent);
     }
 
     public void gameStopped() {
