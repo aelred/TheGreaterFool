@@ -5,11 +5,10 @@ import se.sics.tac.util.ArgEnumerator;
 
 
 public class Agent extends AgentImpl {
-
+	
     public static final int NUM_DAYS = 5;
     public static final int NUM_CLIENTS = 8;
     
-    private HotelAgent hotelAgent;
 
     private Client[] clients;
     private List<Package> packages;
@@ -19,8 +18,11 @@ public class Agent extends AgentImpl {
     private List<HotelBooking> hotelBookings = new ArrayList<HotelBooking>();
     private List<EntertainmentTicket> entertainmentTickets = new ArrayList<EntertainmentTicket>();
 
+    // SubAgents
     // The plane agent monitors and buys plane tickets
     private FlightAgent flightAgent;
+    private HotelAgent hotelAgent;
+    private EntertainmentAgent entertainmentAgent;
 
     protected void init(ArgEnumerator args) {
     }
@@ -146,5 +148,25 @@ public class Agent extends AgentImpl {
     public void auctionClosed(int auction) {
         getAuctionByID(auction).fireClosed();
     }
+
+}
+
+class Pair<T> {
+
+	private int i;
+	private T t;
+	
+	public Pair(int i, T t) {
+		this.i = i;
+		this.t = t;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public boolean equals(Object o) {
+		if (getClass() != o.getClass())
+			return false;
+		return (this.i == ((Pair<T>)o).i) && (this.t.equals(((Pair<T>)o).t));
+	}
 
 }
