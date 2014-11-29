@@ -14,6 +14,11 @@ public class Agent extends AgentImpl {
     private Client[] clients;
     private List<Package> packages;
 
+    // Current stock
+    private List<PlaneTicket> planeTickets = new ArrayList<PlaneTicket>();
+    private List<HotelBooking> hotelBookings = new ArrayList<HotelBooking>();
+    private List<EntertainmentTicket> entertainmentTickets = new ArrayList<EntertainmentTicket>();
+
     // The plane agent monitors and buys plane tickets
     private FlightAgent flightAgent;
 
