@@ -32,10 +32,6 @@ public abstract class Auction {
         return agent.getAuctionFor(category, type, day);
     }
 
-    public int getDay() {
-        return day;
-    }
-
     public void addWatcher(Watcher watcher) {
         watchers.add(watcher);
     }
