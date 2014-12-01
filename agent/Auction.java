@@ -29,7 +29,7 @@ public abstract class Auction<T extends Buyable> {
     protected abstract int getAuctionID();
 
     protected int getAuctionID(int category, int type) {
-        return agent.getAuctionFor(category, type, day);
+        return TACAgent.getAuctionFor(category, type, day);
     }
 
     // Return the Buyable associated with this auction
@@ -90,12 +90,12 @@ public abstract class Auction<T extends Buyable> {
     }
 
     public interface Watcher {
-        public void auctionQuoteUpdated(Auction auction, Quote quote);
-        public void auctionBidUpdated(Auction auction, BidString bidString);
-        public void auctionBidRejected(Auction auction, BidString bidString);
-        public void auctionBidError(Auction auction, BidString bidString, int error);
-        public void auctionTransaction(Auction auction, List<Buyable> buyables);
-        public void auctionClosed(Auction auction);
+        public void auctionQuoteUpdated(Auction<?> auction, Quote quote);
+        public void auctionBidUpdated(Auction<?> auction, BidString bidString);
+        public void auctionBidRejected(Auction<?> auction, BidString bidString);
+        public void auctionBidError(Auction<?> auction, BidString bidString, int error);
+        public void auctionTransaction(Auction<?> auction, List<Buyable> buyables);
+        public void auctionClosed(Auction<?> auction);
     }
 
     /** Clear the bid string currently being built. Changes are not submitted until submitBid is called.
@@ -164,6 +164,7 @@ public abstract class Auction<T extends Buyable> {
 }
 
 class BidMap extends HashMap<Float,Integer> {
+    public static final long serialVersionUID = 1L;
 
     public BidMap(BidMap workingBids) {
         super(workingBids);
@@ -174,4 +175,6 @@ class BidMap extends HashMap<Float,Integer> {
     }
 }
 
-class BidInUseException extends Exception {}
+class BidInUseException extends Exception {
+    public static final long serialVersionUID = 1L;
+}
