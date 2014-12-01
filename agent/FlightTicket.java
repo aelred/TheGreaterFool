@@ -19,4 +19,8 @@ public class FlightTicket extends Buyable {
 
         this.arrival = arrival;
     }
+
+    public String toString() {
+        return "FlightTicket(" + day + ", " + arrival + ")";
+    }
 }
