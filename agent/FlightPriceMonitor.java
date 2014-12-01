@@ -28,7 +28,7 @@ public class FlightPriceMonitor {
         this.auction = auction;
 
         // Set initial probabilities using probability density
-        double initX = 1d / (double)(X_MAX - X_MIN);
+        double initX = 1d / (double)(X_MAX - X_MIN + 1);
 
         for (int x = X_MIN; x <= X_MAX; x ++) {
             probX.put(x, initX);
@@ -67,6 +67,54 @@ public class FlightPriceMonitor {
 
     public double predictMinimumPrice() {
         return Collections.min(projectPrices());
+    }
+
+    public List<Double> priceCumulativeDist() {
+        // Return a cumulative distribution of prices.
+        // dist.get(p) gives the probability the actual price will be less than p
+
+        List<Double> dist = new ArrayList<Double>();
+
+        final Map<Integer, Double> mins = new HashMap<Integer, Double>();
+        List<Integer> xByPrice = new ArrayList<Integer>();
+
+        // Find all predicted minimum prices
+        for (int x = X_MIN; x <= X_MAX; x ++) {
+            xByPrice.add(x);
+            mins.put(x, Collections.min(projectPrices(x)));
+        }
+
+        // Sort xByPrice to be sorted by price as promised!
+        Collections.sort(xByPrice, new Comparator<Integer>() {
+            @Override
+            public int compare(Integer x1, Integer x2) {
+                return mins.get(x1).compareTo(mins.get(x2));
+            }
+        });
+
+        Iterator<Integer> xs = xByPrice.iterator();
+        int x = xs.next();
+        boolean isX = true;
+        double cumulative = 0d;
+
+        for (int price = 0; price < PRICE_MAX; price ++) {
+            // when we encounter a possible minimum, increase cumulative distribution
+            if (isX && price >= mins.get(x)) {
+                // increase chance of this price by probability of X
+                cumulative += probX.get(x);
+
+                // look at next minimum price
+                if (xs.hasNext()) {
+                    x = xs.next();
+                } else {
+                    isX = false;
+                }
+            }
+
+            dist.add(cumulative);
+        }
+
+        return dist;
     }
 
     private int time() {
