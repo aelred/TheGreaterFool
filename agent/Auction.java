@@ -84,12 +84,23 @@ public abstract class Auction {
         public void auctionClosed(Auction auction);
     }
 
+    /** Clear the bid string currently being built. Changes are not submitted until submitBid is called.
+     *
+     * @throws BidInUseException if the previously submitted bid has not yet been confirmed.
+     */
     public void wipeBid() throws BidInUseException {
         if (awaitingConfirmation)
             throw new BidInUseException();
         workingBids = new BidMap();
     }
-    
+
+    /** Set a quantity the agent is willing to buy at a certain price. If a bid point has already been set for that
+     * price, the quantity will be adjusted by the given amount. Changes are not submitted until submitBid is called.
+     *
+     * @param quantity The amount to adjust the quantity by. Negative values reduce the quantity being bid for.
+     * @param price The price at which to buy or sell the item.
+     * @throws BidInUseException if the previously submitted bid has not yet been confirmed.
+     */
     public void modifyBidPoint(int quantity, float price) throws BidInUseException {
         if (awaitingConfirmation)
             throw new BidInUseException();
@@ -99,7 +110,11 @@ public abstract class Auction {
             workingBids.put(price, quantity);
         }
     }
-    
+
+    /** Submit the changes made to the bid string by wipeBid and modifyBidPoint.
+     *
+     * @throws BidInUseException if the previously submitted bid has not yet been confirmed.
+     */
     public void submitBid() throws BidInUseException {
         if (awaitingConfirmation)
             throw new BidInUseException();
@@ -115,7 +130,8 @@ public abstract class Auction {
         }
         return bid;
     }
-    
+
+    /** @return a {@link agent.BidMap} containing the agent's active bids in this auction. */
     public BidMap getActiveBids() {
         return activeBids;
     }
