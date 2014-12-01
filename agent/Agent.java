@@ -23,6 +23,11 @@ public class Agent extends AgentImpl {
     private FlightAgent flightAgent;
     private HotelAgent hotelAgent;
     private EntertainmentAgent entertainmentAgent;
+    
+    // Auctions //
+    private Map<Pair<Boolean>, FlightAuction> flightAuctions;
+    private Map<Pair<Boolean>, HotelAuction> hotelAuctions;
+    private Map<Pair<EntertainmentType>, EntertainmentAuction> entertainmentAuctions;
 
     protected void init(ArgEnumerator args) {
     }
@@ -34,7 +39,7 @@ public class Agent extends AgentImpl {
     public void gameStarted() {
         flightAgent = new FlightAgent(this, flightTickets);
         createAuctions();
-
+        hotelAgent = new HotelAgent(this,hotelBookings,hotelAuctions);
         packages = new ArrayList<Package>();
         
         clients = new Client[NUM_CLIENTS];
@@ -46,12 +51,6 @@ public class Agent extends AgentImpl {
 
     public void gameStopped() {
     }
-
-    // Auctions //
-
-    private Map<Pair<Boolean>, FlightAuction> flightAuctions;
-    private Map<Pair<Boolean>, HotelAuction> hotelAuctions;
-    private Map<Pair<EntertainmentType>, EntertainmentAuction> entertainmentAuctions;
 
     private void createAuctions() {
         flightAuctions = new HashMap<Pair<Boolean>, FlightAuction>();
