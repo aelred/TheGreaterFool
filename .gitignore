@@ -16,3 +16,7 @@ hs_err_pid*
 
 ### VIM ###
 *.swp
+
+### Random TAC stuff ###
+*.log
+*.lck
