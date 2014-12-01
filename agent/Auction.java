@@ -144,6 +144,10 @@ public abstract class Auction {
     		return 0;
     	}
     }
+    
+    public Quote getMostRecentQuote() {
+    	return mostRecentQuote;
+    }
 }
 
 class BidMap extends HashMap<Float,Integer> {
