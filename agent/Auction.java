@@ -12,6 +12,7 @@ public abstract class Auction {
     private BidMap workingBids, activeBids; // Integer 1 is price, Integer 2 is quantity
     private boolean awaitingConfirmation = false;
     private TACAgent agent;
+    private Quote mostRecentQuote;
     
     protected int day;
     
@@ -134,6 +135,14 @@ public abstract class Auction {
     /** @return a {@link agent.BidMap} containing the agent's active bids in this auction. */
     public BidMap getActiveBids() {
         return activeBids;
+    }
+    
+    public float getAskPrice() {
+    	if (mostRecentQuote != null) {
+    		return mostRecentQuote.getAskPrice();
+    	} else {
+    		return 0;
+    	}
     }
 }
 
