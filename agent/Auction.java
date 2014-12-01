@@ -8,7 +8,7 @@ import se.sics.tac.aw.Transaction;
 import java.util.*;
 
 public abstract class Auction<T extends Buyable> {
-    private Set<Watcher> watchers;
+    private Set<Watcher> watchers = new HashSet<Watcher>();
     private BidMap workingBids, activeBids;
     private boolean awaitingConfirmation = false;
     private TACAgent agent;
