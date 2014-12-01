@@ -110,16 +110,17 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
     }
 
     public void fulfillPackages(List<Package> packages) {
-        if (firstRun) {
+        if (!firstRun) {
             for (Package pkg : packages) {
                 pkg.clearEntertainmentTickets();
             }
             for (EntertainmentTicket ticket : stock) {
                 ticket.clearAssociatedPackage();
             }
+            // TODO: clear buy bids
             // TODO: clear any untaken sell bids
-            firstRun = false;
         }
+        firstRun = false;
 
         List<Allocation> allocations = possibleAllocations(packages);
         List<Allocation> bestAllocations = chooseBestAllocations(allocations);
