@@ -56,6 +56,10 @@ public class Agent extends AgentImpl {
 
     public void gameStopped() {
     }
+    
+    public TACAgent getTACAgent() {
+    	return agent;
+    }
 
     private void createAuctions() {
         flightAuctions = new HashMap<Pair<Boolean>, FlightAuction>();

@@ -9,7 +9,7 @@ import java.util.*;
 
 public abstract class Auction {
     private Set<Watcher> watchers;
-    private BidMap workingBids, activeBids; // Integer 1 is price, Integer 2 is quantity
+    private BidMap workingBids, activeBids;
     private boolean awaitingConfirmation = false;
     private TACAgent agent;
     private Quote mostRecentQuote;
@@ -22,6 +22,10 @@ public abstract class Auction {
         workingBids = new BidMap();
     }
 
+    public int getDay() {
+    	return day;
+    }
+    
     protected abstract int getAuctionID();
 
     protected int getAuctionID(int category, int type) {
@@ -37,7 +41,8 @@ public abstract class Auction {
     }
 
     public void fireQuoteUpdated(Quote quote) {
-        for (Watcher watcher : watchers) {
+        mostRecentQuote = quote;
+    	for (Watcher watcher : watchers) {
             watcher.auctionQuoteUpdated(this, quote);
         }
     }
