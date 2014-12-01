@@ -19,8 +19,6 @@ public class FlightBidder implements Auction.Watcher {
     private int numWanted = 0;
     private boolean bidDirtyFlag = false;
 
-    private int time = 0;
-
     public FlightBidder(FlightAgent flightAgent, FlightAuction auction) {
         this.flightAgent = flightAgent;
         this.auction = auction;
@@ -42,8 +40,8 @@ public class FlightBidder implements Auction.Watcher {
     public void auctionQuoteUpdated(Auction<?> auction, Quote quote) {
         // Update price monitor with new prices information
         // TODO: Make sure this only happens every 10 seconds when the price perturbs!
-        monitor.addQuote((double)quote.getAskPrice(), time);
-        time ++;
+        FlightAgent.log.info("Quote updated");
+        monitor.addQuote((double)quote.getAskPrice(), getTimeStep());
         refreshBid();
     }
 
@@ -74,6 +72,11 @@ public class FlightBidder implements Auction.Watcher {
     }
 
     public void auctionClosed(Auction<?> auction) {
+        FlightAgent.log.warning("Auction closed");
+    }
+
+    private int getTimeStep() {
+        return (int)(flightAgent.agent.getTime() / 10000);
     }
 
     private void refreshBid() {
@@ -96,7 +99,7 @@ public class FlightBidder implements Auction.Watcher {
     }
 
     private float calcPrice() {
-        List<Double> dist = monitor.priceCumulativeDist(time);
+        List<Double> dist = monitor.priceCumulativeDist(getTimeStep());
         // Find lowest price that has confidence within required bounds
         for (int price = 0; price < dist.size(); price ++) {
             double prob = dist.get(price);

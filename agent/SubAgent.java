@@ -4,7 +4,7 @@ import java.util.List;
 
 public abstract class SubAgent<T extends Buyable> {
 
-	protected final Agent agent;
+	public final Agent agent;
 	protected final List<T> stock;
 
 	public SubAgent(Agent agent, List<T> stock) {

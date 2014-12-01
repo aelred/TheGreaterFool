@@ -80,6 +80,10 @@ public class Agent extends AgentImpl {
     	return agent;
     }
 
+    public long getTime() {
+        return agent.getGameTime();
+    }
+
     private void createAuctions() {
         log.info("Creating auctions");
         flightAuctions = new HashMap<Pair<Boolean>, FlightAuction>();
