@@ -4,20 +4,18 @@ import java.util.*;
 
 public class FlightAgent extends SubAgent<FlightTicket> {
 
-    private Map<FlightAuction, Integer> intentions = 
-        new HashMap<FlightAuction, Integer>();
-    private Map<FlightAuction, FlightPriceMonitor> monitors = 
-        new HashMap<FlightAuction, FlightPriceMonitor>();
+    private Map<FlightAuction, FlightBidder> bidders = 
+        new HashMap<FlightAuction, FlightBidder>();
 
     public FlightAgent(Agent agent, List<FlightTicket> stock) {
         super(agent, stock);
 
-        // create a price monitor for every flight auction
+        // Create a bidder for every auction
         for (int day = 1; day <= Agent.NUM_DAYS; day ++) {
             FlightAuction auctionOut = agent.getFlightAuction(day, true);
             FlightAuction auctionIn = agent.getFlightAuction(day, false);
-            monitors.put(auctionOut, new FlightPriceMonitor(auctionOut));
-            monitors.put(auctionIn, new FlightPriceMonitor(auctionIn));
+            bidders.put(auctionOut, new FlightBidder(this, auctionOut));
+            bidders.put(auctionIn, new FlightBidder(this, auctionIn));
         }
     }
 
@@ -27,13 +25,12 @@ public class FlightAgent extends SubAgent<FlightTicket> {
         }
     }
 
-    private void addIntention(FlightAuction auction) {
-        if (!intentions.containsKey(auction)) intentions.put(auction, 0);
-        intentions.put(auction, intentions.get(auction) + 1);
+    public void addTicket(FlightTicket ticket) {
+        this.stock.add(ticket);
     }
 
     private void fulfillPackage(Package pack) {
-        addIntention(agent.getFlightAuction(pack.getArrivalDay(), true));
-        addIntention(agent.getFlightAuction(pack.getDepartureDay(), false));
+        bidders.get(agent.getFlightAuction(pack.getArrivalDay(), true)).addWanted();
+        bidders.get(agent.getFlightAuction(pack.getDepartureDay(), false)).addWanted();
     }
 }

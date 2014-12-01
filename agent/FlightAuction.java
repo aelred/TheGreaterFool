@@ -10,6 +10,10 @@ public class FlightAuction extends Auction {
 		this.arrival = arrival;
 	}
 
+    public boolean getArrival() {
+        return arrival;
+    }
+
 	protected int getAuctionID() {
 		return getAuctionID(TACAgent.CAT_FLIGHT, 
 			arrival ? TACAgent.TYPE_INFLIGHT : TACAgent.TYPE_OUTFLIGHT);
