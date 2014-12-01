@@ -23,7 +23,7 @@ public class HotelAuction extends Auction<HotelBooking> {
 	}
 
     protected HotelBooking getBuyable() {
-        return new HotelBooking(day, towers);
+        return new HotelBooking(day, tt);
     }
 	
 	@Override

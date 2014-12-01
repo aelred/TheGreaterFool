@@ -32,10 +32,6 @@ public abstract class Auction<T extends Buyable> {
         return agent.getAuctionFor(category, type, day);
     }
 
-    public int getDay() {
-        return day;
-    }
-
     // Return the Buyable associated with this auction
     protected abstract T getBuyable();
 

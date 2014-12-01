@@ -57,7 +57,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 						+ " for " + ((HotelAuction)auction).toString());
 			}
 			@Override
-			public void auctionTransaction(Auction auction, Transaction transaction) {
+			public void auctionTransaction(Auction auction, List<Buyable> buyables) {
 			}
 			@Override
 			public void auctionClosed(Auction auction) {
