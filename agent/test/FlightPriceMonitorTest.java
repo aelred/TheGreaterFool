@@ -160,6 +160,35 @@ public class FlightPriceMonitorTest {
 		// Price accuracy must be better than 95%
 		assertTrue(overallPriceAcc > 0.95);
 	}
+
+    @Test
+    public void testPriceCumulativeDist() {
+        // Assert that probability begins at ~0d and increases to ~1d.
+		FlightAuction auction = new FlightAuction(null, 3, true);
+
+		for (int x = X_MIN; x <= X_MAX; x++) {
+			FlightPriceMonitor monitor = new FlightPriceMonitor(auction);
+            PriceGenerator gen = new PriceGenerator(x);
+
+            while (gen.hasNext()) {
+                double quote = gen.next();
+                monitor.addQuote(quote);
+                
+                // Assert cumulative distribution is valid
+                List<Double> dist = monitor.priceCumulativeDist();
+                double lastProb = 0d;
+                for (int price = 0; price < dist.size(); price ++) {
+                    double prob = dist.get(price);
+                    // Make sure probability always increases
+                    assertTrue(prob >= lastProb);
+                    lastProb = prob;
+                }
+
+                // Make sure final probability is approximately 1
+                assertEquals(1d, lastProb, 0.01d);
+            }
+		}
+    }
 }
 
 class PriceGenerator implements Iterator<Double> {
