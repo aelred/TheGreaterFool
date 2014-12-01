@@ -50,7 +50,7 @@ public class FlightPriceMonitor {
 
         if (quote < min || quote > max) {
             throw new IllegalArgumentException(
-                "Price quote outside expected range");
+                "Price quote outside expected range: " + quote);
         }
 
         // Take change in prices to update estimate

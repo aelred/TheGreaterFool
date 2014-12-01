@@ -9,7 +9,7 @@ import se.sics.tac.util.ArgEnumerator;
 public class Agent extends AgentImpl {
 	
 	public static final Logger log =
-            Logger.getLogger(DummyAgent.class.getName());
+            Logger.getLogger(Agent.class.getName());
 	
     public static final int NUM_DAYS = 5;
     public static final int NUM_CLIENTS = 8;
@@ -35,6 +35,7 @@ public class Agent extends AgentImpl {
     private Map<Pair<EntertainmentType>, EntertainmentAuction> entertainmentAuctions;
 
     protected void init(ArgEnumerator args) {
+        log.info("Initializing");
     }
 
     protected String getUsage() {
@@ -42,14 +43,12 @@ public class Agent extends AgentImpl {
     }
 
     public void gameStarted() {
-        // Create agents
-        flightAgent = new FlightAgent(this, flightTickets);
-        hotelAgent = new HotelAgent(this, hotelBookings);
-        entertainmentAgent = new EntertainmentAgent(this, entertainmentTickets);
+        log.info("Game started");
 
         // Create auctions
         createAuctions();
 
+        log.info("Creating packages");
         // Create clients and packages
         packages = new ArrayList<Package>();
         
@@ -58,9 +57,16 @@ public class Agent extends AgentImpl {
             clients[i] = new ClientFromTAC(agent, i);
             packages.add(new Package(clients[i]));
         }
+
+        log.info("Creating subagents");
+        // Create agents
+        flightAgent = new FlightAgent(this, flightTickets);
+        hotelAgent = new HotelAgent(this, hotelBookings);
+        entertainmentAgent = new EntertainmentAgent(this, entertainmentTickets);
     }
 
     public void gameStopped() {
+        log.info("Game stopped");
     }
     
     public TACAgent getTACAgent() {
@@ -68,6 +74,7 @@ public class Agent extends AgentImpl {
     }
 
     private void createAuctions() {
+        log.info("Creating auctions");
         flightAuctions = new HashMap<Pair<Boolean>, FlightAuction>();
         hotelAuctions = new HashMap<Pair<Boolean>, HotelAuction>();
         entertainmentAuctions = 
