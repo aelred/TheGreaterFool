@@ -1,10 +1,15 @@
 package agent;
 import java.util.*;
+import java.util.logging.Logger;
+
 import se.sics.tac.aw.*;
 import se.sics.tac.util.ArgEnumerator;
 
 
 public class Agent extends AgentImpl {
+	
+	public static final Logger log =
+            Logger.getLogger(DummyAgent.class.getName());
 	
     public static final int NUM_DAYS = 5;
     public static final int NUM_CLIENTS = 8;
