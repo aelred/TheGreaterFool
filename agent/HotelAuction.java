@@ -3,7 +3,7 @@ package agent;
 import se.sics.tac.aw.Quote;
 import se.sics.tac.aw.TACAgent;
 
-public class HotelAuction extends Auction {
+public class HotelAuction extends Auction<HotelBooking> {
 	private boolean tt;
 	private int hqw;
 
@@ -21,6 +21,10 @@ public class HotelAuction extends Auction {
 		return getAuctionID(TACAgent.CAT_HOTEL, 
 			tt ? TACAgent.TYPE_GOOD_HOTEL : TACAgent.TYPE_CHEAP_HOTEL);
 	}
+
+    protected HotelBooking getBuyable() {
+        return new HotelBooking(day, towers);
+    }
 	
 	@Override
 	public void fireQuoteUpdated(Quote quote) {

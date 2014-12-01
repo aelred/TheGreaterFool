@@ -7,7 +7,7 @@ import se.sics.tac.aw.Transaction;
 
 import java.util.*;
 
-public abstract class Auction {
+public abstract class Auction<T extends Buyable> {
     private Set<Watcher> watchers;
     private BidMap workingBids, activeBids;
     private boolean awaitingConfirmation = false;
@@ -31,6 +31,13 @@ public abstract class Auction {
     protected int getAuctionID(int category, int type) {
         return agent.getAuctionFor(category, type, day);
     }
+
+    public int getDay() {
+        return day;
+    }
+
+    // Return the Buyable associated with this auction
+    protected abstract T getBuyable();
 
     public void addWatcher(Watcher watcher) {
         watchers.add(watcher);
@@ -70,8 +77,13 @@ public abstract class Auction {
     }
 
     public void fireTransaction(Transaction transaction) {
+        List<Buyable> buyables = new ArrayList<Buyable>();
+        for (int i = 0; i < transaction.getQuantity(); i ++) {
+            buyables.add(getBuyable());
+        }
+
         for (Watcher watcher : watchers) {
-            watcher.auctionTransaction(this, transaction);
+            watcher.auctionTransaction(this, buyables);
         }
     }
 
@@ -86,7 +98,7 @@ public abstract class Auction {
         public void auctionBidUpdated(Auction auction, BidString bidString);
         public void auctionBidRejected(Auction auction, BidString bidString);
         public void auctionBidError(Auction auction, BidString bidString, int error);
-        public void auctionTransaction(Auction auction, Transaction transaction);
+        public void auctionTransaction(Auction auction, List<Buyable> buyables);
         public void auctionClosed(Auction auction);
     }
 

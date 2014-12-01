@@ -60,14 +60,13 @@ public class FlightBidder implements Auction.Watcher {
         System.err.println("FlightAgent Bid error " + error);
     }
 
-    public void auctionTransaction(Auction auction, Transaction transaction) {
+    public void auctionTransaction(Auction auction, List<Buyable> tickets) {
         // We got a flight ticket!
-        for (int i = 0; i < transaction.getQuantity(); i ++) {
-            flightAgent.addTicket(
-                new FlightTicket(this.auction.getDay(), this.auction.getArrival()));
+        for (Buyable ticket : tickets) {
+            flightAgent.addTicket((FlightTicket)ticket);
         }
         System.out.println("FlightAgent got a ticket!");
-        numWanted -= transaction.getQuantity();
+        numWanted -= tickets.size();
         refreshBid();
     }
 

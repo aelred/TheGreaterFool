@@ -2,7 +2,7 @@ package agent;
 
 import se.sics.tac.aw.TACAgent;
 
-public class FlightAuction extends Auction {
+public class FlightAuction extends Auction<FlightTicket> {
 	private boolean arrival;
 
 	public FlightAuction(TACAgent agent, int day, boolean arrival) {
@@ -18,4 +18,8 @@ public class FlightAuction extends Auction {
 		return getAuctionID(TACAgent.CAT_FLIGHT, 
 			arrival ? TACAgent.TYPE_INFLIGHT : TACAgent.TYPE_OUTFLIGHT);
 	}
+
+    protected FlightTicket getBuyable() {
+        return new FlightTicket(day, arrival);
+    }
 }
