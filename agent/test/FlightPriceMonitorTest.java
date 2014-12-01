@@ -35,22 +35,25 @@ public class FlightPriceMonitorTest {
 			FlightPriceMonitor monitor = new FlightPriceMonitor(auction);
 
 			// Assert valid starting quotes are accepted
-			monitor.addQuote(start);
+			monitor.addQuote(start, 0);
 
 			// Assert valid quotes are accepted
+            int t = 1;
 			for (double quote : validQuotes) {
-				monitor.addQuote(quote);
+				monitor.addQuote(quote, t);
+                t ++;
 			}
 
 			// Assert invalid quotes throw an exception
 			for (double quote : invalidQuotes) {
 				boolean thrown = false;
 				try {
-					monitor.addQuote(quote);
+					monitor.addQuote(quote, t);
 				} catch (IllegalArgumentException e) {
 					thrown = true;
 				}
 				assertTrue(thrown);
+                t ++;
 			}
 		}
 
@@ -59,7 +62,7 @@ public class FlightPriceMonitorTest {
 
 			boolean thrown = false;
 			try {
-				monitor.addQuote(start);
+				monitor.addQuote(start, 0);
 			} catch (IllegalArgumentException e) {
 				thrown = true;
 			}
@@ -87,8 +90,8 @@ public class FlightPriceMonitorTest {
 
 				// Test prediction with no quotes given.
 				// Shouldn't crash, but return value is not important.
-				monitor.predictMinimumTime();
-				monitor.predictMinimumPrice();
+				monitor.predictMinimumTime(0);
+				monitor.predictMinimumPrice(0);
 
 				List<Integer> timePredictions = new ArrayList<Integer>();
 				List<Double> pricePredictions = new ArrayList<Double>();
@@ -104,12 +107,12 @@ public class FlightPriceMonitorTest {
 						minTime = time;
 					}
 
-					monitor.addQuote(quote);
+					monitor.addQuote(quote, time);
 
-					int timePrediction = monitor.predictMinimumTime();
+					int timePrediction = monitor.predictMinimumTime(time);
 					timePredictions.add(timePrediction);
 
-					double pricePrediction = monitor.predictMinimumPrice();
+					double pricePrediction = monitor.predictMinimumPrice(time);
 					pricePredictions.add(pricePrediction);
 
 					time ++;
@@ -120,7 +123,7 @@ public class FlightPriceMonitorTest {
 				for (int timePrediction : timePredictions) {
 					thisTimeAcc += 1.0d - 
 						((double)Math.abs(timePrediction - minTime) / 
-						(double)PriceGenerator.MAX_TIME);
+						PriceGenerator.MAX_TIME);
 				}
 				thisTimeAcc /= PriceGenerator.MAX_TIME;
 				timeAcc += thisTimeAcc;
@@ -170,12 +173,14 @@ public class FlightPriceMonitorTest {
 			FlightPriceMonitor monitor = new FlightPriceMonitor(auction);
             PriceGenerator gen = new PriceGenerator(x);
 
+            int time = 0;
+
             while (gen.hasNext()) {
                 double quote = gen.next();
-                monitor.addQuote(quote);
+                monitor.addQuote(quote, time);
                 
                 // Assert cumulative distribution is valid
-                List<Double> dist = monitor.priceCumulativeDist();
+                List<Double> dist = monitor.priceCumulativeDist(time);
                 double lastProb = 0d;
                 for (int price = 0; price < dist.size(); price ++) {
                     double prob = dist.get(price);
@@ -186,6 +191,8 @@ public class FlightPriceMonitorTest {
 
                 // Make sure final probability is approximately 1
                 assertEquals(1d, lastProb, 0.01d);
+
+                time ++;
             }
 		}
     }
@@ -239,7 +246,7 @@ class PriceGenerator implements Iterator<Double> {
 	}
 
  	private double xFunc() {
-		return 10d + ((double)time / (double)MAX_TIME) * ((double)x - 10d);
+		return 10d + ((double)time / MAX_TIME) * ((double)x - 10d);
 	}
 
 	private double randRange(double min, double max) {

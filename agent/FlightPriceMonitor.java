@@ -19,7 +19,7 @@ public class FlightPriceMonitor {
     private final FlightAuction auction;
 
     // Historic prices
-    private final List<Double> prices = new ArrayList<Double>();
+    private final double[] prices = new double[MAX_TIME];
 
     // Estimates of the X constant affecting prices
     private final Map<Integer, Double> probX = new HashMap<Integer, Double>();
@@ -33,17 +33,23 @@ public class FlightPriceMonitor {
         for (int x = X_MIN; x <= X_MAX; x ++) {
             probX.put(x, initX);
         }
+
+        // Set prices to default value (-1)
+        for (int t = 0; t < MAX_TIME; t++) {
+            prices[t] = -1;
+        }
     }
 
     public FlightAuction getAuction() {
         return auction;
     }
 
-    public void addQuote(double quote) throws IllegalArgumentException {
+    // Time should be an integer measured in 10 second intervals, from 0
+    public void addQuote(double quote, int time) throws IllegalArgumentException {
         // Test quote is within expected range
         double min = PRICE_MIN;
         double max = PRICE_MAX;
-        if (prices.size() == 0) {
+        if (time == 0) {
             min = START_MIN;
             max = START_MAX;
         }
@@ -53,23 +59,23 @@ public class FlightPriceMonitor {
                 "Price quote outside expected range: " + quote);
         }
 
+        prices[time] = quote;
+
         // Take change in prices to update estimate
-        if (prices.size() != 0) {
-            updateEstimate(quote - prices.get(prices.size()-1));
+        if (time != 0 && prices[time-1] != -1) {
+            updateEstimate(prices[time] - prices[time-1], time);
         }
-        prices.add(quote);
     }
 
-    public int predictMinimumTime() {
-        List<Double> projection = projectPrices();
-        return projection.indexOf(Collections.min(projection));
+    public int predictMinimumTime(int time) {
+        return findMinTime(projectPrices(time));
     }
 
-    public double predictMinimumPrice() {
-        return Collections.min(projectPrices());
+    public double predictMinimumPrice(int time) {
+        return findMinPrice(projectPrices(time));
     }
 
-    public List<Double> priceCumulativeDist() {
+    public List<Double> priceCumulativeDist(int time) {
         // Return a cumulative distribution of prices.
         // dist.get(p) gives the probability the actual price will be less than p
 
@@ -81,7 +87,7 @@ public class FlightPriceMonitor {
         // Find all predicted minimum prices
         for (int x = X_MIN; x <= X_MAX; x ++) {
             xByPrice.add(x);
-            mins.put(x, Collections.min(projectPrices(x)));
+            mins.put(x, findMinPrice(projectPrices(x, time)));
         }
 
         // Sort xByPrice to be sorted by price as promised!
@@ -117,20 +123,34 @@ public class FlightPriceMonitor {
         return dist;
     }
 
-    private int time() {
-        return prices.size();
+    private double findMinPrice(double[] prices) {
+        double min = PRICE_MAX;
+        for (int i = 0; i < prices.length; i ++) {
+            if (prices[i] < min && prices[i] != -1) {
+                min = prices[i];
+            }
+        }
+        return min;
     }
 
-    private double xFunc(int x) {
-        return xFunc(x, time());
+    private int findMinTime(double[] prices) {
+        double min = PRICE_MAX;
+        int time = 0;
+        for (int i = 0; i < prices.length; i ++) {
+            if (prices[i] < min && prices[i] != -1) {
+                min = prices[i];
+                time = i;
+            }
+        }
+        return time;
     }
 
     private double xFunc(int x, int t) {
         return 10d + ((double)t - (double)MAX_TIME) * ((double)x - 10d);
     }
 
-    private double probDiffGivenX(double diff, int x) {
-        double f = xFunc(x);
+    private double probDiffGivenX(double diff, int x, int t) {
+        double f = xFunc(x, t);
 
         double dmin = f;
         double dmax = f;
@@ -145,7 +165,7 @@ public class FlightPriceMonitor {
         }
     }
 
-    private void updateEstimate(double diff) {
+    private void updateEstimate(double diff, int t) {
         // Use Baye's theorem to improve estimates
 
         // Find probability of quote occuring for every x
@@ -153,7 +173,7 @@ public class FlightPriceMonitor {
         double probDiffAll = 0d;
 
         for (int x = X_MIN; x <= X_MAX; x ++) {
-            double prob = probDiffGivenX(diff, x) * probX.get(x);
+            double prob = probDiffGivenX(diff, x, t) * probX.get(x);
             probDiff.put(x, prob);
             probDiffAll += prob;
         }
@@ -170,42 +190,48 @@ public class FlightPriceMonitor {
         else return (f + 10d) / 2d;
     }
 
-    private List<Double> projectPrices(int x) {
-        // project future price given x
-        List<Double> futPrices = new ArrayList<Double>(prices);
+    private double[] projectPrices(int x, int t) {
+        // project future price from t given x
+        double[] futPrices = new double[MAX_TIME];
+        for (int i = 0; i <= t; i ++) {
+            futPrices[i] = prices[i];
+        }
 
         double last;
-        if (time() != 0) {
-            last = futPrices.get(futPrices.size()-1);
+        if (t != 0) {
+            last = futPrices[t];
         } else {
             // Predict initial price
             last = (START_MAX - START_MIN) / 2d;
-            futPrices.add(last);
+            futPrices[0] = last;
         }
 
-        for (int t = time(); t < MAX_TIME; t ++) {
-            double price = last + averagePriceDiff(x, t);
-            futPrices.add(price);
+        for (int i = t + 1; i < MAX_TIME; i ++) {
+            double price = last + averagePriceDiff(x, i);
+            futPrices[i] = price;
             last = price;
         }
 
         return futPrices;
     }
 
-    private List<Double> projectPrices() {
+    private double[] projectPrices(int t) {
         // project future prices over all x
-        List<Double> futPrices = new ArrayList<Double>();
-        for (int t = 0; t < MAX_TIME; t ++) {
-            futPrices.add(0d);
+        double[] futPrices = new double[MAX_TIME];
+        for (int i = 0; i < MAX_TIME; i ++) {
+            futPrices[i] = 0d;
         }
 
         for (int x : probX.keySet()) {
-            List<Double> pricesX = projectPrices(x);
+            double[] pricesX = projectPrices(x, t);
             // add prediction for this x, weighted by prob of x
-            for (int t = 0; t < MAX_TIME; t ++) {
-                double weighted = 
-                    (double)pricesX.get(t) * (double)probX.get(x);
-                futPrices.set(t, futPrices.get(t) + weighted);
+            for (int i = 0; i < MAX_TIME; i ++) {
+                if (pricesX[i] != -1) {
+                    double weighted = pricesX[i] * probX.get(x);
+                    futPrices[i] += weighted;
+                } else {
+                    futPrices[i] = -1;
+                }
             }
         }
 
