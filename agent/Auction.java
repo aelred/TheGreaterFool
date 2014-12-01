@@ -42,22 +42,22 @@ public abstract class Auction {
     }
 
     public void fireBidUpdated(BidString bidString) {
-    	activeBids = new BidMap(workingBids);
-    	awaitingConfirmation = false;
+        activeBids = new BidMap(workingBids);
+        awaitingConfirmation = false;
         for (Watcher watcher : watchers) {
             watcher.auctionBidUpdated(this, bidString);
         }
     }
 
     public void fireBidRejected(BidString bidString) {
-    	awaitingConfirmation = false;
+        awaitingConfirmation = false;
         for (Watcher watcher : watchers) {
             watcher.auctionBidRejected(this, bidString);
         }
     }
 
     public void fireBidError(BidString bidString, int error) {
-    	awaitingConfirmation = false;
+        awaitingConfirmation = false;
         for (Watcher watcher : watchers) {
             watcher.auctionBidError(this, bidString, error);
         }
@@ -83,53 +83,53 @@ public abstract class Auction {
         public void auctionTransaction(Auction auction, Transaction transaction);
         public void auctionClosed(Auction auction);
     }
-    
+
     public void wipeBid() throws BidInUseException {
-    	if (awaitingConfirmation)
-    		throw new BidInUseException();
-    	workingBids = new BidMap();
+        if (awaitingConfirmation)
+            throw new BidInUseException();
+        workingBids = new BidMap();
     }
     
     public void modifyBidPoint(int quantity, float price) throws BidInUseException {
-    	if (awaitingConfirmation)
-    		throw new BidInUseException();
-    	if (workingBids.containsKey(price)) {
-    		workingBids.put(price, workingBids.get(price) + quantity);
-    	} else {
-    		workingBids.put(price, quantity);
-    	}
+        if (awaitingConfirmation)
+            throw new BidInUseException();
+        if (workingBids.containsKey(price)) {
+            workingBids.put(price, workingBids.get(price) + quantity);
+        } else {
+            workingBids.put(price, quantity);
+        }
     }
     
     public void submitBid() throws BidInUseException {
-    	if (awaitingConfirmation)
-    		throw new BidInUseException();
-    	BidString bs = generateBidString();
-    	awaitingConfirmation = true;
-    	agent.submitBid(bs);
+        if (awaitingConfirmation)
+            throw new BidInUseException();
+        BidString bs = generateBidString();
+        awaitingConfirmation = true;
+        agent.submitBid(bs);
     }
     
     private BidString generateBidString() {
-    	BidString bid = new BidString(getAuctionID());
-    	for (Float price : workingBids.keySet()) {
-    		bid.addBidPoint(workingBids.get(price), price);
-    	}
-    	return bid;
+        BidString bid = new BidString(getAuctionID());
+        for (Float price : workingBids.keySet()) {
+            bid.addBidPoint(workingBids.get(price), price);
+        }
+        return bid;
     }
     
     public BidMap getActiveBids() {
-    	return activeBids;
+        return activeBids;
     }
 }
 
 class BidMap extends HashMap<Float,Integer> {
 
-	public BidMap(BidMap workingBids) {
-		super(workingBids);
-	}
+    public BidMap(BidMap workingBids) {
+        super(workingBids);
+    }
 
-	public BidMap() {
-		super();
-	}
+    public BidMap() {
+        super();
+    }
 }
 
 class BidInUseException extends Exception {}
