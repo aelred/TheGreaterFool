@@ -55,7 +55,9 @@ public class Agent extends AgentImpl {
         clients = new Client[NUM_CLIENTS];
         for (int i = 0; i < clients.length; i++) {
             clients[i] = new ClientFromTAC(agent, i);
-            packages.add(new Package(clients[i]));
+            packages.add(new Package(clients[i], 
+                clients[i].getPreferredArrivalDay(), 
+                clients[i].getPreferredDepartureDay()));
         }
 
         log.info("Creating subagents");
@@ -63,6 +65,11 @@ public class Agent extends AgentImpl {
         flightAgent = new FlightAgent(this, flightTickets);
         hotelAgent = new HotelAgent(this, hotelBookings);
         entertainmentAgent = new EntertainmentAgent(this, entertainmentTickets);
+
+        log.info("Start subagents");
+        flightAgent.fulfillPackages(packages);
+        hotelAgent.fulfillPackages(packages);
+        entertainmentAgent.fulfillPackages(packages);
     }
 
     public void gameStopped() {
