@@ -11,9 +11,9 @@ public class FlightAgent extends SubAgent<FlightTicket> {
         super(agent, stock);
 
         // Create a bidder for every auction
-        for (int day = 1; day <= Agent.NUM_DAYS; day ++) {
+        for (int day = 1; day < Agent.NUM_DAYS; day ++) {
             FlightAuction auctionOut = agent.getFlightAuction(day, true);
-            FlightAuction auctionIn = agent.getFlightAuction(day, false);
+            FlightAuction auctionIn = agent.getFlightAuction(day+1, false);
             bidders.put(auctionOut, new FlightBidder(this, auctionOut));
             bidders.put(auctionIn, new FlightBidder(this, auctionIn));
         }
