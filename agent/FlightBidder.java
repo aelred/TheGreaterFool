@@ -28,11 +28,13 @@ public class FlightBidder implements Auction.Watcher {
     }
 
     public void addWanted() {
+        FlightAgent.log.info("Increase number wanted");
         numWanted++;
         refreshBid();
     }
 
     public void removeWanted() {
+        FlightAgent.log.info("Decrease number wanted");
         numWanted--;
         refreshBid();
     }
@@ -48,17 +50,18 @@ public class FlightBidder implements Auction.Watcher {
     public void auctionBidUpdated(Auction<?> auction, BidString bidString) {
         // If this is called when a bid is accepted,
         // then this checks if we have a waiting bid to submit
+        FlightAgent.log.info("Bid updated");
         if (bidDirtyFlag) {
             refreshBid();
         }
     }
 
     public void auctionBidRejected(Auction<?> auction, BidString bidString) {
-        System.err.println("FlightAgent Bid rejected");
+        FlightAgent.log.warning("Bid rejected");
     }
 
     public void auctionBidError(Auction<?> auction, BidString bidString, int error) {
-        System.err.println("FlightAgent Bid error " + error);
+        FlightAgent.log.warning("Bid error " + error);
     }
 
     public void auctionTransaction(Auction<?> auction, List<Buyable> tickets) {
@@ -66,7 +69,6 @@ public class FlightBidder implements Auction.Watcher {
         for (Buyable ticket : tickets) {
             flightAgent.addTicket((FlightTicket)ticket);
         }
-        System.out.println("FlightAgent got a ticket!");
         numWanted -= tickets.size();
         refreshBid();
     }
@@ -85,10 +87,13 @@ public class FlightBidder implements Auction.Watcher {
         
         try {
             auction.wipeBid();
+            float price = calcPrice();
             if (numWanted > 0) {
-                auction.modifyBidPoint(numWanted, calcPrice());
+                auction.modifyBidPoint(numWanted, price);
             }
 
+            FlightAgent.log.info(
+                "Submitting bid (" + numWanted + ", " + price + ")");
             auction.submitBid();
         } catch (BidInUseException e) {
             // return early, don't unset bidDirtyFlag
