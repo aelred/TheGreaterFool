@@ -37,14 +37,14 @@ public class FlightBidder implements Auction.Watcher {
         refreshBid();
     }
 
-    public void auctionQuoteUpdated(Auction auction, Quote quote) {
+    public void auctionQuoteUpdated(Auction<?> auction, Quote quote) {
         // Update price monitor with new prices information
         // TODO: Make sure this only happens every 10 seconds when the price perturbs!
         monitor.addQuote(quote.getAskPrice());
         refreshBid();
     }
 
-    public void auctionBidUpdated(Auction auction, BidString bidString) {
+    public void auctionBidUpdated(Auction<?> auction, BidString bidString) {
         // If this is called when a bid is accepted,
         // then this checks if we have a waiting bid to submit
         if (bidDirtyFlag) {
@@ -52,15 +52,15 @@ public class FlightBidder implements Auction.Watcher {
         }
     }
 
-    public void auctionBidRejected(Auction auction, BidString bidString) {
+    public void auctionBidRejected(Auction<?> auction, BidString bidString) {
         System.err.println("FlightAgent Bid rejected");
     }
 
-    public void auctionBidError(Auction auction, BidString bidString, int error) {
+    public void auctionBidError(Auction<?> auction, BidString bidString, int error) {
         System.err.println("FlightAgent Bid error " + error);
     }
 
-    public void auctionTransaction(Auction auction, List<Buyable> tickets) {
+    public void auctionTransaction(Auction<?> auction, List<Buyable> tickets) {
         // We got a flight ticket!
         for (Buyable ticket : tickets) {
             flightAgent.addTicket((FlightTicket)ticket);
@@ -70,7 +70,7 @@ public class FlightBidder implements Auction.Watcher {
         refreshBid();
     }
 
-    public void auctionClosed(Auction auction) {
+    public void auctionClosed(Auction<?> auction) {
     }
 
     private void refreshBid() {

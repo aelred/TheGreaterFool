@@ -21,16 +21,16 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		super(agent, hotelStock);
 		Auction.Watcher watcher = new Auction.Watcher() {
 			@Override
-			public void auctionQuoteUpdated(Auction auction, Quote quote) {
+			public void auctionQuoteUpdated(Auction<?> auction, Quote quote) {
 					updateBid(auction.getDay(),((HotelAuction)auction).isTT());
 			}
 			@Override
-			public void auctionBidUpdated(Auction auction, BidString bidString) {
+			public void auctionBidUpdated(Auction<?> auction, BidString bidString) {
 				Agent.log.fine("Bid updated to " + bidString.getBidString()
 						+ " for " + ((HotelAuction)auction).toString());
 			}
 			@Override
-			public void auctionBidRejected(Auction auction, BidString bidString) {
+			public void auctionBidRejected(Auction<?> auction, BidString bidString) {
 				Agent.log.fine("Bid rejected: " + bidString.getBidString()
 						+ " for " + ((HotelAuction)auction).toString());
 			}
@@ -57,10 +57,10 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 						+ " for " + ((HotelAuction)auction).toString());
 			}
 			@Override
-			public void auctionTransaction(Auction auction, List<Buyable> buyables) {
+			public void auctionTransaction(Auction<?> auction, List<Buyable> buyables) {
 			}
 			@Override
-			public void auctionClosed(Auction auction) {
+			public void auctionClosed(Auction<?> auction) {
 				updateAuctionClosed((HotelAuction) auction);
 			}
 		};
@@ -76,7 +76,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 	
 	private void updateAuctionClosed(HotelAuction auction) {
 		int day = auction.getDay();
-		boolean tt = ((HotelAuction)auction).isTT();
+		boolean tt = auction.isTT();
 		int i = hashForIndex(day, tt);
 		auctionsClosed[i] = true;
 		int won = agent.getTACAgent().getOwn(getAuctionID(tt, day));
@@ -187,4 +187,6 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 
 }
 
-class AuctionClosedException extends Exception {}
+class AuctionClosedException extends Exception {
+    public static final long serialVersionUID = 1L;
+}
