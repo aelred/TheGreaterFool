@@ -1,6 +1,5 @@
 package agent;
 
-import agent.Auction.Watcher;
 import se.sics.tac.aw.Quote;
 import se.sics.tac.aw.TACAgent;
 
@@ -27,5 +26,9 @@ public class HotelAuction extends Auction {
 	
 	public int getHQW() {
 		return hqw;
+	}
+	
+	public boolean isClosed() {
+		return super.getMostRecentQuote().isAuctionClosed();
 	}
 }

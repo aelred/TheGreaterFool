@@ -44,7 +44,7 @@ public class Agent extends AgentImpl {
     public void gameStarted() {
         flightAgent = new FlightAgent(this, flightTickets);
         createAuctions();
-        hotelAgent = new HotelAgent(this,hotelBookings,hotelAuctions);
+        hotelAgent = new HotelAgent(this,hotelBookings);
         packages = new ArrayList<Package>();
         
         clients = new Client[NUM_CLIENTS];
