@@ -95,17 +95,17 @@ public class FlightPriceMonitorTest {
 
 				List<Integer> timePredictions = new ArrayList<Integer>();
 				List<Double> pricePredictions = new ArrayList<Double>();
-				double minPrice = PriceGenerator.PRICE_MAX;
-				int minTime = 0;
 				int time = 0;
+
+                // gives lowest price after this point 
+                List<Double> rollingMinimum = new ArrayList<Double>();
+                List<Integer> rollingMinTime = new ArrayList<Integer>();
 
 				while (gen.hasNext()) {
 					double quote = gen.next();
 
-					if (quote < minPrice) {
-						minPrice = quote;
-						minTime = time;
-					}
+                    rollingMinimum.add(quote);
+                    rollingMinTime.add(time);
 
 					monitor.addQuote(quote, time);
 
@@ -118,24 +118,31 @@ public class FlightPriceMonitorTest {
 					time ++;
 				}
 
+                // calculate rolling minimum backwards
+                for (int j = time-2; j > 0; j --) {
+                    if (rollingMinimum.get(j) > rollingMinimum.get(j+1)) {
+                        // set this minimum to previous minimum
+                        rollingMinimum.set(j, rollingMinimum.get(j+1));
+                        rollingMinTime.set(j, rollingMinTime.get(j+1));
+                    }
+                }
+
 				// Calculate overall accuracy from predictions
 				double thisTimeAcc = 0d;
-				for (int timePrediction : timePredictions) {
-					thisTimeAcc += 1.0d - 
-						((double)Math.abs(timePrediction - minTime) / 
-						PriceGenerator.MAX_TIME);
-				}
-				thisTimeAcc /= PriceGenerator.MAX_TIME;
-				timeAcc += thisTimeAcc;
-
 				double thisPriceAcc = 0d;
-				for (double pricePrediction : pricePredictions) {
+                for (int j = 0; j < time; j ++) {
+					thisTimeAcc += 1.0d - 
+						((double)Math.abs(timePredictions.get(j) - rollingMinTime.get(j)) / 
+						PriceGenerator.MAX_TIME);
 					thisPriceAcc += 1.0d - 
-						(Math.abs(pricePrediction - minPrice) / 
+						(Math.abs(pricePredictions.get(j) - rollingMinimum.get(j)) / 
 						(PriceGenerator.PRICE_MAX - 
 						 PriceGenerator.PRICE_MIN));
-				}
-				thisPriceAcc /= PriceGenerator.MAX_TIME;
+                }
+				thisTimeAcc /= time;
+				timeAcc += thisTimeAcc;
+
+				thisPriceAcc /= time;
 				priceAcc += thisPriceAcc;
 			}
 

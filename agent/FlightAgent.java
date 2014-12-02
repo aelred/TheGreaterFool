@@ -5,6 +5,10 @@ import java.util.logging.Logger;
 
 public class FlightAgent extends SubAgent<FlightTicket> {
 
+    public static final double PRICE_MIN = 150;
+    public static final double PRICE_MAX = 800;
+    public static final int MAX_TIME = 54;
+
     public static final Logger log = 
         Logger.getLogger(Agent.log.getName() + ".flights");
 

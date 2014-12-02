@@ -6,20 +6,16 @@ public class FlightPriceMonitor {
 
     private static final double START_MIN = 250;
     private static final double START_MAX = 400;
-    private static final double PRICE_MIN = 150;
-    private static final double PRICE_MAX = 800;
     private static final double PRICE_DIV = 1;
 
     private static final int X_MIN = -10;
     private static final int X_MAX = 30;
 
-    private static final int MAX_TIME = 54;
-
     // The plane ticket auction to monitor
     private final FlightAuction auction;
 
     // Historic prices
-    private final double[] prices = new double[MAX_TIME];
+    private final double[] prices = new double[FlightAgent.MAX_TIME];
 
     // Estimates of the X constant affecting prices
     private final Map<Integer, Double> probX = new HashMap<Integer, Double>();
@@ -35,7 +31,7 @@ public class FlightPriceMonitor {
         }
 
         // Set prices to default value (-1)
-        for (int t = 0; t < MAX_TIME; t++) {
+        for (int t = 0; t < FlightAgent.MAX_TIME; t++) {
             prices[t] = -1;
         }
     }
@@ -47,8 +43,8 @@ public class FlightPriceMonitor {
     // Time should be an integer measured in 10 second intervals, from 0
     public void addQuote(double quote, int time) throws IllegalArgumentException {
         // Test quote is within expected range
-        double min = PRICE_MIN;
-        double max = PRICE_MAX;
+        double min = FlightAgent.PRICE_MIN;
+        double max = FlightAgent.PRICE_MAX;
         if (time == 0) {
             min = START_MIN;
             max = START_MAX;
@@ -68,7 +64,7 @@ public class FlightPriceMonitor {
     }
 
     public int predictMinimumTime(int time) {
-        return findMinTime(projectPrices(time));
+        return time + findMinTime(projectPrices(time));
     }
 
     public double predictMinimumPrice(int time) {
@@ -103,7 +99,7 @@ public class FlightPriceMonitor {
         boolean isX = true;
         double cumulative = 0d;
 
-        for (int price = 0; price < PRICE_MAX; price ++) {
+        for (int price = 0; price < FlightAgent.PRICE_MAX; price ++) {
             // when we encounter a possible minimum, increase cumulative distribution
             if (isX && price >= mins.get(x)) {
                 // increase chance of this price by probability of X
@@ -123,8 +119,20 @@ public class FlightPriceMonitor {
         return dist;
     }
 
+    public double getConfidence() {
+        // Return an estimate of confidence
+        // TODO: See if there's a more mathematical approach here
+        double mean =  1d / (double)probX.size();
+        double var = 0d;
+        for (int x = X_MIN; x <= X_MAX; x ++) {
+            var += (mean - probX.get(x)) * (mean - probX.get(x));
+        }
+        // Not exactly the variance
+        return Math.sqrt(var * (double)probX.size() / (double)(probX.size() - 1));
+    }
+
     private double findMinPrice(double[] prices) {
-        double min = PRICE_MAX;
+        double min = FlightAgent.PRICE_MAX;
         for (int i = 0; i < prices.length; i ++) {
             if (prices[i] < min && prices[i] != -1) {
                 min = prices[i];
@@ -134,7 +142,7 @@ public class FlightPriceMonitor {
     }
 
     private int findMinTime(double[] prices) {
-        double min = PRICE_MAX;
+        double min = FlightAgent.PRICE_MAX;
         int time = 0;
         for (int i = 0; i < prices.length; i ++) {
             if (prices[i] < min && prices[i] != -1) {
@@ -146,7 +154,7 @@ public class FlightPriceMonitor {
     }
 
     private double xFunc(int x, int t) {
-        return 10d + ((double)t - (double)MAX_TIME) * ((double)x - 10d);
+        return 10d + ((double)t / (double)FlightAgent.MAX_TIME) * ((double)x - 10d);
     }
 
     private double probDiffGivenX(double diff, int x, int t) {
@@ -192,23 +200,19 @@ public class FlightPriceMonitor {
 
     private double[] projectPrices(int x, int t) {
         // project future price from t given x
-        double[] futPrices = new double[MAX_TIME];
-        for (int i = 0; i <= t; i ++) {
-            futPrices[i] = prices[i];
-        }
-
         double last;
-        if (t != 0) {
-            last = futPrices[t];
+        if (prices[t] != -1) {
+            last = prices[t];
         } else {
             // Predict initial price
             last = (START_MAX - START_MIN) / 2d;
-            futPrices[0] = last;
         }
 
-        for (int i = t + 1; i < MAX_TIME; i ++) {
+        double[] futPrices = new double[FlightAgent.MAX_TIME-t];
+        futPrices[0] = last; // Include the most recent real price
+        for (int i = t+1; i < FlightAgent.MAX_TIME; i ++) {
             double price = last + averagePriceDiff(x, i);
-            futPrices[i] = price;
+            futPrices[i-t] = price;
             last = price;
         }
 
@@ -217,21 +221,17 @@ public class FlightPriceMonitor {
 
     private double[] projectPrices(int t) {
         // project future prices over all x
-        double[] futPrices = new double[MAX_TIME];
-        for (int i = 0; i < MAX_TIME; i ++) {
+        double[] futPrices = new double[FlightAgent.MAX_TIME-t];
+        for (int i = 0; i < FlightAgent.MAX_TIME-t; i ++) {
             futPrices[i] = 0d;
         }
 
         for (int x : probX.keySet()) {
             double[] pricesX = projectPrices(x, t);
             // add prediction for this x, weighted by prob of x
-            for (int i = 0; i < MAX_TIME; i ++) {
-                if (pricesX[i] != -1) {
-                    double weighted = pricesX[i] * probX.get(x);
-                    futPrices[i] += weighted;
-                } else {
-                    futPrices[i] = -1;
-                }
+            for (int i = 0; i < FlightAgent.MAX_TIME-t; i ++) {
+                double weighted = pricesX[i] * probX.get(x);
+                futPrices[i] += weighted;
             }
         }
 
