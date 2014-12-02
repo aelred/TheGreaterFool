@@ -27,6 +27,14 @@ public class FlightAgent extends SubAgent<FlightTicket> {
         }
     }
 
+    public void gameStopped() {
+        // Tell bidders to stop
+        log.info("Stopping FlightAgent");
+        for (FlightBidder bidder : bidders.values()) {
+            bidder.gameStopped();
+        }
+    }
+
     public void fulfillPackages(List<Package> packages) {
         for (Package pack : packages) {
             fulfillPackage(pack);

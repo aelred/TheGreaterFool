@@ -21,6 +21,7 @@ public class FlightBidder implements Auction.Watcher {
     private final FlightPriceMonitor monitor;
     private int numWanted = 0;
     private boolean bidDirtyFlag = false;
+    private boolean gameStarted = true;
 
     public FlightBidder(FlightAgent flightAgent, FlightAuction auction) {
         this.flightAgent = flightAgent;
@@ -30,6 +31,13 @@ public class FlightBidder implements Auction.Watcher {
         this.monitor = new FlightPriceMonitor(auction);
         // Register to watch this auction
         this.auction.addWatcher(this);
+    }
+
+    public void gameStopped() {
+        log.info("Stopping bidder");
+        // stop receiving updates on auction
+        auction.removeWatcher(this);
+        gameStarted = false;
     }
 
     public void addWanted() {
@@ -87,6 +95,11 @@ public class FlightBidder implements Auction.Watcher {
     }
 
     private void refreshBid() {
+        // Don't bid if game has stopped
+        if (!gameStarted) {
+            throw new IllegalStateException("Cannot bid on stopped game.");
+        }
+
         // flag saying this bid must be refreshed when possible
         bidDirtyFlag = true;
         

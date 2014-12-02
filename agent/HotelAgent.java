@@ -67,6 +67,11 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		subscribeAll(watcher);
 	}
 
+    public void gameStopped() {
+        // TODO: Implement behaviour when game stops
+        // Most importantly, unsubscribe from any auctions
+    }
+
 	private void subscribeAll(Watcher watcher) {
 		for (int day = 1; day < 5; day++) {
 			agent.getHotelAuction(day, true).addWatcher(watcher);

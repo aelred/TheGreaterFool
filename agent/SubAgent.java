@@ -12,6 +12,8 @@ public abstract class SubAgent<T extends Buyable> {
 		this.stock = stock;
 	}
 
+    public abstract void gameStopped();
+
 	// Fulfill the given list of packages
 	public abstract void fulfillPackages(List<Package> packages);
 }

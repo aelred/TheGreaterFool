@@ -74,6 +74,11 @@ public class Agent extends AgentImpl {
 
     public void gameStopped() {
         log.info("Game stopped");
+
+        // Tell subagents to stop
+        flightAgent.gameStopped();
+        hotelAgent.gameStopped();
+        entertainmentAgent.gameStopped();
     }
     
     public TACAgent getTACAgent() {

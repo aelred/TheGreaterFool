@@ -50,6 +50,11 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
         }
     }
 
+    public void gameStopped() {
+        // TODO: Implement behaviour when game stops
+        // Most importantly, unsubscribe from any auctions
+    }
+
     private List<Allocation> possibleAllocations(List<Package> packages) {
         List<Allocation> allocations = new ArrayList<Allocation>();
         for (Package pkg : packages) {
