@@ -1,25 +1,68 @@
 package agent;
 
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 import agent.Auction.Watcher;
-
 import se.sics.tac.aw.BidString;
 import se.sics.tac.aw.Quote;
-import se.sics.tac.aw.TACAgent;
-import se.sics.tac.aw.Transaction;
 
 public class HotelAgent extends SubAgent<HotelBooking> {
 
 	private static final boolean DEBUG = true;
+	private Auction.Watcher watcher = new Auction.Watcher() {
+		@Override
+		public void auctionQuoteUpdated(Auction<?> auction, Quote quote) {
+			log.info("Hotel auction updating with day=" + Integer.toString(auction.getDay()));	
+			updateBid(auction.getDay(),((HotelAuction)auction).isTT());
+		}
+		@Override
+		public void auctionBidUpdated(Auction<?> auction, BidString bidString) {
+			log.info("Bid updated to " + bidString.getBidString()
+					+ " for " + ((HotelAuction)auction).toString());
+		}
+		@Override
+		public void auctionBidRejected(Auction<?> auction, BidString bidString) {
+			log.info("Bid rejected: " + bidString.getBidString()
+					+ " for " + ((HotelAuction)auction).toString());
+		}
+		@Override
+		public void auctionBidError(Auction<?> auction, BidString bidString, int error) {
+			String[] statusName = {
+		            "no error",
+		            "internal error",
+		            "agent not auth",
+		            "game not found",
+		            "not member of game",
+		            "game future",
+		            "game complete",
+		            "auction not found",
+		            "auction closed",
+		            "bid not found",
+		            "trans not found",
+		            "cannot withdraw bid",
+		            "bad bidstring format",
+		            "not supported",
+		            "game type not supported"
+		    };
+			log.info("Bid error: " + statusName[error] + " on bid: " + bidString.getBidString()
+					+ " for " + ((HotelAuction)auction).toString());
+		}
+		@Override
+		public void auctionTransaction(Auction<?> auction, List<Buyable> buyables) {
+		}
+		@Override
+		public void auctionClosed(Auction<?> auction) {
+			updateAuctionClosed((HotelAuction) auction);
+		}
+	};
 	
 	private boolean[] auctionsClosed;
 	private int[] held = new int[8];
 	private int[] intentions = new int[8];
 	private List<Package> mostRecentPackages;
 	
+	@SuppressWarnings("unused")
 	private boolean[] intendedHotel;
 	
 	public static final Logger log = 
@@ -27,62 +70,23 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 
 	public HotelAgent(Agent agent, List<HotelBooking> hotelStock) {
 		super(agent, hotelStock);
-		Auction.Watcher watcher = new Auction.Watcher() {
-			@Override
-			public void auctionQuoteUpdated(Auction<?> auction, Quote quote) {
-				log.info("Hotel auction updating with day=" + Integer.toString(auction.getDay()));	
-				updateBid(auction.getDay(),((HotelAuction)auction).isTT());
-			}
-			@Override
-			public void auctionBidUpdated(Auction<?> auction, BidString bidString) {
-				log.info("Bid updated to " + bidString.getBidString()
-						+ " for " + ((HotelAuction)auction).toString());
-			}
-			@Override
-			public void auctionBidRejected(Auction<?> auction, BidString bidString) {
-				log.info("Bid rejected: " + bidString.getBidString()
-						+ " for " + ((HotelAuction)auction).toString());
-			}
-			@Override
-			public void auctionBidError(Auction auction, BidString bidString, int error) {
-				String[] statusName = {
-			            "no error",
-			            "internal error",
-			            "agent not auth",
-			            "game not found",
-			            "not member of game",
-			            "game future",
-			            "game complete",
-			            "auction not found",
-			            "auction closed",
-			            "bid not found",
-			            "trans not found",
-			            "cannot withdraw bid",
-			            "bad bidstring format",
-			            "not supported",
-			            "game type not supported"
-			    };
-				log.info("Bid error: " + statusName[error] + " on bid: " + bidString.getBidString()
-						+ " for " + ((HotelAuction)auction).toString());
-			}
-			@Override
-			public void auctionTransaction(Auction<?> auction, List<Buyable> buyables) {
-			}
-			@Override
-			public void auctionClosed(Auction<?> auction) {
-				updateAuctionClosed((HotelAuction) auction);
-			}
-		};
-		subscribeAll(watcher);
+		subscribeAll();
 		auctionsClosed = new boolean[8];
 	}
 
+	public void gameStarted() {
+		
+	}
+	
     public void gameStopped() {
-        // TODO: Implement behaviour when game stops
-        // Most importantly, unsubscribe from any auctions
+    	for (int day = 1; day < 5; day++) {
+			agent.getHotelAuction(day, true).removeWatcher(watcher);;
+			agent.getHotelAuction(day, false).removeWatcher(watcher);
+		}
+    	auctionsClosed = new boolean[8];
     }
 
-	private void subscribeAll(Watcher watcher) {
+	private void subscribeAll() {
 		for (int day = 1; day < 5; day++) {
 			agent.getHotelAuction(day, true).addWatcher(watcher);
 			agent.getHotelAuction(day, false).addWatcher(watcher);
@@ -96,13 +100,13 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		auctionsClosed[i] = true;
 		int won = agent.getTACAgent().getOwn(getAuctionID(tt, day));
 		held[i] = won;
-		for (i = 1; i <= won; i++) {
+		for (int a = 1; a <= won; a++) {
 			stock.add(new HotelBooking(day, tt));
 		}
-	}
-	
-	public void clearIntentions() {
-		intentions = new int[8];
+		if (held[i] < intentions[i]) {
+			// did not achieve ideal scenario, need to reassess
+			fulfillPackages(mostRecentPackages);
+		}
 	}
 	
 	/**
@@ -120,7 +124,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		boolean[] intendedHotel = new boolean[8];
 		int[] allocated = new int[8];
 		mostRecentPackages = packages;
-		clearIntentions();
+		intentions = new int[8];
 		boolean tt, err;
 		int prefArrive, prefDepart, hotelPremium, errCount, day, i;
 		int[] tempIntentions, tempAllocations;
@@ -165,6 +169,9 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 					allocated[i] = allocated[i] + tempAllocations[i];
 					intentions[i] = intentions[i] + tempIntentions[i];
 				}
+			} else {
+				// failed to find a feasible solution to this package on specified days
+				
 			}
 		}
 		//updateBids(); // Bids are updated individually as initial quote updates come in
