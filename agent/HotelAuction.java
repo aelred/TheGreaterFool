@@ -37,7 +37,10 @@ public class HotelAuction extends Auction<HotelBooking> {
 	}
 	
 	public boolean isClosed() {
-		return super.getMostRecentQuote().isAuctionClosed();
+		if (super.getMostRecentQuote() != null)
+			return super.getMostRecentQuote().isAuctionClosed();
+		else
+			return false;
 	}
 	
 	public String toString() {

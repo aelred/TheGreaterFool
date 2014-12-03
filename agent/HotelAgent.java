@@ -2,6 +2,7 @@ package agent;
 
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import agent.Auction.Watcher;
 
@@ -12,26 +13,34 @@ import se.sics.tac.aw.Transaction;
 
 public class HotelAgent extends SubAgent<HotelBooking> {
 
-	private boolean[] auctionsClosed = new boolean[8];
+	private static final boolean DEBUG = true;
+	
+	private boolean[] auctionsClosed;
 	private int[] held = new int[8];
 	private int[] intentions = new int[8];
 	private List<Package> mostRecentPackages;
+	
+	private boolean[] intendedHotel;
+	
+	public static final Logger log = 
+	        Logger.getLogger(Agent.log.getName() + ".hotels");
 
 	public HotelAgent(Agent agent, List<HotelBooking> hotelStock) {
 		super(agent, hotelStock);
 		Auction.Watcher watcher = new Auction.Watcher() {
 			@Override
 			public void auctionQuoteUpdated(Auction<?> auction, Quote quote) {
-					updateBid(auction.getDay(),((HotelAuction)auction).isTT());
+				log.info("Hotel auction updating with day=" + Integer.toString(auction.getDay()));	
+				updateBid(auction.getDay(),((HotelAuction)auction).isTT());
 			}
 			@Override
 			public void auctionBidUpdated(Auction<?> auction, BidString bidString) {
-				Agent.log.fine("Bid updated to " + bidString.getBidString()
+				log.info("Bid updated to " + bidString.getBidString()
 						+ " for " + ((HotelAuction)auction).toString());
 			}
 			@Override
 			public void auctionBidRejected(Auction<?> auction, BidString bidString) {
-				Agent.log.fine("Bid rejected: " + bidString.getBidString()
+				log.info("Bid rejected: " + bidString.getBidString()
 						+ " for " + ((HotelAuction)auction).toString());
 			}
 			@Override
@@ -53,7 +62,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 			            "not supported",
 			            "game type not supported"
 			    };
-				Agent.log.fine("Bid error: " + statusName[error] + " on bid: " + bidString.getBidString()
+				log.info("Bid error: " + statusName[error] + " on bid: " + bidString.getBidString()
 						+ " for " + ((HotelAuction)auction).toString());
 			}
 			@Override
@@ -65,6 +74,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 			}
 		};
 		subscribeAll(watcher);
+		auctionsClosed = new boolean[8];
 	}
 
     public void gameStopped() {
@@ -107,6 +117,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 
 	@Override
 	public void fulfillPackages(List<Package> packages) {
+		boolean[] intendedHotel = new boolean[8];
 		int[] allocated = new int[8];
 		mostRecentPackages = packages;
 		clearIntentions();
@@ -114,7 +125,11 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		int prefArrive, prefDepart, hotelPremium, errCount, day, i;
 		int[] tempIntentions, tempAllocations;
 		Client c;
+		int cliNum = 0;
 		for (Package p : packages) {
+			cliNum++;
+			log.info("Sorting preferences for package with days " + Integer.toString(p.getArrivalDay())
+					+ " to " + Integer.toString(p.getDepartureDay()));
 			c = p.getClient();
 			prefArrive = c.getPreferredArrivalDay();
 			prefDepart = c.getPreferredDepartureDay();
@@ -125,7 +140,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 				err = false;
 				tempIntentions = new int[8];
 				tempAllocations = new int[8];
-				for (day = prefArrive; day <= prefDepart; day++) {
+				for (day = prefArrive; day < prefDepart; day++) {
 					i = hashForIndex(day, tt);
 					if (!auctionsClosed[i]) {
 						tempIntentions[i]++;
@@ -143,14 +158,28 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 				}
 			} while (errCount == 1 && err);
 			if (!err) {
+				// store hotel intention
+				intendedHotel[cliNum-1] = tt;
 				// push changes to main intention and allocation arrays
-				for (i = 1; i <= 8; i++) {
+				for (i = 0; i <= 7; i++) {
 					allocated[i] = allocated[i] + tempAllocations[i];
 					intentions[i] = intentions[i] + tempIntentions[i];
 				}
 			}
 		}
-		updateBids();
+		//updateBids(); // Bids are updated individually as initial quote updates come in
+		// Output intentions
+		if (DEBUG) {
+			log.info("Intentions:");
+			cliNum = 0;
+			for (Package p : packages) {
+				cliNum++;
+				log.info(Integer.toString(cliNum) + ": days " + Integer.toString(p.getArrivalDay())
+						+ " to " + Integer.toString(p.getDepartureDay()) + " with premium of "
+						+ Integer.toString(p.getClient().getHotelPremium()) + ". Attempt to get "
+						+ (intendedHotel[cliNum-1] ? "TT" : "SS"));
+			}
+		}
 	}
 	
 	private void updateBids() {
@@ -167,10 +196,10 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 	private void updateBid(int day, boolean tt) {
 		try {
 			HotelAuction auc = agent.getHotelAuction(day, tt);
+			int dayHash = hashForIndex(day, tt);
 			if (auc.isClosed())
 				throw new AuctionClosedException();
 			int hqw = auc.getHQW();
-			int dayHash = hashForIndex(day, tt);
 			auc.wipeBid();
 			if (intentions[dayHash] < hqw) { // on target to win surplus to requirement
 				auc.modifyBidPoint(intentions[dayHash] - hqw, auc.getAskPrice() + 1);
@@ -178,16 +207,28 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 			auc.modifyBidPoint(intentions[dayHash], auc.getAskPrice() + 50);
 			auc.submitBid();
 		} catch (AuctionClosedException e) {
-			Agent.log.fine("Attempted to update " + agent.getHotelAuction(day, tt).toString() + 
+			log.info("Attempted to update " + agent.getHotelAuction(day, tt).toString() + 
 					" after it had CLOSED");
+			e.printStackTrace();
 		} catch (BidInUseException e) {
-			Agent.log.fine("Attempted to update " + agent.getHotelAuction(day, tt).toString() + 
+			log.info("Attempted to update " + agent.getHotelAuction(day, tt).toString() + 
 					" while it was BUSY");
+			e.printStackTrace();
 		}	
 	}
 	
+	/**
+	 * Returns an integer index between 0 and 7. 0 is SS day 1, 3 = SS day 4,
+	 * TT is 4 more than the equivalent day of SS
+	 * @param day - integer between 1 and 4
+	 * @param tt - boolean, is the hotel choice TT?
+	 * @return
+	 */
 	private static int hashForIndex(int day, boolean tt) {
-		return day + (tt ? 4 : 0) - 1;
+		int toReturn = day + (tt ? 4 : 0) - 1;
+		if (toReturn < 0 || toReturn > 7)
+			log.warning("hashForIndex invalid: " + Integer.toString(toReturn));
+		return toReturn;
 	}
 
 }
