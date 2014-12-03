@@ -1,5 +1,6 @@
 package agent;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -10,7 +11,7 @@ public class Package {
     private final Client client;
     private int arrivalDay, departureDay;
     private FlightTicket arrivalTicket, departureTicket;
-    private final HotelBooking[] hotelBookings = new HotelBooking[4];
+    private final HotelBooking[] hotelBookings = new HotelBooking[Agent.NUM_DAYS - 1];
     private final Map<EntertainmentType, EntertainmentTicket> entertainmentTickets = new TreeMap<EntertainmentType,
                 EntertainmentTicket>();
 
@@ -50,9 +51,11 @@ public class Package {
     public void setEntertainmentTicket(EntertainmentTicket ticket) {
         // TODO: do something if there's already a booking in that slot
         entertainmentTickets.put(ticket.getType(), ticket);
+        itinerary[ticket.getDay()] = DayStatus.IN_USE;
     }
     public void clearEntertainmentTickets() {
         entertainmentTickets.clear();
+        clearItinerary();
     }
 
     /** Create a new Package with the given {@link agent.Client}, using the client's preferred dates. */
@@ -64,6 +67,8 @@ public class Package {
         this.client = client;
         this.arrivalDay = arrivalDay;
         this.departureDay = departureDay;
+
+        clearItinerary();
     }
 
     // TODO: `validate` function
@@ -119,5 +124,37 @@ public class Package {
 
     public int clientUtility() {
         return isFeasible() ? 1000 - travelPenalty() + hotelBonus() + funBonus() : 0;
+    }
+
+    // Day reservations //
+
+    private enum DayStatus { CLIENT_NOT_PRESENT, FREE, RESERVED, IN_USE }
+
+    /** Thrown by reserveDay when there are no more free itinerary in the {@link agent.Package}. */
+    public class PackageFullException extends RuntimeException {}
+
+    private final DayStatus[] itinerary = new DayStatus[Agent.NUM_DAYS];
+
+    private void clearItinerary() {
+        Arrays.fill(itinerary, 0, arrivalDay, DayStatus.CLIENT_NOT_PRESENT);
+        Arrays.fill(itinerary, arrivalDay, departureDay, DayStatus.FREE);
+        Arrays.fill(itinerary, departureDay, Agent.NUM_DAYS, DayStatus.CLIENT_NOT_PRESENT);
+    }
+
+    /** Reserves a day in the client's itinerary. The day will be one during which the client is in Tampa and does
+     * not have any other entertainment booked.
+     *
+     * @return the day which has been reserved.
+     * @throws PackageFullException if the client has no free days left in their itinerary.
+     */
+    public int reserveDay() throws PackageFullException {
+        for (int day = arrivalDay; day < departureDay; day++) {
+            if (itinerary[day] == DayStatus.FREE) {
+                itinerary[day] = DayStatus.RESERVED;
+                return day;
+            }
+        }
+
+        throw new PackageFullException();
     }
 }
