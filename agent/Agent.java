@@ -19,9 +19,9 @@ public class Agent extends AgentImpl {
     private List<Package> packages;
 
     // Current stock
-    private List<FlightTicket> flightTickets = new ArrayList<FlightTicket>();
-    private List<HotelBooking> hotelBookings = new ArrayList<HotelBooking>();
-    private List<EntertainmentTicket> entertainmentTickets = new ArrayList<EntertainmentTicket>();
+    private List<FlightTicket> flightTickets;
+    private List<HotelBooking> hotelBookings;
+    private List<EntertainmentTicket> entertainmentTickets;
 
     // SubAgents
     // The plane agent monitors and buys plane tickets
@@ -47,6 +47,10 @@ public class Agent extends AgentImpl {
     }
 
     private void takeStock() {
+        flightTickets = new ArrayList<FlightTicket>();
+        hotelBookings = new ArrayList<HotelBooking>();
+        entertainmentTickets = new ArrayList<EntertainmentTicket>();
+
         for (FlightAuction auction : flightAuctions.values()) {
             for (int i = 0; i < agent.getOwn(auction.getAuctionID()); i++) {
                 flightTickets.add(auction.getBuyable());
