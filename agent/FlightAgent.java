@@ -48,7 +48,9 @@ public class FlightAgent extends SubAgent<FlightTicket> {
 
     private void fulfillPackage(Package pack) {
         log.info("Fullfill package");
-        bidders.get(agent.getFlightAuction(pack.getArrivalDay(), true)).addWanted();
-        bidders.get(agent.getFlightAuction(pack.getDepartureDay(), false)).addWanted();
+        bidders.get(agent.getFlightAuction(pack.getArrivalDay(), true))
+            .addPackage(pack);
+        bidders.get(agent.getFlightAuction(pack.getDepartureDay(), false))
+            .addPackage(pack);
     }
 }

@@ -19,7 +19,7 @@ public class FlightBidder implements Auction.Watcher {
     private final FlightAgent flightAgent;
     private final FlightAuction auction;
     private final FlightPriceMonitor monitor;
-    private int numWanted = 0;
+    private final List<Package> packages = new ArrayList<Package>();
     private boolean bidDirtyFlag = false;
     private boolean gameStarted = true;
 
@@ -40,15 +40,9 @@ public class FlightBidder implements Auction.Watcher {
         gameStarted = false;
     }
 
-    public void addWanted() {
-        log.info("Increase number wanted");
-        numWanted++;
-        refreshBid();
-    }
-
-    public void removeWanted() {
-        log.info("Decrease number wanted");
-        numWanted--;
+    public void addPackage(Package pack) {
+        log.info("Adding package");
+        packages.add(pack);
         refreshBid();
     }
 
@@ -78,11 +72,19 @@ public class FlightBidder implements Auction.Watcher {
     }
 
     public void auctionTransaction(Auction<?> auction, List<Buyable> tickets) {
-        // We got a flight ticket!
-        for (Buyable ticket : tickets) {
-            flightAgent.addTicket((FlightTicket)ticket);
+        // We got some flight tickets!
+        for (Buyable b : tickets) {
+            FlightTicket ticket = (FlightTicket)b;
+            flightAgent.addTicket(ticket);
+
+            // TODO: Pick packages in a sensible way
+            Package pack = packages.remove(0);
+            if (this.auction.getArrival()) {
+                pack.setArrivalTicket(ticket);
+            } else {
+                pack.setDepartureTicket(ticket);
+            }
         }
-        numWanted -= tickets.size();
         refreshBid();
     }
 
@@ -106,12 +108,12 @@ public class FlightBidder implements Auction.Watcher {
         try {
             auction.wipeBid();
             float price = calcPrice();
-            if (numWanted > 0) {
-                auction.modifyBidPoint(numWanted, price);
+            if (packages.size() > 0) {
+                auction.modifyBidPoint(packages.size(), price);
             }
 
             log.info(
-                "Submitting bid (" + numWanted + ", " + price + ")");
+                "Submitting bid (" + packages.size() + ", " + price + ")");
             auction.submitBid();
         } catch (BidInUseException e) {
             // return early, don't unset bidDirtyFlag
@@ -136,7 +138,9 @@ public class FlightBidder implements Auction.Watcher {
         // In the final round, we should just pay the ask price
         if (getTimeStep() >= FlightAgent.MAX_TIME) {
             // A dollar for luck!
-            return auction.getAskPrice() + 1f;
+            float price = auction.getAskPrice() + 1f;
+            log.info("PANIC MODE: " + price);
+            return price;
         }
 
         // Find price with highest expected return
