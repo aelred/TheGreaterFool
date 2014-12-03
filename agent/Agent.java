@@ -42,6 +42,26 @@ public class Agent extends AgentImpl {
         return null;
     }
 
+    private void takeStock() {
+        for (FlightAuction auction : flightAuctions.values()) {
+            for (int i = 0; i < agent.getOwn(auction.getAuctionID()); i++) {
+                flightTickets.add(auction.getBuyable());
+            }
+        }
+
+        for (HotelAuction auction : hotelAuctions.values()) {
+            for (int i = 0; i < agent.getOwn(auction.getAuctionID()); i++) {
+                hotelBookings.add(auction.getBuyable());
+            }
+        }
+
+        for (EntertainmentAuction auction : entertainmentAuctions.values()) {
+            for (int i = 0; i < agent.getOwn(auction.getAuctionID()); i++) {
+                entertainmentTickets.add(auction.getBuyable());
+            }
+        }
+    }
+
     public void gameStarted() {
         log.info("Game started");
 
@@ -59,6 +79,8 @@ public class Agent extends AgentImpl {
                 clients[i].getPreferredArrivalDay(), 
                 clients[i].getPreferredDepartureDay()));
         }
+
+        takeStock();
 
         log.info("Creating subagents");
         // Create agents
