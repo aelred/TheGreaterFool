@@ -94,7 +94,14 @@ public abstract class Auction<T extends Buyable> {
         public void auctionBidUpdated(Auction<?> auction, BidString bidString);
         public void auctionBidRejected(Auction<?> auction, BidString bidString);
         public void auctionBidError(Auction<?> auction, BidString bidString, int error);
+
+        /** Called when one or more {@link agent.Buyable}s are acquired through the Auction.
+         *
+         * @param buyables A {@link java.util.List} of {@link agent.Buyable}s won. {@link agent.Auction.Watcher}s may
+         *                 remove {@link agent.Buyable}s from this list to indicate that they have 'taken' them.
+         */
         public void auctionTransaction(Auction<?> auction, List<Buyable> buyables);
+
         public void auctionClosed(Auction<?> auction);
     }
 
