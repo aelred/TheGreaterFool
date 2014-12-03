@@ -42,7 +42,6 @@ public class FlightBidder implements Auction.Watcher {
 
     public void addPackage(Package pack) {
         log.info("Adding package");
-        // TODO: Verify package is not already satisfied!
         packages.add(pack);
         refreshBid();
     }

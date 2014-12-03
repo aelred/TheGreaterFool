@@ -15,8 +15,16 @@ public class FlightAgent extends SubAgent<FlightTicket> {
     private Map<FlightAuction, FlightBidder> bidders = 
         new HashMap<FlightAuction, FlightBidder>();
 
+    private final List<FlightTicket> unusedStock = 
+        new ArrayList<FlightTicket>();
+
     public FlightAgent(Agent agent, List<FlightTicket> stock) {
         super(agent, stock);
+
+        // Add stock to unused stock
+        for (FlightTicket ticket : stock) {
+            unusedStock.add(ticket);
+        }
 
         // Create a bidder for every auction
         for (int day = 1; day < Agent.NUM_DAYS; day ++) {
@@ -48,9 +56,49 @@ public class FlightAgent extends SubAgent<FlightTicket> {
 
     private void fulfillPackage(Package pack) {
         log.info("Fullfill package");
-        bidders.get(agent.getFlightAuction(pack.getArrivalDay(), true))
-            .addPackage(pack);
-        bidders.get(agent.getFlightAuction(pack.getDepartureDay(), false))
-            .addPackage(pack);
+
+        // Check if arrival ticket already in unused stock
+        FlightTicket arrival = null;
+        for (FlightTicket ticket : unusedStock) {
+            if (ticket.isArrival() && 
+                ticket.getDay() == pack.getArrivalDay()) {
+                arrival = ticket;
+                break;
+            }
+        }
+
+        if (arrival != null) {
+            // Use unused ticket
+            log.info("Using unused arrival ticket");
+            pack.setArrivalTicket(arrival);
+            unusedStock.remove(arrival);
+        } else {
+            // Start bidding for ticket
+            log.info("Bidding for arrival ticket");
+            bidders.get(agent.getFlightAuction(pack.getArrivalDay(), true))
+                .addPackage(pack);
+        }
+
+        // Check if departure ticket already in unused stock
+        FlightTicket departure = null;
+        for (FlightTicket ticket : unusedStock) {
+            if (!ticket.isArrival() && 
+                ticket.getDay() == pack.getDepartureDay()) {
+                departure = ticket;
+                break;
+            }
+        }
+
+        if (departure != null) {
+            // Use unused ticket
+            log.info("Using unused departure ticket");
+            pack.setDepartureTicket(departure);
+            unusedStock.remove(departure);
+        } else {
+            // Start bidding for ticket
+            log.info("Bidding for departure ticket");
+            bidders.get(agent.getFlightAuction(pack.getDepartureDay(), false))
+                .addPackage(pack);
+        }
     }
 }
