@@ -3,12 +3,19 @@ package agent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.logging.Logger;
 
 /**
  * Manages allocation of {@link agent.EntertainmentTicket}s to {@link agent.Client}s.
  */
 public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
+    public static final Logger log = Logger.getLogger(EntertainmentAgent.class.getName());
+
     private boolean firstRun = true;
+    private List<Package> packages;
+    private List<EntertainmentBidder> bidders = new ArrayList<EntertainmentBidder>();
+
+    private static final float PROFIT_FACTOR = 0.2f;
 
     public EntertainmentAgent(Agent agent, List<EntertainmentTicket> stock) {
         super(agent, stock);
@@ -51,11 +58,10 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
     }
 
     public void gameStopped() {
-        // TODO: Implement behaviour when game stops
-        // Most importantly, unsubscribe from any auctions
+        bidders.clear();
     }
 
-    private List<Allocation> possibleAllocations(List<Package> packages) {
+    private List<Allocation> possibleAllocations() {
         List<Allocation> allocations = new ArrayList<Allocation>();
         for (Package pkg : packages) {
             for (EntertainmentTicket ticket : stock) {
@@ -94,7 +100,37 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
         return bestAllocations;
     }
 
-    public void sellUnusedTickets() {
+    /** Called by an {@link agent.EntertainmentBidder} when it obtains a ticket from an auction.
+     *
+     * @param bidder The {@link agent.EntertainmentBidder}.
+     * @param ticket The {@link agent.EntertainmentTicket} that was bought.
+     */
+    public void ticketWon(EntertainmentBidder bidder, EntertainmentTicket ticket) {
+        this.stock.add(ticket);
+    }
+
+    private void bidFor(Package pkg, int day, EntertainmentType type, float bidPrice) {
+        EntertainmentAuction auction = agent.getEntertainmentAuction(day, type);
+        EntertainmentBidder bidder = new EntertainmentBidder(this, auction, pkg, bidPrice);
+        bidders.add(bidder);
+    }
+
+    private void bidForUnfilledSlots() {
+        for (Package pkg : packages) {
+            try {
+                // TODO: fill more valuable slots first
+                for (EntertainmentType type : EntertainmentType.values()) {
+                    if (pkg.getEntertainmentTicket(type) == null) {
+                        int day = pkg.reserveDay();
+                        float bidPrice = pkg.getClient().getEntertainmentPremium(type) * (1 - PROFIT_FACTOR);
+                        bidFor(pkg, day, type, bidPrice);
+                    }
+                }
+            } catch (Package.PackageFullException ex) { }  // We can't fit anything else in the package, so move on
+        }
+    }
+
+    private void sellUnusedTickets() {
         List<EntertainmentTicket> unusedTickets = new ArrayList<EntertainmentTicket>();
         for (EntertainmentTicket ticket : stock) {
             if (ticket.getAssociatedPackage() == null) {
@@ -110,18 +146,24 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
     }
 
     public void fulfillPackages(List<Package> packages) {
-        if (firstRun) {
-            for (Package pkg : packages) {
+        if (!firstRun) {
+            for (Package pkg : this.packages) {
                 pkg.clearEntertainmentTickets();
             }
             for (EntertainmentTicket ticket : stock) {
                 ticket.clearAssociatedPackage();
             }
-            // TODO: clear any untaken sell bids
-            firstRun = false;
-        }
 
-        List<Allocation> allocations = possibleAllocations(packages);
+            for (EntertainmentBidder bidder : bidders) {
+                bidder.cancelBid();
+            }
+            bidders.clear();
+            // TODO: clear any untaken sell bids
+        }
+        firstRun = false;
+        this.packages = packages;
+
+        List<Allocation> allocations = possibleAllocations();
         List<Allocation> bestAllocations = chooseBestAllocations(allocations);
 
         System.out.println("Best allocations:");
@@ -129,6 +171,8 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
             allocation.perform();
             System.out.printf("\t%s for $%d\n", allocation.ticket, allocation.getValue());
         }
+
+        bidForUnfilledSlots();
 
         sellUnusedTickets();
     }
