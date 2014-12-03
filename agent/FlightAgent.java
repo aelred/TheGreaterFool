@@ -56,6 +56,8 @@ public class FlightAgent extends SubAgent<FlightTicket> {
 
     private void fulfillPackage(Package pack) {
         log.info("Fullfill package");
+        log.info("Arrival: " + pack.getArrivalDay());
+        log.info("Departure: " + pack.getDepartureDay());
 
         // Check if arrival ticket already in unused stock
         FlightTicket arrival = null;

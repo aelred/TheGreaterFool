@@ -23,6 +23,9 @@ public class FlightBidder implements Auction.Watcher {
     private boolean bidDirtyFlag = false;
     private boolean gameStarted = true;
 
+    private int lastBidQuantity = 0;
+    private float lastBidPrice = 0f;
+
     public FlightBidder(FlightAgent flightAgent, FlightAuction auction) {
         this.flightAgent = flightAgent;
         this.auction = auction;
@@ -77,7 +80,9 @@ public class FlightBidder implements Auction.Watcher {
             FlightTicket ticket = (FlightTicket)b;
             flightAgent.addTicket(ticket);
 
-            // TODO: Pick packages in a sensible way
+            // Fulfill packages one-by-one.
+            // There should always be exactly the same number of tickets
+            // as packages.
             Package pack = packages.remove(0);
             if (this.auction.getArrival()) {
                 pack.setArrivalTicket(ticket);
@@ -102,14 +107,22 @@ public class FlightBidder implements Auction.Watcher {
             throw new IllegalStateException("Cannot bid on stopped game.");
         }
 
-        // flag saying this bid must be refreshed when possible
+        int quantity = packages.size();
+        float price = calcPrice();
+
+        // Don't bid if current bid is still valid and quantity hasn't changed
+        // This is security for accidentally buying multiple copies
+        if (quantity == lastBidQuantity && 
+            lastBidPrice > auction.getAskPrice()) {
+            return;
+        }
+
         bidDirtyFlag = true;
         
         try {
             auction.wipeBid();
-            float price = calcPrice();
-            if (packages.size() > 0) {
-                auction.modifyBidPoint(packages.size(), price);
+            if (quantity > 0) {
+                auction.modifyBidPoint(quantity, price);
             }
 
             log.info(
@@ -119,6 +132,9 @@ public class FlightBidder implements Auction.Watcher {
             // return early, don't unset bidDirtyFlag
             return;
         }
+
+        lastBidQuantity = quantity;
+        lastBidPrice = price;
 
         bidDirtyFlag = false;
     }
