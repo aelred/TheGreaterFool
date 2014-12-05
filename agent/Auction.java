@@ -154,7 +154,15 @@ public abstract class Auction<T extends Buyable> {
     private BidString generateBidString() {
         BidString bid = new BidString(getAuctionID());
         for (Float price : workingBids.keySet()) {
-            bid.addBidPoint(workingBids.get(price), price);
+            try {
+            	bid.addBidPoint(workingBids.get(price), price);
+            } catch (Exception e) {
+            	Agent.logMessage("auction" + Integer.toString(getAuctionID()), "Existing bid: "
+            			+ bid.getBidString());
+            	Agent.logMessage("auction" + Integer.toString(getAuctionID()), "Tried to add bid point: ("
+            			+ Integer.toString(workingBids.get(price)) + " " + Float.toString(price) + ")");
+            	throw e;
+            }
         }
         return bid;
     }
