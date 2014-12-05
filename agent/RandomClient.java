@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+import agent.entertainment.EntertainmentType;
+
 public class RandomClient extends Client {
     private final int preferredArrivalDay, preferredDepartureDay;
 

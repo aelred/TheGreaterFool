@@ -1,8 +1,8 @@
 package agent.test;
 
 import agent.Client;
-import agent.EntertainmentType;
 import agent.Package;
+import agent.entertainment.EntertainmentType;
 
 import org.junit.Test;
 import org.junit.Rule;

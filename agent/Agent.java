@@ -2,6 +2,10 @@ package agent;
 import java.util.*;
 import java.util.logging.Logger;
 
+import agent.entertainment.EntertainmentAgent;
+import agent.entertainment.EntertainmentAuction;
+import agent.entertainment.EntertainmentTicket;
+import agent.entertainment.EntertainmentType;
 import agent.hotel.*;
 
 import se.sics.tac.aw.*;

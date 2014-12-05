@@ -1,5 +1,6 @@
 package agent;
 
+import agent.entertainment.EntertainmentType;
 import se.sics.tac.aw.TACAgent;
 
 public class ClientFromTAC extends Client {

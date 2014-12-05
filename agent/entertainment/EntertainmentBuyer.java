@@ -1,10 +1,15 @@
-package agent;
+package agent.entertainment;
 
 import se.sics.tac.aw.BidString;
 import se.sics.tac.aw.Quote;
 
 import java.util.List;
 import java.util.logging.Logger;
+
+import agent.Auction;
+import agent.BidInUseException;
+import agent.Buyable;
+import agent.Package;
 
 public class EntertainmentBuyer extends EntertainmentBidder {
     private final Package pkg;

@@ -1,8 +1,13 @@
-package agent;
+package agent.entertainment;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+
+import agent.Agent;
+import agent.Auction;
+import agent.BidInUseException;
+import agent.Buyable;
 
 public class EntertainmentSeller extends EntertainmentBidder {
     public static final Logger log = Logger.getLogger(Agent.log.getName() + ".entertainment.seller");

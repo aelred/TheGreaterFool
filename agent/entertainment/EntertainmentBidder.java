@@ -1,10 +1,16 @@
-package agent;
+package agent.entertainment;
 
 import se.sics.tac.aw.BidString;
 import se.sics.tac.aw.Quote;
 
 import java.util.List;
 import java.util.logging.Logger;
+
+import agent.Agent;
+import agent.Auction;
+import agent.BidInUseException;
+import agent.Buyable;
+import agent.Auction.Watcher;
 
 public abstract class EntertainmentBidder implements EntertainmentAuction.Watcher {
     public static final Logger log = Logger.getLogger(Agent.log.getName() + ".entertainment.bidder");

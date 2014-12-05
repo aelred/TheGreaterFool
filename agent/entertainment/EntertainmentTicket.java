@@ -1,4 +1,6 @@
-package agent;
+package agent.entertainment;
+
+import agent.Buyable;
 
 /** Represents a ticket for an entertainment event on a particular day. */
 public class EntertainmentTicket extends Buyable {

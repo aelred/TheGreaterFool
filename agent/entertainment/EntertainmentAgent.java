@@ -1,10 +1,18 @@
-package agent;
+package agent.entertainment;
 
 import java.util.*;
 import java.util.logging.Logger;
 
+import agent.Agent;
+import agent.Auction;
+import agent.Client;
+import agent.Package;
+import agent.RandomClient;
+import agent.SubAgent;
+import agent.Package.PackageFullException;
+
 /**
- * Manages allocation of {@link agent.EntertainmentTicket}s to {@link agent.Client}s.
+ * Manages allocation of {@link agent.entertainment.EntertainmentTicket}s to {@link agent.Client}s.
  */
 public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
     public static final Logger log = Logger.getLogger(Agent.log.getName() + ".entertainment");
@@ -122,20 +130,20 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
         return bestAllocations;
     }
 
-    /** Called by an {@link agent.EntertainmentBuyer} when it obtains a ticket from an auction.
+    /** Called by an {@link agent.entertainment.EntertainmentBuyer} when it obtains a ticket from an auction.
      *
-     * @param bidder The {@link agent.EntertainmentBuyer}.
-     * @param ticket The {@link agent.EntertainmentTicket} that was bought.
+     * @param bidder The {@link agent.entertainment.EntertainmentBuyer}.
+     * @param ticket The {@link agent.entertainment.EntertainmentTicket} that was bought.
      */
     public void ticketWon(EntertainmentBuyer bidder, EntertainmentTicket ticket) {
         log.info("Won ticket: " + ticket);
         this.stock.add(ticket);
     }
 
-    /** Called by an {@link agent.EntertainmentSeller} when it sells one or more tickets in an auction.
+    /** Called by an {@link agent.entertainment.EntertainmentSeller} when it sells one or more tickets in an auction.
      *
-     * @param seller The {@link agent.EntertainmentSeller}.
-     * @param tickets A {@link java.util.List} of the {@link agent.EntertainmentTicket}s sold.
+     * @param seller The {@link agent.entertainment.EntertainmentSeller}.
+     * @param tickets A {@link java.util.List} of the {@link agent.entertainment.EntertainmentTicket}s sold.
      */
     public void ticketsSold(EntertainmentSeller seller, List<EntertainmentTicket> tickets) {
         log.info("Sold tickets.");
@@ -232,8 +240,8 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
         addTickets(tickets, 2, (rnd.nextInt(2) == 0) ? day1 : day2, EntertainmentType.randomType(rnd, type1));
     }
 
-    /** Tests the {@link agent.EntertainmentAgent} class with some {@link agent.RandomClient}s and
-     * {@link agent.EntertainmentTicket}s assigned according to the spec. */
+    /** Tests the {@link agent.entertainment.EntertainmentAgent} class with some {@link agent.RandomClient}s and
+     * {@link agent.entertainment.EntertainmentTicket}s assigned according to the spec. */
     public static void main(String[] args) {
         // Create random clients
         List<Package> packages = new ArrayList<Package>(8);

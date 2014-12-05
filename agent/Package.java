@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
 
+import agent.entertainment.EntertainmentTicket;
+import agent.entertainment.EntertainmentType;
 import agent.hotel.HotelBooking;
 
 /**

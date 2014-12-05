@@ -1,4 +1,4 @@
-package agent;
+package agent.entertainment;
 import se.sics.tac.aw.*;
 
 import java.util.Random;

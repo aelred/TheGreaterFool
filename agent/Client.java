@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
+import agent.entertainment.EntertainmentType;
 import agent.hotel.HotelBooking;
 
 public abstract class Client {

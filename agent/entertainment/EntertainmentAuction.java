@@ -1,5 +1,6 @@
-package agent;
+package agent.entertainment;
 
+import agent.Auction;
 import se.sics.tac.aw.TACAgent;
 
 public class EntertainmentAuction extends Auction<EntertainmentTicket> {
@@ -11,7 +12,7 @@ public class EntertainmentAuction extends Auction<EntertainmentTicket> {
 		this.type = type;
 	}
 
-	protected int getAuctionID() {
+	public int getAuctionID() {
 		return getAuctionID(TACAgent.CAT_ENTERTAINMENT, type.getValue());
 	}
 
