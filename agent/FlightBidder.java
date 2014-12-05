@@ -60,7 +60,11 @@ public class FlightBidder implements Auction.Watcher {
         // TODO: Make sure this only happens every 10 seconds when the price perturbs!
         log.info("Quote updated: " + quote.getAskPrice());
         monitor.addQuote((double)quote.getAskPrice(), getTimeStep());
-        refreshBid();
+
+        // only refresh bid at 20 second intervals to avoid duplicate bid problems
+        if (getTimeStep() % 2 == 0) {
+            refreshBid();
+        }
     }
 
     public void auctionBidUpdated(Auction<?> auction, BidString bidString) {
@@ -158,7 +162,7 @@ public class FlightBidder implements Auction.Watcher {
         int min = (int)FlightAgent.PRICE_MIN, max = (int)FlightAgent.PRICE_MAX;
 
         // In the final few rounds, we should just pay the ask price
-        if (getTimeStep() >= FlightAgent.MAX_TIME - 1) {
+        if (getTimeStep() >= FlightAgent.MAX_TIME - 2) {
             // A dollar for luck!
             float price = auction.getAskPrice() + 1f;
             log.info("PANIC MODE: " + price);
