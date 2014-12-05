@@ -1,5 +1,6 @@
 package agent;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -52,7 +53,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		}
 		@Override
 		public void auctionClosed(Auction<?> auction) {
-			updateAuctionClosed((HotelAuction) auction);
+			updateOnAuctionClosed((HotelAuction) auction);
 		}
 	};
 	
@@ -61,6 +62,8 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 	private int[] intentions = new int[8];
 	private List<Package> mostRecentPackages;
 	private HotelHistory hotelHist;
+	private HotelGame currentGame;
+	private int numClosed = 0;
 	
 	@SuppressWarnings("unused")
 	private boolean[] intendedHotel;
@@ -71,6 +74,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 	public HotelAgent(Agent agent, List<HotelBooking> hotelStock, HotelHistory hh) {
 		this(agent,hotelStock);
 		hotelHist = hh;
+		currentGame = new HotelGame();
 	}
 	
 	public HotelAgent(Agent agent, List<HotelBooking> hotelStock) {
@@ -83,6 +87,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 			agent.getHotelAuction(day, true).removeWatcher(watcher);;
 			agent.getHotelAuction(day, false).removeWatcher(watcher);
 		}
+    	hotelHist.add(currentGame);
     }
 
 	private void subscribeAll() {
@@ -92,7 +97,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		}
 	}
 	
-	private void updateAuctionClosed(HotelAuction auction) {
+	private void updateOnAuctionClosed(HotelAuction auction) {
 		int day = auction.getDay();
 		boolean tt = auction.isTT();
 		int i = hashForIndex(day, tt);
@@ -102,6 +107,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		for (int a = 1; a <= won; a++) {
 			stock.add(new HotelBooking(day, tt));
 		}
+		currentGame.setAskPrice(day, tt, auction.getAskPrice(), ++numClosed, true);
 		if (held[i] < intentions[i]) {
 			// did not achieve ideal scenario, need to reassess
 			fulfillPackages(mostRecentPackages);
@@ -202,6 +208,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 	private void updateBid(int day, boolean tt) {
 		try {
 			HotelAuction auc = agent.getHotelAuction(day, tt);
+			currentGame.setAskPrice(day, tt, auc.getAskPrice(), numClosed, false);
 			int dayHash = hashForIndex(day, tt);
 			if (auc.isClosed())
 				throw new AuctionClosedException();
@@ -256,3 +263,5 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 class AuctionClosedException extends Exception {
     public static final long serialVersionUID = 1L;
 }
+
+class HotelHistory extends ArrayList<HotelGame> {}
