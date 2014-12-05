@@ -6,35 +6,30 @@ import se.sics.tac.aw.Quote;
 import java.util.List;
 import java.util.logging.Logger;
 
-public class EntertainmentBidder implements EntertainmentAuction.Watcher {
+public abstract class EntertainmentBidder implements EntertainmentAuction.Watcher {
     public static final Logger log = Logger.getLogger(Agent.log.getName() + ".entertainment.bidder");
+    protected final EntertainmentAgent entAgent;
+    protected final EntertainmentAuction auction;
+    protected float bidPrice;
 
-    private final EntertainmentAgent entAgent;
-    private final EntertainmentAuction auction;
-    private final Package pkg;
+    public EntertainmentBidder(EntertainmentAgent entAgent, EntertainmentAuction auction) {
+        this.entAgent = entAgent;
+        this.auction = auction;
+    }
 
-    private float bidPrice;
-
-    public EntertainmentAuction getAuction() { return auction; }
-    public Package getPackage() { return pkg; }
-    public float getBidPrice() { return bidPrice; }
-
-    private void handleBidInUseException(BidInUseException ex) {
-        log.warning(ex.getMessage());
+    protected void handleBidInUseException(BidInUseException ex) {
+        EntertainmentBidder.log.warning(ex.getMessage());
         ex.printStackTrace();
     }
 
-    public EntertainmentBidder(EntertainmentAgent entAgent, EntertainmentAuction auction, Package pkg, float bidPrice) {
-        this.entAgent = entAgent;
-        this.auction = auction;
-        this.pkg = pkg;
-        auction.addWatcher(this);
-        bid(bidPrice);
-    }
+    public float getBidPrice() { return bidPrice; }
+
+    protected abstract void addBid() throws BidInUseException;
+    protected abstract void removeBid() throws BidInUseException;
 
     public void bid(float bidPrice) {
         try {
-            auction.modifyBidPoint(1, bidPrice);
+            addBid();
             auction.submitBid();
             this.bidPrice = bidPrice;
         } catch (BidInUseException ex) { handleBidInUseException(ex); }
@@ -42,7 +37,7 @@ public class EntertainmentBidder implements EntertainmentAuction.Watcher {
 
     public void cancelBid() {
         try {
-            auction.modifyBidPoint(-1, bidPrice);
+            removeBid();
             auction.submitBid();
         } catch (BidInUseException ex) { handleBidInUseException(ex); }
     }
@@ -60,11 +55,7 @@ public class EntertainmentBidder implements EntertainmentAuction.Watcher {
     public void auctionBidError(Auction<?> auction, BidString bidString, int error) {  }
 
     @Override
-    public void auctionTransaction(Auction<?> auction, List<Buyable> buyables) {
-        EntertainmentTicket ticket = (EntertainmentTicket)buyables.remove(buyables.size() - 1);
-        pkg.setEntertainmentTicket(ticket);
-        entAgent.ticketWon(this, ticket);
-    }
+    public abstract void auctionTransaction(Auction<?> auction, List<Buyable> buyables);
 
     @Override
     public void auctionClosed(Auction<?> auction) {  }
