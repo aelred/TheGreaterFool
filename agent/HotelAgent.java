@@ -221,6 +221,8 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 			}*/
 			if (intentions[dayHash] < hqw) { // on target to win surplus to requirement
 				auc.modifyBidPoint(hqw - intentions[dayHash], auc.getAskPrice() + 1);
+			} else if (auc.getAskPrice() < 1) {
+				auc.modifyBidPoint(intentions[hashForIndex(day, !tt)], (float)1.01);
 			}
 			auc.modifyBidPoint(intentions[dayHash], auc.getAskPrice() + 50);
 			auc.submitBid(true);
