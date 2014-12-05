@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 public class EntertainmentBidder implements EntertainmentAuction.Watcher {
-    public static final Logger log = Logger.getLogger(EntertainmentBidder.class.getName());
+    public static final Logger log = Logger.getLogger(Agent.log.getName() + ".entertainment.bidder");
 
     private final EntertainmentAgent entAgent;
     private final EntertainmentAuction auction;
@@ -28,6 +28,7 @@ public class EntertainmentBidder implements EntertainmentAuction.Watcher {
         this.entAgent = entAgent;
         this.auction = auction;
         this.pkg = pkg;
+        auction.addWatcher(this);
         bid(bidPrice);
     }
 
