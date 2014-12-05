@@ -171,26 +171,43 @@ public class FlightBidder implements Auction.Watcher {
 
         // Find price with highest expected return
         int bestPrice = (int)FlightAgent.PRICE_MIN;
-        double bestExpectedCost = Double.MAX_VALUE;
+        double bestExpectedOutcome = Double.MAX_VALUE;
         for (int price = min; price < max; price ++) {
-            double prob = dist.get(price);
+            // Probabiliy price will be below this, assuming confidence in estimate
+            double probWithConf = dist.get(price);
+            // Probability price will be below this if estimate is incorrect
+            // Very approximate, assume minimum price is uniformly below current price
+            // TODO: Make this more accurate
+            double probWoutConf = ((double)dist.get(price) - (double)min) / 
+                (double)(auction.getAskPrice() - min);
+            if (probWoutConf > 1d) {
+                probWoutConf = 1d;
+            }
 
-            // Calculate potential loss if price estimate is incorrect
-            double incorrectLoss = (double)price * (1d - confidence);
-            // Calculate loss if estimate is correct and we buy at this price
-            double correctLoss = (double)price * confidence * prob;
+            // Potential bad price if estimate is incorrect
+            int highPrice = max;
+            // Potential good price if estimate is incorrect
+            int lowPrice = min;
 
-            // A potentially bad price: the maximum possible
-            double badPrice = (double)max;
-            // Calculate loss if estimate is too low and ticket is bought
-            // later at a higher price.
-            double tooLowLoss = badPrice * confidence * (1d - prob);
-            // Calculate expected cost
-            double expectedCost = incorrectLoss + correctLoss + tooLowLoss;
+            // Outcome if estimate is correct and bid is above true minimum
+            double correctOutcomeHigh = confidence * probWithConf * (double)price;
+            // Outcome if estimate is correct and bid is below true minimum
+            double correctOutcomeLow = confidence * (1d - probWoutConf) * (double)max;
 
-            if (expectedCost < bestExpectedCost) {
+            // Outcome if estimate is incorrect and bid is too high
+            double incorrectOutcomeHigh = 
+                (1d - confidence) * probWoutConf * (double)price;
+            // Outcome if estimate is incorrect and bid is too low
+            double incorrectOutcomeLow = 
+                (1d - confidence) * (1d - probWoutConf) * (double)lowPrice;
+
+            // Expected outcome
+            double expectedOutcome = correctOutcomeHigh + correctOutcomeLow +
+                incorrectOutcomeHigh + incorrectOutcomeLow;
+
+            if (expectedOutcome < bestExpectedOutcome) {
                 bestPrice = price;
-                bestExpectedCost = expectedCost;
+                bestExpectedOutcome = expectedOutcome;
             }
         }
 
