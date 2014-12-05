@@ -15,7 +15,7 @@ public class EntertainmentAuction extends Auction<EntertainmentTicket> {
 		return getAuctionID(TACAgent.CAT_ENTERTAINMENT, type.getValue());
 	}
 
-    protected EntertainmentTicket getBuyable() {
+    public EntertainmentTicket getBuyable() {
         return new EntertainmentTicket(day, type);
     }
 }

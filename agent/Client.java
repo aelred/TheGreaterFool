@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
+import agent.hotel.HotelBooking;
+
 public abstract class Client {
     public abstract int getPreferredArrivalDay();
     public abstract int getPreferredDepartureDay();

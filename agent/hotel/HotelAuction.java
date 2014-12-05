@@ -1,5 +1,6 @@
-package agent;
+package agent.hotel;
 
+import agent.Auction;
 import se.sics.tac.aw.Quote;
 import se.sics.tac.aw.TACAgent;
 
@@ -17,12 +18,12 @@ public class HotelAuction extends Auction<HotelBooking> {
 		return tt;
 	}
 	
-	protected int getAuctionID() {
+	public int getAuctionID() {
 		return getAuctionID(TACAgent.CAT_HOTEL, 
 			tt ? TACAgent.TYPE_GOOD_HOTEL : TACAgent.TYPE_CHEAP_HOTEL);
 	}
 
-    protected HotelBooking getBuyable() {
+    public HotelBooking getBuyable() {
         return new HotelBooking(day, tt);
     }
 	

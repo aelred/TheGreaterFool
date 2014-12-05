@@ -1,4 +1,7 @@
-package agent;
+package agent.hotel;
+
+import agent.Agent;
+import agent.Buyable;
 
 public class HotelBooking extends Buyable {
 	public final boolean towers;

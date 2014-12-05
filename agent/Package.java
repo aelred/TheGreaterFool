@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
 
+import agent.hotel.HotelBooking;
+
 /**
  * Represents the actual package being given to a client, as opposed to their preferences.
  */

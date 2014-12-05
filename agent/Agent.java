@@ -2,6 +2,8 @@ package agent;
 import java.util.*;
 import java.util.logging.Logger;
 
+import agent.hotel.*;
+
 import se.sics.tac.aw.*;
 import se.sics.tac.util.ArgEnumerator;
 

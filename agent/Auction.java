@@ -33,7 +33,7 @@ public abstract class Auction<T extends Buyable> {
     }
 
     // Return the Buyable associated with this auction
-    protected abstract T getBuyable();
+    public abstract T getBuyable();
 
     public void addWatcher(Watcher watcher) {
         watchers.add(watcher);
@@ -195,8 +195,4 @@ class BidMap extends HashMap<Float,Integer> {
     public BidMap() {
         super();
     }
-}
-
-class BidInUseException extends Exception {
-    public static final long serialVersionUID = 1L;
 }

@@ -19,7 +19,7 @@ public class FlightAuction extends Auction<FlightTicket> {
 			arrival ? TACAgent.TYPE_INFLIGHT : TACAgent.TYPE_OUTFLIGHT);
 	}
 
-    protected FlightTicket getBuyable() {
+    public FlightTicket getBuyable() {
         return new FlightTicket(day, arrival);
     }
 }

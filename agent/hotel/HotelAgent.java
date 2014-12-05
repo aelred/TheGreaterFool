@@ -1,8 +1,16 @@
-package agent;
+package agent.hotel;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+
+import agent.Agent;
+import agent.Auction;
+import agent.BidInUseException;
+import agent.Buyable;
+import agent.Client;
+import agent.Package;
+import agent.SubAgent;
+import agent.Auction.Watcher;
 
 import se.sics.tac.aw.BidString;
 import se.sics.tac.aw.Quote;
@@ -275,31 +283,6 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 
 class AuctionClosedException extends Exception {
     public static final long serialVersionUID = 1L;
-}
-
-class HotelHistory extends ArrayList<HotelGame> {
-	
-	public float[] averagePriceDifference() {
-		if (this.isEmpty())
-			return new float[]{25, 25, 25, 25};
-		float[] prices = new float[8];
-		int gameCount = 0;
-		for (HotelGame g : this) {
-			gameCount++;
-			for (int auction = 0; auction < 8; auction++) {
-				prices[auction] += g.getClosePrice(auction);
-			}
-		}
-		for (int auction = 0; auction < 8; auction++) {
-			prices[auction] = prices[auction] / gameCount;
-		}
-		float[] pds = new float[4];
-		for (int day = 0; day < 4; day++) {
-			pds[day] = prices[day+4] - prices[day];
-		}
-		return prices;
-	}
-	
 }
 
 

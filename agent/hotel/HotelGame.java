@@ -1,4 +1,4 @@
-package agent;
+package agent.hotel;
 
 public class HotelGame {
 
