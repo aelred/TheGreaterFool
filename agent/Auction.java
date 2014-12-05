@@ -146,7 +146,8 @@ public abstract class Auction<T extends Buyable> {
             throw new BidInUseException();
         BidString bs = generateBidString();
         awaitingConfirmation = true;
-        Agent.logMessage("auction" + Integer.toString(getAuctionID()), "Submitting: " + bs.getBidString());
+        if (copyToConsole)
+        	Agent.logMessage("auction" + Integer.toString(getAuctionID()), "Submitting: " + bs.getBidString());
         agent.submitBid(bs);
     }
     
