@@ -3,7 +3,6 @@ package agent;
 import java.util.List;
 import java.util.logging.Logger;
 
-import agent.Auction.Watcher;
 import se.sics.tac.aw.BidString;
 import se.sics.tac.aw.Quote;
 
@@ -70,12 +69,12 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 
 	public HotelAgent(Agent agent, List<HotelBooking> hotelStock) {
 		super(agent, hotelStock);
-		subscribeAll();
-		auctionsClosed = new boolean[8];
 	}
 
-	public void gameStarted() {
-		
+	public void gameStarted(List<HotelBooking> hotelStock) {
+		super.stock = hotelStock;
+		subscribeAll();
+		auctionsClosed = new boolean[8];
 	}
 	
     public void gameStopped() {
@@ -83,7 +82,6 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 			agent.getHotelAuction(day, true).removeWatcher(watcher);;
 			agent.getHotelAuction(day, false).removeWatcher(watcher);
 		}
-    	auctionsClosed = new boolean[8];
     }
 
 	private void subscribeAll() {
@@ -171,7 +169,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 				}
 			} else {
 				// failed to find a feasible solution to this package on specified days
-				
+				agent.requestPackageUpdate();
 			}
 		}
 		//updateBids(); // Bids are updated individually as initial quote updates come in

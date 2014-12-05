@@ -83,19 +83,16 @@ public class Agent extends AgentImpl {
         // Create auctions
         createAuctions();
 
-        log.info("Creating packages");
-        // Create clients and packages
-        packages = new ArrayList<Package>();
-        
+        // Create clients
         clients = new Client[NUM_CLIENTS];
         for (int i = 0; i < clients.length; i++) {
             clients[i] = new ClientFromTAC(agent, i);
-            packages.add(new Package(clients[i], 
-                clients[i].getPreferredArrivalDay(), 
-                clients[i].getPreferredDepartureDay()));
         }
 
         takeStock();
+
+        log.info("Creating packages");
+        createPackages();
 
         log.info("Creating subagents");
         // Create agents
@@ -104,9 +101,7 @@ public class Agent extends AgentImpl {
         entertainmentAgent = new EntertainmentAgent(this, entertainmentTickets);
 
         log.info("Start subagents");
-        flightAgent.fulfillPackages(packages);
-        hotelAgent.fulfillPackages(packages);
-        entertainmentAgent.fulfillPackages(packages);
+        fulfillPackages();
     }
 
     public void gameStopped() {
@@ -117,6 +112,20 @@ public class Agent extends AgentImpl {
         hotelAgent.gameStopped();
         entertainmentAgent.gameStopped();
     }
+
+    // Call from a SubAgent when a package becomes infeasible
+    public void alertInfeasible() {
+        // Tell subagents to drop everything
+        flightAgent.clearPackages();
+        hotelAgent.clearPackages();
+        entertainmentAgent.clearPackages();
+
+        // Re-create feasible packages
+        createPackages();
+
+        // Re-assign packages to agents
+        fulfillPackages();
+    }
     
     public TACAgent getTACAgent() {
     	return agent;
@@ -124,6 +133,23 @@ public class Agent extends AgentImpl {
 
     public long getTime() {
         return agent.getGameTime();
+    }
+
+    private void createPackages() {
+        // Create packages
+        packages = new ArrayList<Package>();
+        
+        for (int i = 0; i < clients.length; i++) {
+            packages.add(new Package(clients[i], 
+                clients[i].getPreferredArrivalDay(), 
+                clients[i].getPreferredDepartureDay()));
+        }
+    }
+
+    private void fulfillPackages() {
+        flightAgent.fulfillPackages(packages);
+        hotelAgent.fulfillPackages(packages);
+        entertainmentAgent.fulfillPackages(packages);
     }
 
     private void createAuctions() {
