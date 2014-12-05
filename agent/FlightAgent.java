@@ -43,6 +43,20 @@ public class FlightAgent extends SubAgent<FlightTicket> {
         }
     }
 
+    public float purchaseProbability(Auction<?> auction) {
+        // Assume purchase is certain
+        // TODO: be less naive?
+        return 1f;
+    }
+
+    public void clearPackages() {
+        // Tell bidders to clear packages
+        log.info("Clearing packages");
+        for (FlightBidder bidder : bidders.values()) {
+            bidder.clearPackages();
+        }
+    }
+
     public void fulfillPackages(List<Package> packages) {
         for (Package pack : packages) {
             fulfillPackage(pack);
