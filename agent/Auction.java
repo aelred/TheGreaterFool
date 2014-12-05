@@ -138,10 +138,15 @@ public abstract class Auction<T extends Buyable> {
      * @throws BidInUseException if the previously submitted bid has not yet been confirmed.
      */
     public void submitBid() throws BidInUseException {
-        if (awaitingConfirmation)
+        submitBid(false);
+    }
+    
+    public void submitBid(boolean copyToConsole) throws BidInUseException {
+    	if (awaitingConfirmation)
             throw new BidInUseException();
         BidString bs = generateBidString();
         awaitingConfirmation = true;
+        Agent.logMessage("auction" + Integer.toString(getAuctionID()), "Submitting: " + bs.getBidString());
         agent.submitBid(bs);
     }
     

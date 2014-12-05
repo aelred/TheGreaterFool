@@ -216,11 +216,14 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 				throw new AuctionClosedException();
 			int hqw = auc.getHQW();
 			auc.wipeBid();
+			if (auc.getAskPrice() < 1) {
+				auc.modifyBidPoint(intentions[dayHash] + intentions[hashForIndex(day, !tt)], 1);
+			}
 			if (intentions[dayHash] < hqw) { // on target to win surplus to requirement
 				auc.modifyBidPoint(intentions[dayHash] - hqw, auc.getAskPrice() + 1);
 			}
 			auc.modifyBidPoint(intentions[dayHash], auc.getAskPrice() + 50);
-			auc.submitBid();
+			auc.submitBid(true);
 		} catch (AuctionClosedException e) {
 			log.info("Attempted to update " + agent.getHotelAuction(day, tt).toString() + 
 					" after it had CLOSED");
@@ -228,7 +231,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		} catch (BidInUseException e) {
 			log.info("Attempted to update " + agent.getHotelAuction(day, tt).toString() + 
 					" while it was BUSY");
-			e.printStackTrace();
+			//e.printStackTrace();
 		}	
 	}
 	
