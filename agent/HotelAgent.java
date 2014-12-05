@@ -136,6 +136,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		int[] tempIntentions, tempAllocations;
 		Client c;
 		int cliNum = 0;
+		float[] avgDifs = hotelHist.averagePriceDifference();
 		for (Package p : packages) {
 			cliNum++;
 			log.info("Sorting preferences for package with days " + Integer.toString(p.getArrivalDay())
@@ -144,7 +145,12 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 			prefArrive = c.getPreferredArrivalDay();
 			prefDepart = c.getPreferredDepartureDay();
 			hotelPremium = c.getHotelPremium();
-			tt = hotelPremium / (prefDepart - prefArrive) > 35; // identify if tt is worth aiming for
+			//tt = hotelPremium / (prefDepart - prefArrive) > 35; // identify if tt is worth aiming for
+			int expectedExtra = 0; // expected extra for TT
+			for (day = prefArrive; day < prefDepart; day++) {
+				expectedExtra += avgDifs[day-1];
+			}
+			tt = hotelPremium > expectedExtra;
 			errCount = 0;
 			do {
 				err = false;
@@ -271,4 +277,29 @@ class AuctionClosedException extends Exception {
     public static final long serialVersionUID = 1L;
 }
 
-class HotelHistory extends ArrayList<HotelGame> {}
+class HotelHistory extends ArrayList<HotelGame> {
+	
+	public float[] averagePriceDifference() {
+		if (this.isEmpty())
+			return new float[]{25, 25, 25, 25};
+		float[] prices = new float[8];
+		int gameCount = 0;
+		for (HotelGame g : this) {
+			gameCount++;
+			for (int auction = 0; auction < 8; auction++) {
+				prices[auction] += g.getClosePrice(auction);
+			}
+		}
+		for (int auction = 0; auction < 8; auction++) {
+			prices[auction] = prices[auction] / gameCount;
+		}
+		float[] pds = new float[4];
+		for (int day = 0; day < 4; day++) {
+			pds[day] = prices[day+4] - prices[day];
+		}
+		return prices;
+	}
+	
+}
+
+

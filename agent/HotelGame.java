@@ -17,4 +17,8 @@ public class HotelGame {
 		}
 	}
 	
+	public float getClosePrice(int aucID) {
+		return askPrices[aucID][closedOn[aucID]];
+	}
+	
 }
