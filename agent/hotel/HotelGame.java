@@ -1,5 +1,7 @@
 package agent.hotel;
 
+import agent.Agent;
+
 public class HotelGame {
 
 	private float[][] askPrices = new float[8][9];
@@ -19,6 +21,21 @@ public class HotelGame {
 	
 	public float getClosePrice(int aucID) {
 		return askPrices[aucID][closedOn[aucID]];
+	}
+
+	public void dumpToConsole() {
+		String dump = "\n";
+		dump += "hotelGame\taskPrices:\n";
+		dump += "hotelGame\taucID\t0min\t1min\t2min\t3min\t4min\t5min\t6min\t7min\t8min\tclosed on\n";
+		for (int aucID = 0; aucID < 8; aucID++) {
+			dump += "hotelGame\t" + Integer.toString(aucID) + "\t";
+			for (int close = 0; close < 9; close++) {
+				dump += Float.toString(askPrices[aucID][close]) + "\t";
+			}
+			dump += Integer.toString(closedOn[aucID]);
+			dump += "\n";
+		}
+		Agent.logMessage("hotelGame", dump);
 	}
 	
 }

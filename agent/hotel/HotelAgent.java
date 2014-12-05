@@ -97,6 +97,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 			agent.getHotelAuction(day, false).removeWatcher(watcher);
 		}
     	hotelHist.add(currentGame);
+    	currentGame.dumpToConsole();
     }
 
 	private void subscribeAll() {
