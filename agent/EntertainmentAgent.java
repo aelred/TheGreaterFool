@@ -182,6 +182,11 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
         sellUnusedTickets();
     }
 
+    @Override
+    public float purchaseProbability(Auction<?> auction) {
+        return 1;
+    }
+
     // Static test methods //
 
     private static void addTickets(List<EntertainmentTicket> tickets, int count, int day, EntertainmentType type) {
