@@ -46,6 +46,13 @@ public class Agent extends AgentImpl {
         return null;
     }
 
+    /**
+     * called when the current list of packages contains an infeasible package
+     */
+    public void requestPackageUpdate() {
+    	//TODO implement update mechanism between this and the three SubAgents
+    }
+    
     private void takeStock() {
         flightTickets = new ArrayList<FlightTicket>();
         hotelBookings = new ArrayList<HotelBooking>();
