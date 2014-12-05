@@ -11,7 +11,6 @@ import java.util.logging.Logger;
 public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
     public static final Logger log = Logger.getLogger(Agent.log.getName() + ".entertainment");
 
-    private boolean firstRun = true;
     private List<Package> packages;
     private List<EntertainmentBidder> bidders = new ArrayList<EntertainmentBidder>();
 
@@ -60,6 +59,22 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
 
     public void gameStopped() {
         bidders.clear();
+    }
+
+    @Override
+    public void clearPackages() {
+        for (Package pkg : this.packages) {
+            pkg.clearEntertainmentTickets();
+        }
+        for (EntertainmentTicket ticket : stock) {
+            ticket.clearAssociatedPackage();
+        }
+
+        for (EntertainmentBidder bidder : bidders) {
+            bidder.cancelBid();
+        }
+        bidders.clear();
+        // TODO: clear any untaken sell bids
     }
 
     private List<Allocation> possibleAllocations() {
@@ -150,21 +165,6 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
     }
 
     public void fulfillPackages(List<Package> packages) {
-        if (!firstRun) {
-            for (Package pkg : this.packages) {
-                pkg.clearEntertainmentTickets();
-            }
-            for (EntertainmentTicket ticket : stock) {
-                ticket.clearAssociatedPackage();
-            }
-
-            for (EntertainmentBidder bidder : bidders) {
-                bidder.cancelBid();
-            }
-            bidders.clear();
-            // TODO: clear any untaken sell bids
-        }
-        firstRun = false;
         this.packages = packages;
 
         List<Allocation> allocations = possibleAllocations();
@@ -180,6 +180,11 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
         bidForUnfilledSlots();
 
         sellUnusedTickets();
+    }
+
+    @Override
+    public float purchaseProbability(Auction<?> auction) {
+        return 1;
     }
 
     // Static test methods //

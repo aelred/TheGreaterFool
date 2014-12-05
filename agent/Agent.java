@@ -107,7 +107,9 @@ public class Agent extends AgentImpl {
         entertainmentAgent.gameStopped();
     }
 
-    // Call from a SubAgent when a package becomes infeasible
+    /**
+     * called when the current list of packages contains an infeasible package
+     */
     public void alertInfeasible() {
         logMessage("MainAgent","Infeasible package update");
         Thread.dumpStack();
