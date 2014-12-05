@@ -45,13 +45,6 @@ public class Agent extends AgentImpl {
     protected String getUsage() {
         return null;
     }
-
-    /**
-     * called when the current list of packages contains an infeasible package
-     */
-    public void requestPackageUpdate() {
-    	//TODO implement update mechanism between this and the three SubAgents
-    }
     
     private void takeStock() {
         flightTickets = new ArrayList<FlightTicket>();
@@ -113,7 +106,9 @@ public class Agent extends AgentImpl {
         entertainmentAgent.gameStopped();
     }
 
-    // Call from a SubAgent when a package becomes infeasible
+    /**
+     * called when the current list of packages contains an infeasible package
+     */
     public void alertInfeasible() {
         // Tell subagents to drop everything
         flightAgent.clearPackages();
