@@ -9,7 +9,7 @@ import java.util.logging.Logger;
  * Manages allocation of {@link agent.EntertainmentTicket}s to {@link agent.Client}s.
  */
 public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
-    public static final Logger log = Logger.getLogger(EntertainmentAgent.class.getName());
+    public static final Logger log = Logger.getLogger(Agent.log.getName() + ".entertainment");
 
     private boolean firstRun = true;
     private List<Package> packages;
@@ -19,6 +19,7 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
 
     public EntertainmentAgent(Agent agent, List<EntertainmentTicket> stock) {
         super(agent, stock);
+        log.info("EntertainmentAgent constructed.");
     }
 
     protected class Allocation implements Comparable<Allocation> {
@@ -63,6 +64,7 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
 
     private List<Allocation> possibleAllocations() {
         List<Allocation> allocations = new ArrayList<Allocation>();
+        log.info("We already own " + stock.size() + " tickets.");
         for (Package pkg : packages) {
             for (EntertainmentTicket ticket : stock) {
                 if (pkg.getArrivalDay() <= ticket.getDay()
@@ -106,11 +108,13 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
      * @param ticket The {@link agent.EntertainmentTicket} that was bought.
      */
     public void ticketWon(EntertainmentBidder bidder, EntertainmentTicket ticket) {
+        log.info("Won ticket: " + ticket);
         this.stock.add(ticket);
     }
 
     private void bidFor(Package pkg, int day, EntertainmentType type, float bidPrice) {
         EntertainmentAuction auction = agent.getEntertainmentAuction(day, type);
+        log.info("Bidding for a ticket to " + type + " on " + day);
         EntertainmentBidder bidder = new EntertainmentBidder(this, auction, pkg, bidPrice);
         bidders.add(bidder);
     }
@@ -171,6 +175,7 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
             allocation.perform();
             System.out.printf("\t%s for $%d\n", allocation.ticket, allocation.getValue());
         }
+        log.info("Made " + bestAllocations.size() + " allocations out of a possible " + allocations.size() + ".");
 
         bidForUnfilledSlots();
 
