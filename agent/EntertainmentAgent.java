@@ -1,8 +1,6 @@
 package agent;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
@@ -12,9 +10,11 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
     public static final Logger log = Logger.getLogger(Agent.log.getName() + ".entertainment");
 
     private List<Package> packages;
-    private List<EntertainmentBidder> bidders = new ArrayList<EntertainmentBidder>();
+    private List<EntertainmentBuyer> buyers = new ArrayList<EntertainmentBuyer>();
+    private List<EntertainmentSeller> sellers = new ArrayList<EntertainmentSeller>();
 
     private static final float PROFIT_FACTOR = 0.2f;
+    private static final float TICKET_SELL_PRICE = 100f;
 
     public EntertainmentAgent(Agent agent, List<EntertainmentTicket> stock) {
         super(agent, stock);
@@ -58,6 +58,14 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
     }
 
     public void gameStopped() {
+        buyers.clear();
+        sellers.clear();
+    }
+
+    private void cancelBidders(List<? extends EntertainmentBidder> bidders) {
+        for (EntertainmentBidder bidder : bidders) {
+            bidder.cancelBid();
+        }
         bidders.clear();
     }
 
@@ -70,11 +78,8 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
             ticket.clearAssociatedPackage();
         }
 
-        for (EntertainmentBidder bidder : bidders) {
-            bidder.cancelBid();
-        }
-        bidders.clear();
-        // TODO: clear any untaken sell bids
+        cancelBidders(buyers);
+        cancelBidders(sellers);
     }
 
     private List<Allocation> possibleAllocations() {
@@ -117,21 +122,31 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
         return bestAllocations;
     }
 
-    /** Called by an {@link agent.EntertainmentBidder} when it obtains a ticket from an auction.
+    /** Called by an {@link agent.EntertainmentBuyer} when it obtains a ticket from an auction.
      *
-     * @param bidder The {@link agent.EntertainmentBidder}.
+     * @param bidder The {@link agent.EntertainmentBuyer}.
      * @param ticket The {@link agent.EntertainmentTicket} that was bought.
      */
-    public void ticketWon(EntertainmentBidder bidder, EntertainmentTicket ticket) {
+    public void ticketWon(EntertainmentBuyer bidder, EntertainmentTicket ticket) {
         log.info("Won ticket: " + ticket);
         this.stock.add(ticket);
+    }
+
+    /** Called by an {@link agent.EntertainmentSeller} when it sells one or more tickets in an auction.
+     *
+     * @param seller The {@link agent.EntertainmentSeller}.
+     * @param tickets A {@link java.util.List} of the {@link agent.EntertainmentTicket}s sold.
+     */
+    public void ticketsSold(EntertainmentSeller seller, List<EntertainmentTicket> tickets) {
+        log.info("Sold tickets.");
+        this.stock.removeAll(tickets);
     }
 
     private void bidFor(Package pkg, int day, EntertainmentType type, float bidPrice) {
         EntertainmentAuction auction = agent.getEntertainmentAuction(day, type);
         log.info("Bidding for a ticket to " + type + " on " + day);
-        EntertainmentBidder bidder = new EntertainmentBidder(this, auction, pkg, bidPrice);
-        bidders.add(bidder);
+        EntertainmentBuyer buyer = new EntertainmentBuyer(this, auction, pkg, bidPrice);
+        buyers.add(buyer);
     }
 
     private void bidForUnfilledSlots() {
@@ -150,17 +165,33 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
     }
 
     private void sellUnusedTickets() {
-        List<EntertainmentTicket> unusedTickets = new ArrayList<EntertainmentTicket>();
-        for (EntertainmentTicket ticket : stock) {
-            if (ticket.getAssociatedPackage() == null) {
-                unusedTickets.add(ticket);
+        Map<EntertainmentType, List<List<EntertainmentTicket>>> unusedTickets =
+                new HashMap<EntertainmentType, List<List<EntertainmentTicket>>>();
+                // Stores lists of tickets to be sold by entertainment type and day
+        for (EntertainmentType type : EntertainmentType.values()) {
+            unusedTickets.put(type, new ArrayList<List<EntertainmentTicket>>(Agent.NUM_DAYS));
+            for (int day = 0; day < Agent.NUM_DAYS; day++) {
+                unusedTickets.get(type).add(new ArrayList<EntertainmentTicket>(4));
             }
         }
 
-        // TODO: sell the tickets
-        System.out.println("Tickets to be sold:");
-        for (EntertainmentTicket ticket : unusedTickets) {
-            System.out.println("\t" + ticket);
+        Set<List<EntertainmentTicket>> ticketLists = new HashSet<List<EntertainmentTicket>>();
+                // Keeps track of which lists of tickets have anything in them
+
+        for (EntertainmentTicket ticket : stock) {
+            if (ticket.getAssociatedPackage() == null) {
+                List<EntertainmentTicket> ticketList = unusedTickets.get(ticket.getType()).get(ticket.getDay() - 1);
+                ticketList.add(ticket);
+                ticketLists.add(ticketList);
+            }
+        }
+
+        for (List<EntertainmentTicket> ticketList : ticketLists) {
+            EntertainmentTicket firstTicket = ticketList.get(0);
+            log.info("Selling " + ticketList.size() + " tickets to " + firstTicket.getType() + " on day " +
+                    firstTicket.getDay());
+            EntertainmentSeller seller = new EntertainmentSeller(this, ticketList, TICKET_SELL_PRICE);
+            sellers.add(seller);
         }
     }
 

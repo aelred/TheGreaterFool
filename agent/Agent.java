@@ -204,6 +204,10 @@ public class Agent extends AgentImpl {
         return hotelAuctions.get(new Pair<Boolean>(day,tt));
     }
 
+    public EntertainmentAuction getEntertainmentAuction(EntertainmentTicket ticket) {
+        return getEntertainmentAuction(ticket.getDay(), ticket.getType());
+    }
+
     public EntertainmentAuction getEntertainmentAuction(int day, EntertainmentType type) {
         return entertainmentAuctions.get(new Pair<EntertainmentType>(day,type));
     }
