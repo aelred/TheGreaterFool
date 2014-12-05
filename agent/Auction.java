@@ -80,6 +80,7 @@ public abstract class Auction<T extends Buyable> {
 
         for (Watcher watcher : watchers) {
             watcher.auctionTransaction(this, buyables);
+            if (buyables.isEmpty()) break;
         }
     }
 
