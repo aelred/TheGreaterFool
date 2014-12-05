@@ -14,7 +14,6 @@ public class Agent extends AgentImpl {
     public static final int NUM_DAYS = 5;
     public static final int NUM_CLIENTS = 8;
     
-
     private Client[] clients;
     private List<Package> packages;
 
@@ -33,6 +32,8 @@ public class Agent extends AgentImpl {
     private Map<Pair<Boolean>, FlightAuction> flightAuctions;
     private Map<Pair<Boolean>, HotelAuction> hotelAuctions;
     private Map<Pair<EntertainmentType>, EntertainmentAuction> entertainmentAuctions;
+    
+    private HotelHistory hotelHist = new HotelHistory();
 
     public static void logMessage(String identifier, String message) {
     	Logger.getLogger(log.getName() + "." + identifier).info(message);
@@ -44,13 +45,6 @@ public class Agent extends AgentImpl {
 
     protected String getUsage() {
         return null;
-    }
-
-    /**
-     * called when the current list of packages contains an infeasible package
-     */
-    public void requestPackageUpdate() {
-    	//TODO implement update mechanism between this and the three SubAgents
     }
     
     private void takeStock() {
@@ -97,7 +91,7 @@ public class Agent extends AgentImpl {
         log.info("Creating subagents");
         // Create agents
         flightAgent = new FlightAgent(this, flightTickets);
-        hotelAgent = new HotelAgent(this, hotelBookings);
+        hotelAgent = new HotelAgent(this, hotelBookings, hotelHist);
         entertainmentAgent = new EntertainmentAgent(this, entertainmentTickets);
 
         log.info("Start subagents");
@@ -115,11 +109,17 @@ public class Agent extends AgentImpl {
 
     // Call from a SubAgent when a package becomes infeasible
     public void alertInfeasible() {
-        // Tell subagents to drop everything
+        logMessage("MainAgent","Infeasible package update");
+        Thread.dumpStack();
+    	
+    	// Tell subagents to drop everything
         flightAgent.clearPackages();
         hotelAgent.clearPackages();
         entertainmentAgent.clearPackages();
 
+        // Retrieve probabilities of success and price estimates for each auction
+        
+        
         // Re-create feasible packages
         createPackages();
 

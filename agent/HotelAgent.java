@@ -60,6 +60,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 	private int[] held = new int[8];
 	private int[] intentions = new int[8];
 	private List<Package> mostRecentPackages;
+	private HotelHistory hotelHist;
 	
 	@SuppressWarnings("unused")
 	private boolean[] intendedHotel;
@@ -67,14 +68,14 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 	public static final Logger log = 
 	        Logger.getLogger(Agent.log.getName() + ".hotels");
 
+	public HotelAgent(Agent agent, List<HotelBooking> hotelStock, HotelHistory hh) {
+		this(agent,hotelStock);
+		hotelHist = hh;
+	}
+	
 	public HotelAgent(Agent agent, List<HotelBooking> hotelStock) {
 		super(agent, hotelStock);
-	}
-
-	public void gameStarted(List<HotelBooking> hotelStock) {
-		super.stock = hotelStock;
 		subscribeAll();
-		auctionsClosed = new boolean[8];
 	}
 	
     public void gameStopped() {
@@ -169,7 +170,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 				}
 			} else {
 				// failed to find a feasible solution to this package on specified days
-				agent.requestPackageUpdate();
+				agent.alertInfeasible();
 			}
 		}
 		//updateBids(); // Bids are updated individually as initial quote updates come in
@@ -234,6 +235,20 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		if (toReturn < 0 || toReturn > 7)
 			log.warning("hashForIndex invalid: " + Integer.toString(toReturn));
 		return toReturn;
+	}
+
+	
+	@Override
+	public void clearPackages() {
+		intentions = new int[8];
+		updateBids();
+	}
+
+	@Override
+	public float purchaseProbability(Auction<?> auction) {
+		int day = auction.getDay();
+		boolean tt = ((HotelAuction)auction).isTT();
+		return auctionsClosed[hashForIndex(day, tt)] ? 0 : 1;
 	}
 
 }
