@@ -80,6 +80,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 	public HotelAgent(Agent agent, List<HotelBooking> hotelStock) {
 		super(agent, hotelStock);
 		subscribeAll();
+		auctionsClosed = new boolean[8];
 	}
 	
     public void gameStopped() {
@@ -176,7 +177,8 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 				}
 			} else {
 				// failed to find a feasible solution to this package on specified days
-				agent.alertInfeasible();
+				Agent.logMessage("hotel", "Package " + Integer.toString(cliNum) + " infeasible");
+				// agent.alertInfeasible();
 			}
 		}
 		//updateBids(); // Bids are updated individually as initial quote updates come in
@@ -222,7 +224,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		} catch (AuctionClosedException e) {
 			log.info("Attempted to update " + agent.getHotelAuction(day, tt).toString() + 
 					" after it had CLOSED");
-			e.printStackTrace();
+			//e.printStackTrace();
 		} catch (BidInUseException e) {
 			log.info("Attempted to update " + agent.getHotelAuction(day, tt).toString() + 
 					" while it was BUSY");
