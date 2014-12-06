@@ -17,7 +17,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 
 	private static final boolean DEBUG = true;
 	private Auction.Watcher watcher = new Auction.Watcher() {
-		AgentLogger aucWatcher = hotelLogger.getSublogger("auctionWatcher");
+		AgentLogger aucWatcher = logger.getSublogger("auctionWatcher");
 		@Override
 		public void auctionQuoteUpdated(Auction<?> auction, Quote quote) {
 			aucWatcher.log("Hotel auction updating with day=" + Integer.toString(auction.getDay()),
@@ -80,17 +80,14 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 	@SuppressWarnings("unused")
 	private boolean[] intendedHotel;
 
-	public static AgentLogger hotelLogger;
-
 	public HotelAgent(Agent agent, List<HotelBooking> hotelStock, HotelHistory hh, AgentLogger logger) {
-		this(agent,hotelStock);
+		this(agent,hotelStock, logger);
 		hotelHist = hh;
 		currentGame = new HotelGame(logger.getSublogger("historyRecorder"));
-		HotelAgent.hotelLogger = logger;
 	}
 	
-	public HotelAgent(Agent agent, List<HotelBooking> hotelStock) {
-		super(agent, hotelStock);
+	public HotelAgent(Agent agent, List<HotelBooking> hotelStock, AgentLogger logger) {
+		super(agent, hotelStock, logger);
 		subscribeAll();
 		auctionsClosed = new boolean[8];
 	}
@@ -152,7 +149,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		float[] avgDifs = hotelHist.averagePriceDifference();
 		for (Package p : packages) {
 			cliNum++;
-			hotelLogger.log("Sorting preferences for package " + cliNum + " with days " 
+			logger.log("Sorting preferences for package " + cliNum + " with days " 
 					+ Integer.toString(p.getArrivalDay()) + " to " + Integer.toString(p.getDepartureDay()), AgentLogger.INFO);
 			c = p.getClient();
 			prefArrive = c.getPreferredArrivalDay();
@@ -196,7 +193,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 				}
 			} else {
 				// failed to find a feasible solution to this package on specified days
-				hotelLogger.log("Package " + Integer.toString(cliNum) + " infeasible, requesting package update",
+				logger.log("Package " + Integer.toString(cliNum) + " infeasible, requesting package update",
 						AgentLogger.WARNING);
 				// agent.alertInfeasible();
 			}
@@ -213,7 +210,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 						+ Integer.toString(p.getClient().getHotelPremium()) + ". Attempt to get "
 						+ (intendedHotel[cliNum-1] ? "TT" : "SS") + "\n";
 			}
-			hotelLogger.log(message, AgentLogger.INFO);
+			logger.log(message, AgentLogger.INFO);
 		}
 	}
 	
@@ -248,11 +245,11 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 			auc.modifyBidPoint(intentions[dayHash], auc.getAskPrice() + 50);
 			auc.submitBid(true);
 		} catch (AuctionClosedException e) {
-			hotelLogger.log("Attempted to update " + agent.getHotelAuction(day, tt).toString() + 
+			logger.log("Attempted to update " + agent.getHotelAuction(day, tt).toString() + 
 					" after it had CLOSED", AgentLogger.WARNING);
 			//e.printStackTrace();
 		} catch (BidInUseException e) {
-			hotelLogger.log("Attempted to update " + agent.getHotelAuction(day, tt).toString() + 
+			logger.log("Attempted to update " + agent.getHotelAuction(day, tt).toString() + 
 					" while it was BUSY", AgentLogger.WARNING);
 			//e.printStackTrace();
 		}	
@@ -265,10 +262,10 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 	 * @param tt - boolean, is the hotel choice TT?
 	 * @return
 	 */
-	private static int hashForIndex(int day, boolean tt) {
+	private int hashForIndex(int day, boolean tt) {
 		int toReturn = day + (tt ? 4 : 0) - 1;
 		if (toReturn < 0 || toReturn > 7)
-			hotelLogger.log("hashForIndex invalid: " + Integer.toString(toReturn), AgentLogger.WARNING);
+			logger.log("hashForIndex invalid: " + Integer.toString(toReturn), AgentLogger.WARNING);
 		return toReturn;
 	}
 

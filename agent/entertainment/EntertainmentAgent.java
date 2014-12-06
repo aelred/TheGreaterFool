@@ -10,6 +10,7 @@ import agent.Package;
 import agent.RandomClient;
 import agent.SubAgent;
 import agent.Package.PackageFullException;
+import agent.logging.AgentLogger;
 
 /**
  * Manages allocation of {@link agent.entertainment.EntertainmentTicket}s to {@link agent.Client}s.
@@ -24,8 +25,8 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
     private static final float PROFIT_FACTOR = 0.2f;
     private static final float TICKET_SELL_PRICE = 100f;
 
-    public EntertainmentAgent(Agent agent, List<EntertainmentTicket> stock) {
-        super(agent, stock);
+    public EntertainmentAgent(Agent agent, List<EntertainmentTicket> stock, AgentLogger logger) {
+        super(agent, stock, logger);
         log.info("EntertainmentAgent constructed.");
     }
 

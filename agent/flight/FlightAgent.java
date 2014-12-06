@@ -1,9 +1,11 @@
 package agent.flight;
 import se.sics.tac.aw.*;
+
 import java.util.*;
 import java.util.logging.Logger;
 
 import agent.*;
+import agent.logging.AgentLogger;
 
 public class FlightAgent extends SubAgent<FlightTicket> {
 
@@ -20,8 +22,8 @@ public class FlightAgent extends SubAgent<FlightTicket> {
     private final List<FlightTicket> unusedStock = 
         new ArrayList<FlightTicket>();
 
-    public FlightAgent(Agent agent, List<FlightTicket> stock) {
-        super(agent, stock);
+    public FlightAgent(Agent agent, List<FlightTicket> stock, AgentLogger logger) {
+        super(agent, stock, logger);
 
         // Add stock to unused stock
         for (FlightTicket ticket : stock) {

@@ -2,14 +2,18 @@ package agent;
 
 import java.util.List;
 
+import agent.logging.AgentLogger;
+
 public abstract class SubAgent<T extends Buyable> {
 
 	public final Agent agent;
 	protected final List<T> stock;
+	protected final AgentLogger logger;
 
-	public SubAgent(Agent agent, List<T> stock) {
+	public SubAgent(Agent agent, List<T> stock, AgentLogger logger) {
 		this.agent = agent;
 		this.stock = stock;
+		this.logger = logger;
 	}
 
     public abstract void gameStopped();

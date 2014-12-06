@@ -17,8 +17,6 @@ import se.sics.tac.util.ArgEnumerator;
 
 public class Agent extends AgentImpl {
 	
-	public static final Logger log =
-            Logger.getLogger(Agent.class.getName());
 	public static final AgentLogger mainLogger = new AgentLogger();
 	
     public static final int NUM_DAYS = 5;
