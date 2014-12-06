@@ -57,6 +57,15 @@ public class AgentLogger {
 		log(message,importance);
 	}
 	
+	public void logExceptionStack(Exception e, int importance) {
+		StackTraceElement[] stack = e.getStackTrace();
+		String message = "Exception stack dump:";
+		for (StackTraceElement ste : stack) {
+			message += "\n" + ste.toString() ;
+		}
+		log(message,importance);
+	}
+	
 	public void save() {
 		Identity parent = root.getParent();
 		root.setParent(null);

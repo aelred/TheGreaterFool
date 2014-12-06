@@ -11,21 +11,23 @@ import agent.Auction;
 import agent.BidInUseException;
 import agent.Buyable;
 import agent.Auction.Watcher;
+import agent.logging.AgentLogger;
 
 public abstract class EntertainmentBidder implements EntertainmentAuction.Watcher {
-    public static final Logger log = Logger.getLogger(Agent.log.getName() + ".entertainment.bidder");
     protected final EntertainmentAgent entAgent;
     protected final EntertainmentAuction auction;
     protected float bidPrice;
+    protected final AgentLogger logger;
 
-    public EntertainmentBidder(EntertainmentAgent entAgent, EntertainmentAuction auction) {
+    public EntertainmentBidder(EntertainmentAgent entAgent, EntertainmentAuction auction, AgentLogger logger) {
         this.entAgent = entAgent;
         this.auction = auction;
+        this.logger = logger;
     }
 
     protected void handleBidInUseException(BidInUseException ex) {
-        EntertainmentBidder.log.warning(ex.getMessage());
-        ex.printStackTrace();
+        logger.log(ex.getMessage(),AgentLogger.WARNING);
+        logger.logExceptionStack(ex, AgentLogger.WARNING);
     }
 
     public float getBidPrice() { return bidPrice; }

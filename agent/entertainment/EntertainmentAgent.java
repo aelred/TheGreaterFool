@@ -16,7 +16,6 @@ import agent.logging.AgentLogger;
  * Manages allocation of {@link agent.entertainment.EntertainmentTicket}s to {@link agent.Client}s.
  */
 public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
-    public static final Logger log = Logger.getLogger(Agent.log.getName() + ".entertainment");
 
     private List<Package> packages;
     private List<EntertainmentBuyer> buyers = new ArrayList<EntertainmentBuyer>();
@@ -27,7 +26,7 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
 
     public EntertainmentAgent(Agent agent, List<EntertainmentTicket> stock, AgentLogger logger) {
         super(agent, stock, logger);
-        log.info("EntertainmentAgent constructed.");
+        logger.log("EntertainmentAgent constructed.");
     }
 
     protected class Allocation implements Comparable<Allocation> {
@@ -93,7 +92,7 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
 
     private List<Allocation> possibleAllocations() {
         List<Allocation> allocations = new ArrayList<Allocation>();
-        log.info("We already own " + stock.size() + " tickets.");
+        logger.log("We already own " + stock.size() + " tickets.");
         for (Package pkg : packages) {
             for (EntertainmentTicket ticket : stock) {
                 if (pkg.getArrivalDay() <= ticket.getDay()
@@ -137,7 +136,7 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
      * @param ticket The {@link agent.entertainment.EntertainmentTicket} that was bought.
      */
     public void ticketWon(EntertainmentBuyer bidder, EntertainmentTicket ticket) {
-        log.info("Won ticket: " + ticket);
+        logger.log("Won ticket: " + ticket);
         this.stock.add(ticket);
     }
 
@@ -147,14 +146,14 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
      * @param tickets A {@link java.util.List} of the {@link agent.entertainment.EntertainmentTicket}s sold.
      */
     public void ticketsSold(EntertainmentSeller seller, List<EntertainmentTicket> tickets) {
-        log.info("Sold tickets.");
+        logger.log("Sold tickets.");
         this.stock.removeAll(tickets);
     }
 
     private void bidFor(Package pkg, int day, EntertainmentType type, float bidPrice) {
         EntertainmentAuction auction = agent.getEntertainmentAuction(day, type);
-        log.info("Bidding for a ticket to " + type + " on " + day);
-        EntertainmentBuyer buyer = new EntertainmentBuyer(this, auction, pkg, bidPrice);
+        logger.log("Bidding for a ticket to " + type + " on " + day);
+        EntertainmentBuyer buyer = new EntertainmentBuyer(this, auction, pkg, bidPrice, logger.getSublogger("bidder"));
         buyers.add(buyer);
     }
 
@@ -197,9 +196,10 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
 
         for (List<EntertainmentTicket> ticketList : ticketLists) {
             EntertainmentTicket firstTicket = ticketList.get(0);
-            log.info("Selling " + ticketList.size() + " tickets to " + firstTicket.getType() + " on day " +
+            logger.log("Selling " + ticketList.size() + " tickets to " + firstTicket.getType() + " on day " +
                     firstTicket.getDay());
-            EntertainmentSeller seller = new EntertainmentSeller(this, ticketList, TICKET_SELL_PRICE);
+            EntertainmentSeller seller = new EntertainmentSeller(this, ticketList, TICKET_SELL_PRICE, 
+            		logger.getSublogger("seller"));
             sellers.add(seller);
         }
     }
@@ -215,7 +215,7 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
             allocation.perform();
             System.out.printf("\t%s for $%d\n", allocation.ticket, allocation.getValue());
         }
-        log.info("Made " + bestAllocations.size() + " allocations out of a possible " + allocations.size() + ".");
+        logger.log("Made " + bestAllocations.size() + " allocations out of a possible " + allocations.size() + ".");
 
         bidForUnfilledSlots();
 
@@ -271,7 +271,8 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
 
         System.out.println("Tickets:");
         for (int i = 0; i < tickets.size(); i++) { System.out.println("\t" + tickets.get(i)); }
-        EntertainmentAgent entertainmentAgent = new EntertainmentAgent(new Agent(), tickets);
+        EntertainmentAgent entertainmentAgent = new EntertainmentAgent(new Agent(), tickets, 
+        		new AgentLogger().getSublogger("entertainment.testing"));
         entertainmentAgent.fulfillPackages(packages);
     }
 }

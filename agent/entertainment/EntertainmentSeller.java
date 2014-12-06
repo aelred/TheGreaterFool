@@ -8,15 +8,16 @@ import agent.Agent;
 import agent.Auction;
 import agent.BidInUseException;
 import agent.Buyable;
+import agent.logging.AgentLogger;
 
 public class EntertainmentSeller extends EntertainmentBidder {
-    public static final Logger log = Logger.getLogger(Agent.log.getName() + ".entertainment.seller");
 
     private final List<EntertainmentTicket> tickets = new ArrayList<EntertainmentTicket>(4);
     private float sellPrice;
 
-    public EntertainmentSeller(EntertainmentAgent entAgent, List<EntertainmentTicket> tickets, float bidPrice) {
-        super(entAgent, entAgent.agent.getEntertainmentAuction(tickets.get(0)));
+    public EntertainmentSeller(EntertainmentAgent entAgent, List<EntertainmentTicket> tickets, float bidPrice, 
+    		AgentLogger logger) {
+        super(entAgent, entAgent.agent.getEntertainmentAuction(tickets.get(0)), logger);
         EntertainmentTicket firstTicket = tickets.get(0);
         for (EntertainmentTicket ticket : tickets) {
             if (ticket.getDay() != firstTicket.getDay() || ticket.getType() != firstTicket.getType()) {

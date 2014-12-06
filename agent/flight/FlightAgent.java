@@ -13,9 +13,6 @@ public class FlightAgent extends SubAgent<FlightTicket> {
     public static final double PRICE_MAX = 800;
     public static final int MAX_TIME = 54;
 
-    public static final Logger log = 
-        Logger.getLogger(Agent.log.getName() + ".flights");
-
     private Map<FlightAuction, FlightBidder> bidders = 
         new HashMap<FlightAuction, FlightBidder>();
 
@@ -34,14 +31,14 @@ public class FlightAgent extends SubAgent<FlightTicket> {
         for (int day = 1; day < Agent.NUM_DAYS; day ++) {
             FlightAuction auctionOut = agent.getFlightAuction(day, true);
             FlightAuction auctionIn = agent.getFlightAuction(day+1, false);
-            bidders.put(auctionOut, new FlightBidder(this, auctionOut));
-            bidders.put(auctionIn, new FlightBidder(this, auctionIn));
+            bidders.put(auctionOut, new FlightBidder(this, auctionOut, logger.getSublogger("outBidder")));
+            bidders.put(auctionIn, new FlightBidder(this, auctionIn, logger.getSublogger("inBidder")));
         }
     }
 
     public void gameStopped() {
         // Tell bidders to stop
-        log.info("Stopping FlightAgent");
+        logger.log("Stopping FlightAgent");
         for (FlightBidder bidder : bidders.values()) {
             bidder.gameStopped();
         }
@@ -55,7 +52,7 @@ public class FlightAgent extends SubAgent<FlightTicket> {
 
     public void clearPackages() {
         // Tell bidders to clear packages
-        log.info("Clearing packages");
+        logger.log("Clearing packages");
         for (FlightBidder bidder : bidders.values()) {
             bidder.clearPackages();
         }
@@ -68,14 +65,14 @@ public class FlightAgent extends SubAgent<FlightTicket> {
     }
 
     public void addTicket(FlightTicket ticket) {
-        log.info("Got ticket " + ticket.toString());
+        logger.log("Got ticket " + ticket.toString());
         this.stock.add(ticket);
     }
 
     private void fulfillPackage(agent.Package pack) {
-        log.info("Fullfill package");
-        log.info("Arrival: " + pack.getArrivalDay());
-        log.info("Departure: " + pack.getDepartureDay());
+        logger.log("Fullfill package");
+        logger.log("Arrival: " + pack.getArrivalDay());
+        logger.log("Departure: " + pack.getDepartureDay());
 
         // Check if arrival ticket already in unused stock
         FlightTicket arrival = null;
@@ -89,12 +86,12 @@ public class FlightAgent extends SubAgent<FlightTicket> {
 
         if (arrival != null) {
             // Use unused ticket
-            log.info("Using unused arrival ticket");
+            logger.log("Using unused arrival ticket");
             pack.setArrivalTicket(arrival);
             unusedStock.remove(arrival);
         } else {
             // Start bidding for ticket
-            log.info("Bidding for arrival ticket");
+            logger.log("Bidding for arrival ticket");
             bidders.get(agent.getFlightAuction(pack.getArrivalDay(), true))
                 .addPackage(pack);
         }
@@ -111,12 +108,12 @@ public class FlightAgent extends SubAgent<FlightTicket> {
 
         if (departure != null) {
             // Use unused ticket
-            log.info("Using unused departure ticket");
+            logger.log("Using unused departure ticket");
             pack.setDepartureTicket(departure);
             unusedStock.remove(departure);
         } else {
             // Start bidding for ticket
-            log.info("Bidding for departure ticket");
+            logger.log("Bidding for departure ticket");
             bidders.get(agent.getFlightAuction(pack.getDepartureDay(), false))
                 .addPackage(pack);
         }

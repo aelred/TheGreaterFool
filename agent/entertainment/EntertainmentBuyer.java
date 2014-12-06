@@ -10,6 +10,7 @@ import agent.Auction;
 import agent.BidInUseException;
 import agent.Buyable;
 import agent.Package;
+import agent.logging.AgentLogger;
 
 public class EntertainmentBuyer extends EntertainmentBidder {
     private final Package pkg;
@@ -17,8 +18,9 @@ public class EntertainmentBuyer extends EntertainmentBidder {
     public EntertainmentAuction getAuction() { return auction; }
     public Package getPackage() { return pkg; }
 
-    public EntertainmentBuyer(EntertainmentAgent entAgent, EntertainmentAuction auction, Package pkg, float bidPrice) {
-        super(entAgent, auction);
+    public EntertainmentBuyer(EntertainmentAgent entAgent, EntertainmentAuction auction, Package pkg, float bidPrice,
+    		AgentLogger logger) {
+        super(entAgent, auction, logger);
         this.pkg = pkg;
         auction.addWatcher(this);
         bid(bidPrice);
