@@ -98,10 +98,9 @@ public class Agent extends AgentImpl {
 
         mainLogger.log("Creating subagents");
         // Create agents
-        flightAgent = new FlightAgent(this, flightTickets);
-        AgentLogger hotelLogger = mainLogger.getSublogger("hotel");
-        hotelAgent = new HotelAgent(this, hotelBookings, hotelHist, hotelLogger);
-        entertainmentAgent = new EntertainmentAgent(this, entertainmentTickets);
+        flightAgent = new FlightAgent(this, flightTickets, mainLogger.getSublogger("flight"));
+        hotelAgent = new HotelAgent(this, hotelBookings, hotelHist, mainLogger.getSublogger("hotel"));
+        entertainmentAgent = new EntertainmentAgent(this, entertainmentTickets, mainLogger.getSublogger("entertainment"));
 
         mainLogger.log("Starting subagents");
         fulfillPackages();
