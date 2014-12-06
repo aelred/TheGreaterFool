@@ -10,7 +10,7 @@ import agent.flight.FlightAgent;
 import agent.flight.FlightTicket;
 import agent.flight.FlightAuction;
 import agent.hotel.*;
-
+import agent.logging.AgentLogger;
 import se.sics.tac.aw.*;
 import se.sics.tac.util.ArgEnumerator;
 
@@ -19,6 +19,7 @@ public class Agent extends AgentImpl {
 	
 	public static final Logger log =
             Logger.getLogger(Agent.class.getName());
+	public static final AgentLogger mainLogger = new AgentLogger();
 	
     public static final int NUM_DAYS = 5;
     public static final int NUM_CLIENTS = 8;
@@ -45,7 +46,7 @@ public class Agent extends AgentImpl {
     private HotelHistory hotelHist = new HotelHistory();
 
     public static void logMessage(String identifier, String message) {
-    	Logger.getLogger(log.getName() + "." + identifier).info(message);
+    	Logger.getLogger(identifier).info(message);
     }
     
     protected void init(ArgEnumerator args) {
@@ -82,6 +83,7 @@ public class Agent extends AgentImpl {
 
     public void gameStarted() {
         log.info("Game started");
+        mainLogger.logMessage("Game Started", 1);
 
         // Create auctions
         createAuctions();
@@ -100,7 +102,8 @@ public class Agent extends AgentImpl {
         log.info("Creating subagents");
         // Create agents
         flightAgent = new FlightAgent(this, flightTickets);
-        hotelAgent = new HotelAgent(this, hotelBookings, hotelHist);
+        AgentLogger hotelLogger = mainLogger.getSublogger("hotel");
+        hotelAgent = new HotelAgent(this, hotelBookings, hotelHist, hotelLogger);
         entertainmentAgent = new EntertainmentAgent(this, entertainmentTickets);
 
         log.info("Start subagents");
@@ -109,6 +112,8 @@ public class Agent extends AgentImpl {
 
     public void gameStopped() {
         log.info("Game stopped");
+        mainLogger.logMessage("Game stopped", AgentLogger.INFO);
+        mainLogger.save();
 
         // Tell subagents to stop
         flightAgent.gameStopped();
@@ -189,7 +194,7 @@ public class Agent extends AgentImpl {
         }
     }
 
-    private Auction getAuctionByID(int auctionID) {
+    private Auction<?> getAuctionByID(int auctionID) {
         int day = TACAgent.getAuctionDay(auctionID);
         int type = TACAgent.getAuctionType(auctionID);
         switch (TACAgent.getAuctionCategory(auctionID)) {

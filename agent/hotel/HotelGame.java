@@ -1,11 +1,16 @@
 package agent.hotel;
 
-import agent.Agent;
+import agent.logging.AgentLogger;
 
 public class HotelGame {
 
 	private float[][] askPrices = new float[8][9];
 	private int[] closedOn = new int[8];
+	private static AgentLogger histLogger;
+	
+	public HotelGame(AgentLogger l) {
+		histLogger = l;
+	}
 	
 	public void setAskPrice(int day, boolean tt, float price, int elapsedMinutes, boolean closed) {
 		int hotelInd = day + (tt ? 4 : 0) - 1;
@@ -35,7 +40,7 @@ public class HotelGame {
 			dump += Integer.toString(closedOn[aucID]);
 			dump += "\n";
 		}
-		Agent.logMessage("hotelGame", dump);
+		histLogger.logMessage(dump, AgentLogger.INFO);
 	}
 	
 }

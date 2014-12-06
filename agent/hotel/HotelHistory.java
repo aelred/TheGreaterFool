@@ -4,6 +4,8 @@ import java.util.ArrayList;
 
 public class HotelHistory extends ArrayList<HotelGame> {
 	
+	private static final long serialVersionUID = 1L;
+
 	public float[] averagePriceDifference() {
 		if (this.isEmpty())
 			return new float[]{25, 25, 25, 25};
