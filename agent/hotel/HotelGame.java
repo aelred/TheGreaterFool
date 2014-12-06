@@ -40,7 +40,7 @@ public class HotelGame {
 			dump += Integer.toString(closedOn[aucID]);
 			dump += "\n";
 		}
-		histLogger.logMessage(dump, AgentLogger.INFO);
+		histLogger.log(dump, AgentLogger.INFO);
 	}
 	
 }

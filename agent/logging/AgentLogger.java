@@ -38,10 +38,23 @@ public class AgentLogger {
 		return q;
 	}
 	
-	public void logMessage(String message, int importance) {
+	public void log(String message) {
+		log(message,AgentLogger.INFO);
+	}
+	
+	public void log(String message, int importance) {
 		agent.Agent.logMessage(root.toString(), message);
 		LogEntry m = new LogEntry(message);
 		root.logMessage(m,importance);
+	}
+	
+	public void logStack(int importance) {
+		StackTraceElement[] stack = Thread.getAllStackTraces().get(Thread.currentThread());
+		String message = "Stack dump:";
+		for (StackTraceElement ste : stack) {
+			message += "\n" + ste.toString() ;
+		}
+		log(message,importance);
 	}
 	
 	public void save() {

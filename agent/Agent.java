@@ -50,7 +50,7 @@ public class Agent extends AgentImpl {
     }
     
     protected void init(ArgEnumerator args) {
-        log.info("Initializing");
+        mainLogger.log("Initialising", AgentLogger.INFO);
     }
 
     protected String getUsage() {
@@ -82,9 +82,8 @@ public class Agent extends AgentImpl {
     }
 
     public void gameStarted() {
-        log.info("Game started");
-        mainLogger.logMessage("Game Started", 1);
-
+        mainLogger.log("Game started");
+        
         // Create auctions
         createAuctions();
 
@@ -96,23 +95,22 @@ public class Agent extends AgentImpl {
 
         takeStock();
 
-        log.info("Creating packages");
+        mainLogger.log("Creating packages");
         createPackages();
 
-        log.info("Creating subagents");
+        mainLogger.log("Creating subagents");
         // Create agents
         flightAgent = new FlightAgent(this, flightTickets);
         AgentLogger hotelLogger = mainLogger.getSublogger("hotel");
         hotelAgent = new HotelAgent(this, hotelBookings, hotelHist, hotelLogger);
         entertainmentAgent = new EntertainmentAgent(this, entertainmentTickets);
 
-        log.info("Start subagents");
+        mainLogger.log("Starting subagents");
         fulfillPackages();
     }
 
     public void gameStopped() {
-        log.info("Game stopped");
-        mainLogger.logMessage("Game stopped", AgentLogger.INFO);
+        mainLogger.log("Game stopped", AgentLogger.INFO);
         mainLogger.save();
 
         // Tell subagents to stop
@@ -125,8 +123,8 @@ public class Agent extends AgentImpl {
      * called when the current list of packages contains an infeasible package
      */
     public void alertInfeasible() {
-        logMessage("MainAgent","Infeasible package update");
-        Thread.dumpStack();
+        mainLogger.log("Updating packages after feasibility lost");
+        //mainLogger.logStack(AgentLogger.INFO);
     	
     	// Tell subagents to drop everything
         flightAgent.clearPackages();
@@ -169,7 +167,7 @@ public class Agent extends AgentImpl {
     }
 
     private void createAuctions() {
-        log.info("Creating auctions");
+    	mainLogger.log("Creating auctions");
         flightAuctions = new HashMap<Pair<Boolean>, FlightAuction>();
         hotelAuctions = new HashMap<Pair<Boolean>, HotelAuction>();
         entertainmentAuctions = 
