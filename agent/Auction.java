@@ -26,7 +26,7 @@ public abstract class Auction<T extends Buyable> {
     	return day;
     }
     
-    protected abstract int getAuctionID();
+    public abstract int getAuctionID();
 
     protected int getAuctionID(int category, int type) {
         return TACAgent.getAuctionFor(category, type, day);

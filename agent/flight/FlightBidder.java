@@ -1,8 +1,10 @@
-package agent;
+package agent.flight;
 
 import se.sics.tac.aw.BidString;
 import se.sics.tac.aw.Quote;
 import se.sics.tac.aw.Transaction;
+
+import agent.*;
 
 import java.util.*;
 import java.util.logging.Logger;
@@ -19,7 +21,7 @@ public class FlightBidder implements Auction.Watcher {
     private final FlightAgent flightAgent;
     private final FlightAuction auction;
     private final FlightPriceMonitor monitor;
-    private final List<Package> packages = new ArrayList<Package>();
+    private final List<agent.Package> packages = new ArrayList<agent.Package>();
     private boolean bidDirtyFlag = false;
     private boolean gameStarted = true;
 
@@ -43,7 +45,7 @@ public class FlightBidder implements Auction.Watcher {
         gameStarted = false;
     }
 
-    public void addPackage(Package pack) {
+    public void addPackage(agent.Package pack) {
         log.info("Adding package");
         packages.add(pack);
         refreshBid();
@@ -93,7 +95,7 @@ public class FlightBidder implements Auction.Watcher {
             // Fulfill packages one-by-one.
             // There should always be exactly the same number of tickets
             // as packages.
-            Package pack = packages.remove(0);
+            agent.Package pack = packages.remove(0);
             if (this.auction.getArrival()) {
                 pack.setArrivalTicket(ticket);
             } else {

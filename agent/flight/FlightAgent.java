@@ -1,7 +1,9 @@
-package agent;
+package agent.flight;
 import se.sics.tac.aw.*;
 import java.util.*;
 import java.util.logging.Logger;
+
+import agent.*;
 
 public class FlightAgent extends SubAgent<FlightTicket> {
 
@@ -57,8 +59,8 @@ public class FlightAgent extends SubAgent<FlightTicket> {
         }
     }
 
-    public void fulfillPackages(List<Package> packages) {
-        for (Package pack : packages) {
+    public void fulfillPackages(List<agent.Package> packages) {
+        for (agent.Package pack : packages) {
             fulfillPackage(pack);
         }
     }
@@ -68,7 +70,7 @@ public class FlightAgent extends SubAgent<FlightTicket> {
         this.stock.add(ticket);
     }
 
-    private void fulfillPackage(Package pack) {
+    private void fulfillPackage(agent.Package pack) {
         log.info("Fullfill package");
         log.info("Arrival: " + pack.getArrivalDay());
         log.info("Departure: " + pack.getDepartureDay());

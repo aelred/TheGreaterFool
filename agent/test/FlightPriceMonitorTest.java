@@ -1,7 +1,7 @@
 package agent.test;
 
-import agent.FlightPriceMonitor;
-import agent.FlightAuction;
+import agent.flight.FlightPriceMonitor;
+import agent.flight.FlightAuction;
 
 import java.util.*;
 import org.junit.Test;

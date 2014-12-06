@@ -1,6 +1,8 @@
-package agent;
+package agent.flight;
 
 import se.sics.tac.aw.TACAgent;
+
+import agent.*;
 
 public class FlightAuction extends Auction<FlightTicket> {
 	private boolean arrival;
@@ -14,7 +16,7 @@ public class FlightAuction extends Auction<FlightTicket> {
         return arrival;
     }
 
-	protected int getAuctionID() {
+	public int getAuctionID() {
 		return getAuctionID(TACAgent.CAT_FLIGHT, 
 			arrival ? TACAgent.TYPE_INFLIGHT : TACAgent.TYPE_OUTFLIGHT);
 	}

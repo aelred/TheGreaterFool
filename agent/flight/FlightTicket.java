@@ -1,4 +1,6 @@
-package agent;
+package agent.flight;
+
+import agent.*;
 
 public class FlightTicket extends Buyable {
     private final boolean arrival;

@@ -1,4 +1,6 @@
-package agent;
+package agent.flight;
+
+import agent.*;
 
 import java.util.*;
 

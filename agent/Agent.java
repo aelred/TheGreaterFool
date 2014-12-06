@@ -6,6 +6,9 @@ import agent.entertainment.EntertainmentAgent;
 import agent.entertainment.EntertainmentAuction;
 import agent.entertainment.EntertainmentTicket;
 import agent.entertainment.EntertainmentType;
+import agent.flight.FlightAgent;
+import agent.flight.FlightTicket;
+import agent.flight.FlightAuction;
 import agent.hotel.*;
 
 import se.sics.tac.aw.*;

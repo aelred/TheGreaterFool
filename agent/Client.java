@@ -7,6 +7,7 @@ import java.util.Comparator;
 
 import agent.entertainment.EntertainmentType;
 import agent.hotel.HotelBooking;
+import agent.flight.FlightTicket;
 
 public abstract class Client {
     public abstract int getPreferredArrivalDay();

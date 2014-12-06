@@ -7,6 +7,7 @@ import java.util.TreeMap;
 import agent.entertainment.EntertainmentTicket;
 import agent.entertainment.EntertainmentType;
 import agent.hotel.HotelBooking;
+import agent.flight.FlightTicket;
 
 /**
  * Represents the actual package being given to a client, as opposed to their preferences.
