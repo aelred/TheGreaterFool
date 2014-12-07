@@ -28,7 +28,7 @@ public class AgentLogger {
 		return new AgentLogger(i);
 	}
 	
-	private static Queue<String> parseQueue(String path) {
+	public static Queue<String> parseQueue(String path) {
 		Queue<String> q = new LinkedList<String>();
 		if (path.isEmpty())
 			return q;

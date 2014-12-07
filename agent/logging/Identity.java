@@ -13,7 +13,7 @@ public class Identity implements Serializable {
 	private Identity parent;
 	private List<Identity> children;
 	private List<LogEntry> infoLog, warningLog, errorLog;
-	
+
 	public Identity(String name, Identity parent) {
 		this.name = name;
 		this.parent = parent;
@@ -22,7 +22,7 @@ public class Identity implements Serializable {
 		warningLog = new ArrayList<LogEntry>();
 		errorLog = new ArrayList<LogEntry>();
 	}
-	
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o)
@@ -35,19 +35,19 @@ public class Identity implements Serializable {
 			return true;
 		return false;
 	}
-	
+
 	public String getName() {
 		return name;
 	}
-	
+
 	public Identity getParent() {
 		return parent;
 	}
-	
+
 	public List<Identity> getChildren() {
 		return children;
 	}
-	
+
 	private Identity getChild(String childName) {
 		for (Identity i : children) {
 			if (i.getName().equals(childName))
@@ -55,8 +55,9 @@ public class Identity implements Serializable {
 		}
 		return null;
 	}
-	
-	public Identity getChild(Queue<String> childPath) throws NoSuchChildException {
+
+	public Identity getDescendent(Queue<String> childPath)
+			throws NoSuchChildException {
 		if (childPath.isEmpty())
 			return this;
 		Identity child = getChild(childPath.peek());
@@ -64,41 +65,46 @@ public class Identity implements Serializable {
 			throw new NoSuchChildException(this);
 		}
 		childPath.remove();
-		return child.getChild(childPath);
+		return child.getDescendent(childPath);
 	}
-	
+
+	public Identity getDescendent(String childPath) throws NoSuchChildException {
+		return getDescendent(AgentLogger.parseQueue(childPath));
+	}
+
 	private Identity createChild(Queue<String> childPath) {
-		if (childPath.isEmpty()) 
+		if (childPath.isEmpty())
 			return this;
 		Identity newChild = new Identity(childPath.remove(), this);
 		children.add(newChild);
 		return newChild.createChild(childPath);
 	}
-	
+
 	public Identity getChildWithCreation(Queue<String> childPath) {
 		try {
-			return getChild(childPath);
+			return getDescendent(childPath);
 		} catch (NoSuchChildException e) {
 			Identity furthestChild = e.getFurthestChild();
 			return furthestChild.createChild(childPath);
 		}
 	}
-	
+
 	@Override
 	public String toString() {
 		if (parent == null)
 			return name;
 		return parent.toString() + "." + name;
 	}
-	
-	public String relativePath(Identity ancestor) throws NoSuchAncestorException {
-		if (parent == null) 
+
+	public String relativePath(Identity ancestor)
+			throws NoSuchAncestorException {
+		if (parent == null)
 			throw new NoSuchAncestorException();
 		if (parent.equals(ancestor))
 			return "." + name;
 		return parent.relativePath(ancestor) + "." + name;
 	}
-	
+
 	public void logMessage(LogEntry m, int importance) {
 		m.setAuthor(this);
 		if (importance < 2)
@@ -108,19 +114,41 @@ public class Identity implements Serializable {
 		else
 			errorLog.add(m);
 	}
-	
+
 	public void setParent(Identity i) {
 		parent = i;
 	}
 
-	public ArrayList<LogEntry> getLog() {
+	public ArrayList<LogEntry> getAllLogs(int importance) {
 		ArrayList<LogEntry> log = new ArrayList<LogEntry>();
-		log.addAll(infoLog);
-		log.addAll(warningLog);
-		log.addAll(errorLog);
+		log.addAll(getOwnLogs(importance));
 		for (Identity child : children) {
-			log.addAll(child.getLog());
+			log.addAll(child.getAllLogs(importance));
 		}
+		return log;
+	}
+
+	public String getIDTreeString() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public ArrayList<LogEntry> getDescLogs(int importance) {
+		ArrayList<LogEntry> log = new ArrayList<LogEntry>();
+		for (Identity child : children) {
+			log.addAll(child.getAllLogs(importance));
+		}
+		return log;
+	}
+	
+	public ArrayList<LogEntry> getOwnLogs(int importance) {
+		ArrayList<LogEntry> log = new ArrayList<LogEntry>();
+		if (importance >= AgentLogger.INFO)
+			log.addAll(infoLog);
+		if (importance >= AgentLogger.WARNING)
+			log.addAll(warningLog);
+		if (importance >= AgentLogger.ERROR)
+			log.addAll(errorLog);
 		return log;
 	}
 }
