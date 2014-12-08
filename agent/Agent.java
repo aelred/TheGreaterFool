@@ -93,14 +93,14 @@ public class Agent extends AgentImpl {
 
         takeStock();
 
-        mainLogger.log("Creating packages");
-        createPackages();
-
         mainLogger.log("Creating subagents");
         // Create agents
         flightAgent = new FlightAgent(this, flightTickets, mainLogger.getSublogger("flight"));
         hotelAgent = new HotelAgent(this, hotelBookings, hotelHist, mainLogger.getSublogger("hotel"));
         entertainmentAgent = new EntertainmentAgent(this, entertainmentTickets, mainLogger.getSublogger("entertainment"));
+
+        mainLogger.log("Creating packages");
+        createPackages();
 
         mainLogger.log("Starting subagents");
         fulfillPackages();
@@ -146,14 +146,49 @@ public class Agent extends AgentImpl {
         return agent.getGameTime();
     }
 
+    // Return probability this package can be fulfilled
+    private float getPackageProbability(Package pack) {
+        float prob = 1f;
+
+        // Get flight probabilities
+        int arrive = pack.getArrivalDay();
+        prob *= flightAgent.purchaseProbability(getFlightAuction(arrive, true));
+        int depart = pack.getDepartureDay();
+        prob *= flightAgent.purchaseProbability(getFlightAuction(depart, false));
+
+        // Get hotel probabilities
+        for (int day = arrive; day < depart-1; day++) {
+            float probTT = hotelAgent.purchaseProbability(getHotelAuction(day, true));
+            float probSS = hotelAgent.purchaseProbability(getHotelAuction(day, false));
+            prob *= probTT + probSS - (probTT * probSS);
+        }
+
+        return prob;
+    }
+
     private void createPackages() {
         // Create packages
         packages = new ArrayList<Package>();
         
         for (int i = 0; i < clients.length; i++) {
-            packages.add(new Package(clients[i], 
-                clients[i].getPreferredArrivalDay(), 
-                clients[i].getPreferredDepartureDay()));
+            // Select viable packages with highest utility
+            // TODO: Take into account predicted cost
+            Package bestPackage = null;
+            int bestUtility = Integer.MIN_VALUE;
+
+            for (int arrive = 1; arrive < NUM_DAYS-1; arrive++) {
+                for (int depart = arrive + 1; depart < NUM_DAYS; depart++) {
+                    Package pack = new Package(clients[i], arrive, depart);
+                    // Check if package is viable
+                    float prob = getPackageProbability(pack);
+                    if (pack.potentialUtility() > bestUtility && prob > 0f) {
+                        bestUtility = pack.potentialUtility();
+                        bestPackage = pack;
+                    }
+                }
+            }
+
+            packages.add(bestPackage);
         }
     }
 

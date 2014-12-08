@@ -127,8 +127,12 @@ public class Package {
         return funBonus;
     }
 
+    public int potentialUtility() {
+        return 1000 - travelPenalty() + hotelBonus() + funBonus();
+    }
+
     public int clientUtility() {
-        return isFeasible() ? 1000 - travelPenalty() + hotelBonus() + funBonus() : 0;
+        return isFeasible() ? potentialUtility() : 0;
     }
 
     // Day reservations //
