@@ -147,7 +147,8 @@ public class Agent extends AgentImpl {
     private float getPackageOutcome(Package pack, 
             int[] arriveStock,
             int[] departStock,
-            int[] hotelStock) {
+            int[] ttStock,
+            int[] ssStock) {
         float prob = 1f;
         float cost = 0f;
 
@@ -168,17 +169,27 @@ public class Agent extends AgentImpl {
         }
 
         // Get hotel probabilities
+        float probTT = 1f;
+        float costTT = 0f;
         for (int day = arrive; day < depart; day++) {
-            if (hotelStock[day] <= 0) {
-                float probTT = hotelAgent.purchaseProbability(getHotelAuction(day, true));
-                float costTT = hotelAgent.estimatedPrice(getHotelAuction(day, true));
-                float probSS = hotelAgent.purchaseProbability(getHotelAuction(day, false));
-                float costSS = hotelAgent.estimatedPrice(getHotelAuction(day, false));
-                prob *= probTT + probSS - (probTT * probSS);
-                cost += costTT * probTT + costSS * probSS - 
-                    ((costTT + costSS) * probTT * probSS / 2f);
+            if (ttStock[day] <= 0) {
+                probTT *= hotelAgent.purchaseProbability(getHotelAuction(day, true));
+                costTT += hotelAgent.estimatedPrice(getHotelAuction(day, true));
             }
         }
+
+        float probSS = 1f;
+        float costSS = 0f;
+        for (int day = arrive; day < depart; day++) {
+            if (ssStock[day] <= 0) {
+                probSS *= hotelAgent.purchaseProbability(getHotelAuction(day, false));
+                costSS += hotelAgent.estimatedPrice(getHotelAuction(day, false));
+            }
+        }
+        
+        prob *= probTT + probSS - (probTT * probSS);
+        cost += costTT * probTT + costSS * probSS - 
+            ((costTT + costSS) * probTT * probSS / 2f);
 
         // Two outcomes: we buy the package at the estimated price
         // OR we don't, but we still pay some cost for buying some things
@@ -195,11 +206,14 @@ public class Agent extends AgentImpl {
         // Create a stock of owned tickets and bookings that could be allocated
         int[] arriveStock = new int[NUM_DAYS + 1];
         int[] departStock = new int[NUM_DAYS + 1];
-        int[] hotelStock = new int[NUM_DAYS + 1];
+        int[] ttStock = new int[NUM_DAYS + 1];
+        int[] ssStock = new int[NUM_DAYS + 1];
+
         for (int day = 0; day <= NUM_DAYS; day ++) {
             arriveStock[day] = 0;
             departStock[day] = 0;
-            hotelStock[day] = 0;
+            ttStock[day] = 0;
+            ssStock[day] = 0;
         }
 
         for (FlightTicket ticket : flightTickets) {
@@ -208,7 +222,8 @@ public class Agent extends AgentImpl {
         }
 
         for (HotelBooking booking : hotelBookings) {
-            hotelStock[booking.getDay()] += 1;
+            int[] stock = booking.towers ? ttStock : ssStock;
+            stock[booking.getDay()] += 1;
         }
         
         for (int i = 0; i < clients.length; i++) {
@@ -222,7 +237,7 @@ public class Agent extends AgentImpl {
 
                     // Calculate expected outcome of package
                     float outcome = getPackageOutcome(
-                            pack, arriveStock, departStock, hotelStock);
+                            pack, arriveStock, departStock, ttStock, ssStock);
 
                     if (outcome > bestOutcome) {
                         bestOutcome = outcome;
@@ -242,8 +257,17 @@ public class Agent extends AgentImpl {
                 arriveStock[arrive] -= 1;
                 departStock[depart] -= 1;
 
+                // Work out whether to remove from TT or SS stock
+                int ttSum = 0;
+                int ssSum = 0;
                 for (int day = arrive; day < depart; day++) {
-                    hotelStock[day] -= 1;
+                    if (ttStock[day] > 0) ttSum += 1;
+                    if (ssStock[day] > 0) ssSum += 1;
+                }
+
+                int[] stock = (ttSum > ssSum) ? ttStock : ssStock;
+                for (int day = arrive; day < depart; day++) {
+                    stock[day] -= 1;
                 }
             }
         }
