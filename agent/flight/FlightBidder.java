@@ -61,6 +61,11 @@ public class FlightBidder implements Auction.Watcher {
         gameStarted = false;
     }
 
+    public float estimatedPrice() {
+        // Get predicted minimum from monitor
+        return (float)monitor.predictMinimumPrice(getTimeStep());
+    }
+
     public void auctionQuoteUpdated(Auction<?> auction, Quote quote) {
         // Update price monitor with new prices information
         // TODO: Make sure this only happens every 10 seconds when the price perturbs!

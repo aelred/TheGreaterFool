@@ -26,4 +26,8 @@ public abstract class SubAgent<T extends Buyable> {
 
     // Return the probability of buying this auction. (1 = certain, 0 = impossible)
     public abstract float purchaseProbability(Auction<?> auction);
+
+    // Return the estimated price for one unit in the specified auction.
+    // If purchase is impossible, return 0.
+    public abstract float estimatedPrice(Auction<?> auction);
 }

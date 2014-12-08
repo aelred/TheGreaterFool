@@ -50,6 +50,12 @@ public class FlightAgent extends SubAgent<FlightTicket> {
         return 1f;
     }
 
+    public float estimatedPrice(Auction<?> auction) {
+        // Return expected minimum price
+        FlightBidder bidder = bidders.get(auction);
+        return bidder.estimatedPrice();
+    }
+
     public void clearPackages() {
         // Tell bidders to clear packages
         logger.log("Clearing packages");

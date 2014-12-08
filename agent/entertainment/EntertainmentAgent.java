@@ -227,6 +227,12 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
         return 1;
     }
 
+    @Override
+    public float estimatedPrice(Auction<?> auction) {
+        // Unused in top agent
+        return 1;
+    }
+
     // Static test methods //
 
     private static void addTickets(List<EntertainmentTicket> tickets, int count, int day, EntertainmentType type) {

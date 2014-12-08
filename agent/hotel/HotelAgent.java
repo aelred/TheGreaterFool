@@ -289,6 +289,12 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		return auctionsClosed[hashForIndex(day, tt)] ? 0 : 1;
 	}
 
+	@Override
+	public float estimatedPrice(Auction<?> auction) {
+	    // Lie, optimistically
+	    return 50f;
+	}
+
 }
 
 class AuctionClosedException extends Exception {
