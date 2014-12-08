@@ -90,6 +90,12 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		super(agent, hotelStock, logger);
 		subscribeAll();
 		auctionsClosed = new boolean[8];
+
+		// Fill held using existing stock of tickets
+		for (HotelBooking booking : hotelStock) {
+		    int i = hashForIndex(booking.getDay(), booking.towers);
+		    held[i] += 1;
+		}
 	}
 	
     public void gameStopped() {
