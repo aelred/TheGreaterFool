@@ -173,8 +173,8 @@ public class Agent extends AgentImpl {
             Package bestPackage = null;
             int bestUtility = 0;
 
-            for (int arrive = 1; arrive < NUM_DAYS-1; arrive++) {
-                for (int depart = arrive + 1; depart < NUM_DAYS; depart++) {
+            for (int arrive = 1; arrive <= NUM_DAYS-1; arrive++) {
+                for (int depart = arrive + 1; depart <= NUM_DAYS; depart++) {
                     Package pack = new Package(clients[i], arrive, depart);
                     // Check if package is viable
                     float prob = getPackageProbability(pack);
