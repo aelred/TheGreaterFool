@@ -154,7 +154,7 @@ public class Agent extends AgentImpl {
         prob *= flightAgent.purchaseProbability(getFlightAuction(depart, false));
 
         // Get hotel probabilities
-        for (int day = arrive; day < depart-1; day++) {
+        for (int day = arrive; day < depart; day++) {
             float probTT = hotelAgent.purchaseProbability(getHotelAuction(day, true));
             float probSS = hotelAgent.purchaseProbability(getHotelAuction(day, false));
             prob *= probTT + probSS - (probTT * probSS);

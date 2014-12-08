@@ -142,7 +142,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		mostRecentPackages = packages;
 		intentions = new int[8];
 		boolean tt, err;
-		int prefArrive, prefDepart, hotelPremium, errCount, day, i;
+		int arrive, depart, hotelPremium, errCount, day, i;
 		int[] tempIntentions, tempAllocations;
 		Client c;
 		int cliNum = 0;
@@ -152,12 +152,12 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 			logger.log("Sorting preferences for package " + cliNum + " with days " 
 					+ Integer.toString(p.getArrivalDay()) + " to " + Integer.toString(p.getDepartureDay()), AgentLogger.INFO);
 			c = p.getClient();
-			prefArrive = c.getPreferredArrivalDay();
-			prefDepart = c.getPreferredDepartureDay();
+			arrive = p.getArrivalDay();
+			depart = p.getDepartureDay();
 			hotelPremium = c.getHotelPremium();
-			//tt = hotelPremium / (prefDepart - prefArrive) > 35; // identify if tt is worth aiming for
+			//tt = hotelPremium / (depart - arrive) > 35; // identify if tt is worth aiming for
 			int expectedExtra = 0; // expected extra for TT
-			for (day = prefArrive; day < prefDepart; day++) {
+			for (day = arrive; day < depart; day++) {
 				expectedExtra += avgDifs[day-1];
 			}
 			tt = hotelPremium > expectedExtra;
@@ -166,7 +166,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 				err = false;
 				tempIntentions = new int[8];
 				tempAllocations = new int[8];
-				for (day = prefArrive; day < prefDepart; day++) {
+				for (day = arrive; day < depart; day++) {
 					i = hashForIndex(day, tt);
 					if (!auctionsClosed[i]) {
 						tempIntentions[i]++;
