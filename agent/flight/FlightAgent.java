@@ -56,6 +56,12 @@ public class FlightAgent extends SubAgent<FlightTicket> {
         for (FlightBidder bidder : bidders.values()) {
             bidder.stop();
         }
+
+        // Re-fill unused stock
+        unusedStock.clear();
+        for (FlightTicket ticket : stock) {
+            unusedStock.add(ticket);
+        }
     }
 
     public void fulfillPackages(List<agent.Package> packages) {
