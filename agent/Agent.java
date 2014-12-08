@@ -144,20 +144,33 @@ public class Agent extends AgentImpl {
     }
 
     // Return probability this package can be fulfilled
-    private float getPackageProbability(Package pack) {
+    private float getPackageProbability(Package pack, 
+            int[] arriveStock,
+            int[] departStock,
+            int[] hotelStock) {
         float prob = 1f;
+
+        // If a ticket or booking is already stocked, probability is 1 so 
+        // skip over that item.
 
         // Get flight probabilities
         int arrive = pack.getArrivalDay();
-        prob *= flightAgent.purchaseProbability(getFlightAuction(arrive, true));
+        if (arriveStock[arrive] <= 0) {
+            prob *= flightAgent.purchaseProbability(getFlightAuction(arrive, true));
+        }
+
         int depart = pack.getDepartureDay();
-        prob *= flightAgent.purchaseProbability(getFlightAuction(depart, false));
+        if (departStock[depart] <= 0) {
+            prob *= flightAgent.purchaseProbability(getFlightAuction(depart, false));
+        }
 
         // Get hotel probabilities
         for (int day = arrive; day < depart; day++) {
-            float probTT = hotelAgent.purchaseProbability(getHotelAuction(day, true));
-            float probSS = hotelAgent.purchaseProbability(getHotelAuction(day, false));
-            prob *= probTT + probSS - (probTT * probSS);
+            if (hotelStock[day] <= 0) {
+                float probTT = hotelAgent.purchaseProbability(getHotelAuction(day, true));
+                float probSS = hotelAgent.purchaseProbability(getHotelAuction(day, false));
+                prob *= probTT + probSS - (probTT * probSS);
+            }
         }
 
         return prob;
@@ -166,6 +179,25 @@ public class Agent extends AgentImpl {
     private void createPackages() {
         // Create packages
         packages = new ArrayList<Package>();
+
+        // Create a stock of owned tickets and bookings that could be allocated
+        int[] arriveStock = new int[NUM_DAYS + 1];
+        int[] departStock = new int[NUM_DAYS + 1];
+        int[] hotelStock = new int[NUM_DAYS + 1];
+        for (int day = 0; day <= NUM_DAYS; day ++) {
+            arriveStock[day] = 0;
+            departStock[day] = 0;
+            hotelStock[day] = 0;
+        }
+
+        for (FlightTicket ticket : flightTickets) {
+            int[] stock = ticket.isArrival() ? arriveStock : departStock;
+            stock[ticket.getDay()] += 1;
+        }
+
+        for (HotelBooking booking : hotelBookings) {
+            hotelStock[booking.getDay()] += 1;
+        }
         
         for (int i = 0; i < clients.length; i++) {
             // Select viable packages with highest utility
@@ -177,7 +209,7 @@ public class Agent extends AgentImpl {
                 for (int depart = arrive + 1; depart <= NUM_DAYS; depart++) {
                     Package pack = new Package(clients[i], arrive, depart);
                     // Check if package is viable
-                    float prob = getPackageProbability(pack);
+                    float prob = getPackageProbability(pack, arriveStock, departStock, hotelStock);
                     if (pack.potentialUtility() > bestUtility && prob > 0f) {
                         bestUtility = pack.potentialUtility();
                         bestPackage = pack;
@@ -189,6 +221,16 @@ public class Agent extends AgentImpl {
             // so we forget this client.
             if (bestPackage != null) {
                 packages.add(bestPackage);
+
+                // Remove any used stock
+                int arrive = bestPackage.getArrivalDay();
+                int depart = bestPackage.getDepartureDay();
+                arriveStock[arrive] -= 1;
+                departStock[depart] -= 1;
+
+                for (int day = arrive; day < depart; day++) {
+                    hotelStock[day] -= 1;
+                }
             }
         }
     }
