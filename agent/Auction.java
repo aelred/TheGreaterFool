@@ -156,7 +156,7 @@ public abstract class Auction<T extends Buyable> {
         for (Float price : workingBids.keySet()) {
             try {
                 bid.addBidPoint(workingBids.get(price), price);
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 Agent.logMessage("auction" + Integer.toString(getAuctionID()), "Existing bid: "
                         + bid.getBidString());
                 Agent.logMessage("auction" + Integer.toString(getAuctionID()), "Tried to add bid point: ("
