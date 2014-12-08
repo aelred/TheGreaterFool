@@ -143,37 +143,49 @@ public class Agent extends AgentImpl {
         return agent.getGameTime();
     }
 
-    // Return probability this package can be fulfilled
-    private float getPackageProbability(Package pack, 
+    // Return expected profit on this package
+    private float getPackageOutcome(Package pack, 
             int[] arriveStock,
             int[] departStock,
             int[] hotelStock) {
         float prob = 1f;
+        float cost = 0f;
 
-        // If a ticket or booking is already stocked, probability is 1 so 
-        // skip over that item.
+        // If a ticket or booking is already stocked, prob=1 and cost=0 so
+        // we can skip it.
 
         // Get flight probabilities
         int arrive = pack.getArrivalDay();
         if (arriveStock[arrive] <= 0) {
             prob *= flightAgent.purchaseProbability(getFlightAuction(arrive, true));
+            cost += flightAgent.estimatedPrice(getFlightAuction(arrive, true));
         }
 
         int depart = pack.getDepartureDay();
         if (departStock[depart] <= 0) {
             prob *= flightAgent.purchaseProbability(getFlightAuction(depart, false));
+            cost += flightAgent.estimatedPrice(getFlightAuction(depart, false));
         }
 
         // Get hotel probabilities
         for (int day = arrive; day < depart; day++) {
             if (hotelStock[day] <= 0) {
                 float probTT = hotelAgent.purchaseProbability(getHotelAuction(day, true));
+                float costTT = hotelAgent.estimatedPrice(getHotelAuction(day, true));
                 float probSS = hotelAgent.purchaseProbability(getHotelAuction(day, false));
+                float costSS = hotelAgent.estimatedPrice(getHotelAuction(day, false));
                 prob *= probTT + probSS - (probTT * probSS);
+                cost += costTT * probTT + costSS * probSS - 
+                    ((costTT + costSS) * probTT * probSS / 2f);
             }
         }
 
-        return prob;
+        // Two outcomes: we buy the package at the estimated price
+        // OR we don't, but we still pay some cost for buying some things
+        // (assume half cost of package).
+        float goodOutcome = pack.potentialUtility() - cost;
+        float badOutcome = -cost / 2f;
+        return prob * goodOutcome + (1f - prob) * badOutcome;
     }
 
     private void createPackages() {
@@ -200,18 +212,20 @@ public class Agent extends AgentImpl {
         }
         
         for (int i = 0; i < clients.length; i++) {
-            // Select viable packages with highest utility
-            // TODO: Take into account predicted cost
+            // Select viable packages with highest expected outcome
             Package bestPackage = null;
-            int bestUtility = 0;
+            float bestOutcome = 0;
 
             for (int arrive = 1; arrive <= NUM_DAYS-1; arrive++) {
                 for (int depart = arrive + 1; depart <= NUM_DAYS; depart++) {
                     Package pack = new Package(clients[i], arrive, depart);
-                    // Check if package is viable
-                    float prob = getPackageProbability(pack, arriveStock, departStock, hotelStock);
-                    if (pack.potentialUtility() > bestUtility && prob > 0f) {
-                        bestUtility = pack.potentialUtility();
+
+                    // Calculate expected outcome of package
+                    float outcome = getPackageOutcome(
+                            pack, arriveStock, departStock, hotelStock);
+
+                    if (outcome > bestOutcome) {
+                        bestOutcome = outcome;
                         bestPackage = pack;
                     }
                 }
