@@ -195,7 +195,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 				// failed to find a feasible solution to this package on specified days
 				logger.log("Package " + Integer.toString(cliNum) + " infeasible, requesting package update",
 						AgentLogger.WARNING);
-				// agent.alertInfeasible();
+				agent.alertInfeasible();
 			}
 		}
 		//updateBids(); // Bids are updated individually as initial quote updates come in

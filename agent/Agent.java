@@ -127,9 +127,6 @@ public class Agent extends AgentImpl {
         flightAgent.clearPackages();
         hotelAgent.clearPackages();
         entertainmentAgent.clearPackages();
-
-        // Retrieve probabilities of success and price estimates for each auction
-        
         
         // Re-create feasible packages
         createPackages();
@@ -174,7 +171,7 @@ public class Agent extends AgentImpl {
             // Select viable packages with highest utility
             // TODO: Take into account predicted cost
             Package bestPackage = null;
-            int bestUtility = Integer.MIN_VALUE;
+            int bestUtility = 0;
 
             for (int arrive = 1; arrive < NUM_DAYS-1; arrive++) {
                 for (int depart = arrive + 1; depart < NUM_DAYS; depart++) {
@@ -188,7 +185,11 @@ public class Agent extends AgentImpl {
                 }
             }
 
-            packages.add(bestPackage);
+            // If package is null, no good package can be found,
+            // so we forget this client.
+            if (bestPackage != null) {
+                packages.add(bestPackage);
+            }
         }
     }
 
