@@ -23,7 +23,7 @@ public abstract class Auction<T extends Buyable> {
     }
 
     public int getDay() {
-    	return day;
+        return day;
     }
     
     public abstract int getAuctionID();
@@ -45,7 +45,7 @@ public abstract class Auction<T extends Buyable> {
 
     public void fireQuoteUpdated(Quote quote) {
         mostRecentQuote = quote;
-    	for (Watcher watcher : watchers) {
+        for (Watcher watcher : watchers) {
             watcher.auctionQuoteUpdated(this, quote);
         }
     }
@@ -142,12 +142,12 @@ public abstract class Auction<T extends Buyable> {
     }
     
     public void submitBid(boolean copyToConsole) throws BidInUseException {
-    	if (awaitingConfirmation)
+        if (awaitingConfirmation)
             throw new BidInUseException();
         BidString bs = generateBidString();
         awaitingConfirmation = true;
         if (copyToConsole)
-        	Agent.logMessage("auction" + Integer.toString(getAuctionID()), "Submitting: " + bs.getBidString());
+            Agent.logMessage("auction" + Integer.toString(getAuctionID()), "Submitting: " + bs.getBidString());
         agent.submitBid(bs);
     }
     
@@ -155,13 +155,13 @@ public abstract class Auction<T extends Buyable> {
         BidString bid = new BidString(getAuctionID());
         for (Float price : workingBids.keySet()) {
             try {
-            	bid.addBidPoint(workingBids.get(price), price);
+                bid.addBidPoint(workingBids.get(price), price);
             } catch (Exception e) {
-            	Agent.logMessage("auction" + Integer.toString(getAuctionID()), "Existing bid: "
-            			+ bid.getBidString());
-            	Agent.logMessage("auction" + Integer.toString(getAuctionID()), "Tried to add bid point: ("
-            			+ Integer.toString(workingBids.get(price)) + " " + Float.toString(price) + ")");
-            	throw e;
+                Agent.logMessage("auction" + Integer.toString(getAuctionID()), "Existing bid: "
+                        + bid.getBidString());
+                Agent.logMessage("auction" + Integer.toString(getAuctionID()), "Tried to add bid point: ("
+                        + Integer.toString(workingBids.get(price)) + " " + Float.toString(price) + ")");
+                throw e;
             }
         }
         return bid;
@@ -173,15 +173,15 @@ public abstract class Auction<T extends Buyable> {
     }
     
     public float getAskPrice() {
-    	if (mostRecentQuote != null) {
-    		return mostRecentQuote.getAskPrice();
-    	} else {
-    		return 0;
-    	}
+        if (mostRecentQuote != null) {
+            return mostRecentQuote.getAskPrice();
+        } else {
+            return 0;
+        }
     }
     
     public Quote getMostRecentQuote() {
-    	return mostRecentQuote;
+        return mostRecentQuote;
     }
 }
 
