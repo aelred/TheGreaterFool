@@ -54,13 +54,17 @@ public class FlightAgent extends SubAgent<FlightTicket> {
         // Tell bidders to clear packages
         logger.log("Clearing packages");
         for (FlightBidder bidder : bidders.values()) {
-            bidder.clearPackages();
+            bidder.stop();
         }
     }
 
     public void fulfillPackages(List<agent.Package> packages) {
         for (agent.Package pack : packages) {
             fulfillPackage(pack);
+        }
+
+        for (FlightBidder bidder : bidders.values()) {
+            bidder.start();
         }
     }
 

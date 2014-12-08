@@ -23,7 +23,7 @@ public class FlightBidder implements Auction.Watcher {
     private final FlightPriceMonitor monitor;
     private final List<agent.Package> packages = new ArrayList<agent.Package>();
     private boolean bidDirtyFlag = false;
-    private boolean gameStarted = true;
+    private boolean gameStarted = false;
 
     private int lastBidQuantity = 0;
     private float lastBidPrice = 0f;
@@ -47,19 +47,24 @@ public class FlightBidder implements Auction.Watcher {
     public void addPackage(agent.Package pack) {
         logger.log("Adding package");
         packages.add(pack);
+    }
+
+    public void start() {
+        gameStarted = true;
         refreshBid();
     }
 
-    public void clearPackages() {
+    public void stop() {
         logger.log("Clearing packages");
         packages.clear();
         refreshBid();
+        gameStarted = false;
     }
 
     public void auctionQuoteUpdated(Auction<?> auction, Quote quote) {
         // Update price monitor with new prices information
         // TODO: Make sure this only happens every 10 seconds when the price perturbs!
-        logger.log("Quote updated: " + quote.getAskPrice());
+        logger.log("Quote updated at " + getTimeStep() + ": " + quote.getAskPrice());
         monitor.addQuote((double)quote.getAskPrice(), getTimeStep());
 
         // only refresh bid at 20 second intervals to avoid duplicate bid problems
@@ -114,9 +119,7 @@ public class FlightBidder implements Auction.Watcher {
 
     private void refreshBid() {
         // Don't bid if game has stopped
-        if (!gameStarted) {
-            throw new IllegalStateException("Cannot bid on stopped game.");
-        }
+        if (!gameStarted) return;
 
         int quantity = packages.size();
         float price = calcPrice();
@@ -161,6 +164,11 @@ public class FlightBidder implements Auction.Watcher {
         logger.log("Min: " + monitor.predictMinimumPrice(getTimeStep()));
         int min = (int)FlightAgent.PRICE_MIN, max = (int)FlightAgent.PRICE_MAX;
 
+        // Don't bid if no ask price yet
+        if (auction.getAskPrice() < min) {
+            return (float)min;
+        }
+
         // In the final few rounds, we should just pay the ask price
         if (getTimeStep() >= FlightAgent.MAX_TIME - 2) {
             // A dollar for luck!
@@ -176,35 +184,30 @@ public class FlightBidder implements Auction.Watcher {
             // Probabiliy price will be below this, assuming confidence in estimate
             double probWithConf = dist.get(price);
             // Probability price will be below this if estimate is incorrect
-            // Very approximate, assume minimum price is uniformly below current price
             // TODO: Make this more accurate
-            double probWoutConf = ((double)dist.get(price) - (double)min) / 
-                (double)(auction.getAskPrice() - min);
-            if (probWoutConf > 1d) {
-                probWoutConf = 1d;
-            }
+            double probWoutConf = ((double)price - FlightAgent.PRICE_MIN) /
+                ((double)auction.getAskPrice() - FlightAgent.PRICE_MIN);
+            if (probWoutConf > 1d) probWoutConf = 1d;
 
             // Potential bad price if estimate is incorrect
-            int highPrice = max;
+            double highPrice = FlightAgent.PRICE_MAX;
             // Potential good price if estimate is incorrect
-            int lowPrice = min;
+            double lowPrice = (double)auction.getAskPrice();
 
             // Outcome if estimate is correct and bid is above true minimum
             double correctOutcomeHigh = confidence * probWithConf * (double)price;
             // Outcome if estimate is correct and bid is below true minimum
-            double correctOutcomeLow = confidence * (1d - probWoutConf) * (double)max;
+            double correctOutcomeLow = confidence * (1d - probWithConf) * highPrice;
 
-            // Outcome if estimate is incorrect and bid is too high
-            double incorrectOutcomeHigh = 
-                (1d - confidence) * probWoutConf * (double)price;
-            // Outcome if estimate is incorrect and bid is too low
-            double incorrectOutcomeLow = 
-                (1d - confidence) * (1d - probWoutConf) * (double)lowPrice;
+            // Outcome if estimate is incorrect and bid is above true minimum
+            double incorrectOutcomeHigh = (1d - confidence) * probWoutConf * (double)price;
+            // Outcome if estimate is incorrect and bid is below true minimum
+            double incorrectOutcomeLow = (1d - confidence) * (1d - probWoutConf) * lowPrice;
 
             // Expected outcome
             double expectedOutcome = correctOutcomeHigh + correctOutcomeLow +
                 incorrectOutcomeHigh + incorrectOutcomeLow;
-
+            
             if (expectedOutcome < bestExpectedOutcome) {
                 bestPrice = price;
                 bestExpectedOutcome = expectedOutcome;
