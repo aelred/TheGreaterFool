@@ -70,8 +70,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		}
 
 		@Override
-		public void auctionTransaction(Auction<?> auction,
-				List<Buyable> buyables) {
+        public void auctionBuySuccessful(Auction<?> auction, List<Buyable> buyables) {
 			aucWatcher.log("Won " + buyables.size() + " rooms in "
 					+ (((HotelBooking) buyables.get(0)).towers ? "TT" : "SS")
 					+ " for day " + buyables.get(0).getDay()
@@ -79,6 +78,8 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 					AgentLogger.INFO);
 		}
 
+        @Override
+        public void auctionSellSuccessful(Auction<?> auction, int numSold) { }
 		@Override
 		public void auctionClosed(Auction<?> auction) {
 			aucWatcher.log("Auction for "
@@ -96,6 +97,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 	private HotelHistory hotelHist;
 	private HotelGame currentGame;
 	private boolean dirtyHistory = false;
+	private AgentLogger pmLogger;
 
 	@SuppressWarnings("unused")
 	private boolean[] intendedHotel;
@@ -105,6 +107,8 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		super(agent, hotelStock, logger);
 		subscribeAll();
 		auctionsClosed = new boolean[8];
+		
+		pmLogger = logger.getSublogger("packageManager");
 
 		hotelHist = new HotelHistory();
 		try (InputStream file = new FileInputStream("hotelHistory.hist");
@@ -112,11 +116,15 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 				ObjectInput input = new ObjectInputStream(buffer);) {
 			hotelHist = (HotelHistory) input.readObject();
 		} catch (Exception e) {
+			logger.log("Unable to read past history file", AgentLogger.ERROR);
+			logger.logExceptionStack(e, AgentLogger.ERROR);
 		}
 		currentGame = new HotelGame(logger.getSublogger("historyRecorder"));
 
-		if (agent.getTime() < 55000)
+		if (agent.getTime() > 55000) {
+			logger.log("Suspected late start, history marked dirty. Time=" + agent.getTime(), AgentLogger.WARNING);
 			dirtyHistory = true;
+		}
 
 		// Fill held using existing stock of tickets
 		for (HotelBooking booking : hotelStock) {
@@ -142,9 +150,8 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 			output.writeObject(hotelHist);
 		} catch (IOException e) {
 			logger.log(
-					"Error: unable to write to file hotelHistory.hist. Error message: "
-							+ e.getMessage(), AgentLogger.ERROR);
-			logger.logExceptionStack(e, AgentLogger.ERROR);
+					"Warning: unable to write to file hotelHistory.hist. Error message: "
+							+ e.getMessage(), AgentLogger.WARNING);
 		}
 	}
 
@@ -202,9 +209,10 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		Client c;
 		int cliNum = 0;
 		float[] avgDifs = hotelHist.averagePriceDifference();
+		
 		for (Package p : packages) {
 			cliNum++;
-			logger.log("Sorting preferences for package " + cliNum
+			pmLogger.log("Sorting preferences for package " + cliNum
 					+ " with days " + Integer.toString(p.getArrivalDay())
 					+ " to " + Integer.toString(p.getDepartureDay()),
 					AgentLogger.INFO);
@@ -219,6 +227,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 				expectedExtra += avgDifs[day - 1];
 			}
 			tt = hotelPremium > expectedExtra;
+			pmLogger.log("HP:" + hotelPremium + ", expected difference in cost:" + expectedExtra + ", so getting " + (tt?"TT":"SS"));
 			errCount = 0;
 			do {
 				err = false;
@@ -252,7 +261,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 			} else {
 				// failed to find a feasible solution to this package on
 				// specified days
-				logger.log("Package " + Integer.toString(cliNum)
+				pmLogger.log("Package " + Integer.toString(cliNum)
 						+ " infeasible, requesting package update",
 						AgentLogger.WARNING);
 				agent.alertInfeasible();
@@ -274,7 +283,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 						+ ". Attempt to get "
 						+ (intendedHotel[cliNum - 1] ? "TT" : "SS") + "\n";
 			}
-			logger.log(message, AgentLogger.INFO);
+			pmLogger.log(message, AgentLogger.INFO);
 		}
 	}
 
