@@ -95,7 +95,7 @@ public class FlightBidder implements Auction.Watcher {
         logger.log("Bid error " + error, AgentLogger.WARNING);
     }
 
-    public void auctionTransaction(Auction<?> auction, List<Buyable> tickets) {
+    public void auctionBuySuccessful(Auction<?> auction, List<Buyable> tickets) {
         // We got some flight tickets!
         for (Buyable b : tickets) {
             FlightTicket ticket = (FlightTicket)b;
@@ -113,6 +113,9 @@ public class FlightBidder implements Auction.Watcher {
         }
         refreshBid();
     }
+
+    @Override
+    public void auctionSellSuccessful(Auction<?> auction, int numSold) { }
 
     public void auctionClosed(Auction<?> auction) {
         logger.log("Auction closed");

@@ -70,8 +70,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		}
 
 		@Override
-		public void auctionTransaction(Auction<?> auction,
-				List<Buyable> buyables) {
+        public void auctionBuySuccessful(Auction<?> auction, List<Buyable> buyables) {
 			aucWatcher.log("Won " + buyables.size() + " rooms in "
 					+ (((HotelBooking) buyables.get(0)).towers ? "TT" : "SS")
 					+ " for day " + buyables.get(0).getDay()
@@ -79,6 +78,8 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 					AgentLogger.INFO);
 		}
 
+        @Override
+        public void auctionSellSuccessful(Auction<?> auction, int numSold) { }
 		@Override
 		public void auctionClosed(Auction<?> auction) {
 			aucWatcher.log("Auction for "

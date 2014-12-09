@@ -72,15 +72,29 @@ public abstract class Auction<T extends Buyable> {
         }
     }
 
-    public void fireTransaction(Transaction transaction) {
+    private void fireBuySuccessful(Transaction transaction) {
         List<Buyable> buyables = new ArrayList<Buyable>();
-        for (int i = 0; i < transaction.getQuantity(); i ++) {
+        for (int i = 0; i < transaction.getQuantity(); i++) {
             buyables.add(getBuyable());
         }
 
         for (Watcher watcher : watchers) {
-            watcher.auctionTransaction(this, buyables);
+            watcher.auctionBuySuccessful(this, buyables);
             if (buyables.isEmpty()) break;
+        }
+    }
+
+    private void fireSellSuccessful(Transaction transaction) {
+        for (Watcher watcher : watchers) {
+            watcher.auctionSellSuccessful(this, transaction.getQuantity());
+        }
+    }
+
+    public void fireTransaction(Transaction transaction) {
+        if (transaction.getQuantity() > 0) {
+            fireBuySuccessful(transaction);
+        } else {
+            fireSellSuccessful(transaction);
         }
     }
 
@@ -101,7 +115,9 @@ public abstract class Auction<T extends Buyable> {
          * @param buyables A {@link java.util.List} of {@link agent.Buyable}s won. {@link agent.Auction.Watcher}s may
          *                 remove {@link agent.Buyable}s from this list to indicate that they have 'taken' them.
          */
-        public void auctionTransaction(Auction<?> auction, List<Buyable> buyables);
+        public void auctionBuySuccessful(Auction<?> auction, List<Buyable> buyables);
+
+        public void auctionSellSuccessful(Auction<?> auction, int numSold);
 
         public void auctionClosed(Auction<?> auction);
     }

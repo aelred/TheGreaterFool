@@ -81,7 +81,10 @@ public abstract class EntertainmentBidder implements EntertainmentAuction.Watche
     public void auctionBidError(Auction<?> auction, BidString bidString, int error) {  }
 
     @Override
-    public abstract void auctionTransaction(Auction<?> auction, List<Buyable> buyables);
+    public abstract void auctionBuySuccessful(Auction<?> auction, List<Buyable> buyables);
+
+    @Override
+    public abstract void auctionSellSuccessful(Auction<?> auction, int numSold);
 
     @Override
     public void auctionClosed(Auction<?> auction) {  }
