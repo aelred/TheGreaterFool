@@ -26,6 +26,7 @@ public abstract class EntertainmentBidder implements EntertainmentAuction.Watche
         this.entAgent = entAgent;
         this.auction = auction;
         this.logger = logger;
+        auction.addWatcher(this);
     }
 
     protected void handleBidInUseException(BidInUseException ex) {
@@ -57,6 +58,11 @@ public abstract class EntertainmentBidder implements EntertainmentAuction.Watche
         } catch (BidInUseException ex) {
             bidState = BidState.WAITING_TO_CLEAR;
         }
+    }
+
+    public void deregister() {
+        cancelBid();
+        auction.removeWatcher(this);
     }
 
     @Override

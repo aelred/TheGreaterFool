@@ -22,7 +22,6 @@ public class EntertainmentBuyer extends EntertainmentBidder {
     		AgentLogger logger) {
         super(entAgent, auction, logger);
         this.pkg = pkg;
-        auction.addWatcher(this);
         bid(bidPrice);
     }
 

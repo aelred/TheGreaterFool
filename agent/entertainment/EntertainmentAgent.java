@@ -72,7 +72,7 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
 
     private void cancelBidders(List<? extends EntertainmentBidder> bidders) {
         for (EntertainmentBidder bidder : bidders) {
-            bidder.cancelBid();
+            bidder.deregister();
         }
         bidders.clear();
     }
