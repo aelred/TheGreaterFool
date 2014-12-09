@@ -1,4 +1,4 @@
-package agent.logging.logreader;
+package agent.logging;
 
 import java.util.ArrayList;
 import java.util.Collections;
