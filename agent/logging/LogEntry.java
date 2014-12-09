@@ -8,7 +8,7 @@ public class LogEntry implements Comparable<LogEntry>, Serializable {
 
 	private static final long serialVersionUID = -1919166776707829718L;
 
-	private static final SimpleDateFormat formatter = new SimpleDateFormat("EE dd-MMM-yy HH:mm:ss");
+	public static final SimpleDateFormat formatter = new SimpleDateFormat("EE dd-MMM-yy HH:mm:ss");
 	
 	private Date timeOfMessage;
 	private String message;
