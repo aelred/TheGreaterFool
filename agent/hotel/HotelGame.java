@@ -1,9 +1,12 @@
 package agent.hotel;
 
+import java.io.Serializable;
+
 import agent.logging.AgentLogger;
 
-public class HotelGame {
+public class HotelGame implements Serializable {
 
+	private static final long serialVersionUID = -7304525179776746139L;
 	private float[][] askPrices = new float[8][9];
 	private int[] closedOn = new int[8];
 	private static AgentLogger histLogger;

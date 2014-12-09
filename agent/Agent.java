@@ -40,8 +40,6 @@ public class Agent extends AgentImpl {
     private Map<Pair<Boolean>, FlightAuction> flightAuctions;
     private Map<Pair<Boolean>, HotelAuction> hotelAuctions;
     private Map<Pair<EntertainmentType>, EntertainmentAuction> entertainmentAuctions;
-    
-    private HotelHistory hotelHist = new HotelHistory();
 
     public static void logMessage(String identifier, String message) {
     	Logger.getLogger(identifier).info(message);
@@ -96,7 +94,7 @@ public class Agent extends AgentImpl {
         mainLogger.log("Creating subagents");
         // Create agents
         flightAgent = new FlightAgent(this, flightTickets, mainLogger.getSublogger("flight"));
-        hotelAgent = new HotelAgent(this, hotelBookings, hotelHist, mainLogger.getSublogger("hotel"));
+        hotelAgent = new HotelAgent(this, hotelBookings, mainLogger.getSublogger("hotel"));
         entertainmentAgent = new EntertainmentAgent(this, entertainmentTickets, mainLogger.getSublogger("entertainment"));
 
         mainLogger.log("Creating packages");

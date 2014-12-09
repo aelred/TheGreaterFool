@@ -1,5 +1,16 @@
 package agent.hotel;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.util.List;
 
 import agent.Agent;
@@ -10,18 +21,21 @@ import agent.Client;
 import agent.Package;
 import agent.SubAgent;
 import agent.logging.AgentLogger;
+import agent.logging.Identity;
 import se.sics.tac.aw.BidString;
 import se.sics.tac.aw.Quote;
 
 public class HotelAgent extends SubAgent<HotelBooking> {
 
 	private static final boolean DEBUG = true;
+	private int[] lastUpdateMinute = new int[]{-1,-1,-1,-1,-1,-1,-1,-1};
 	private Auction.Watcher watcher = new Auction.Watcher() {
 		AgentLogger aucWatcher = logger.getSublogger("auctionWatcher");
 		@Override
 		public void auctionQuoteUpdated(Auction<?> auction, Quote quote) {
-			aucWatcher.log("Hotel auction updating with day=" + Integer.toString(auction.getDay()),
+			aucWatcher.log("Updating " + ((HotelAuction)auction).toString(),
 					AgentLogger.INFO);
+			lastUpdateMinute[hashForIndex(auction.getDay(), ((HotelAuction)auction).isTT())]++;
 			updateBid(auction.getDay(),((HotelAuction)auction).isTT());
 		}
 		@Override
@@ -75,22 +89,23 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 	private List<Package> mostRecentPackages;
 	private HotelHistory hotelHist;
 	private HotelGame currentGame;
-	private int numClosed = 0;
 	
 	@SuppressWarnings("unused")
 	private boolean[] intendedHotel;
-
-	public HotelAgent(Agent agent, List<HotelBooking> hotelStock, HotelHistory hh, AgentLogger logger) {
-		this(agent,hotelStock, logger);
-		hotelHist = hh;
-		currentGame = new HotelGame(logger.getSublogger("historyRecorder"));
-	}
 	
 	public HotelAgent(Agent agent, List<HotelBooking> hotelStock, AgentLogger logger) {
 		super(agent, hotelStock, logger);
 		subscribeAll();
 		auctionsClosed = new boolean[8];
 
+		hotelHist = new HotelHistory();
+		try (InputStream file = new FileInputStream("hotelHistory.hist");
+				InputStream buffer = new BufferedInputStream(file);
+				ObjectInput input = new ObjectInputStream(buffer);) {
+			hotelHist = (HotelHistory) input.readObject();
+		} catch (Exception e) {}
+		currentGame = new HotelGame(logger.getSublogger("historyRecorder"));
+		
 		// Fill held using existing stock of tickets
 		for (HotelBooking booking : hotelStock) {
 		    int i = hashForIndex(booking.getDay(), booking.towers);
@@ -105,6 +120,15 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		}
     	hotelHist.add(currentGame);
     	currentGame.dumpToConsole();
+    	
+    	try (OutputStream file = new FileOutputStream("hotelHistory.hist");
+				OutputStream buffer = new BufferedOutputStream(file);
+				ObjectOutput output = new ObjectOutputStream(buffer);) {
+			output.writeObject(hotelHist);
+		} catch (IOException e) {
+			logger.log("Error: unable to write to file hotelHistory.hist. Error message: " + e.getMessage(), AgentLogger.ERROR);
+			logger.logExceptionStack(e, AgentLogger.ERROR);
+		}
     }
 
 	private void subscribeAll() {
@@ -124,10 +148,12 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		for (int a = 1; a <= won; a++) {
 			stock.add(new HotelBooking(day, tt));
 		}
-		currentGame.setAskPrice(day, tt, auction.getAskPrice(), ++numClosed, true);
+		currentGame.setAskPrice(day, tt, auction.getAskPrice(), lastUpdateMinute[hashForIndex(day, tt)], true);
 		if (held[i] < intentions[i]) {
 			// did not achieve ideal scenario, need to reassess
 			fulfillPackages(mostRecentPackages);
+		} else if (held[i] > intentions[i]) {
+			//TODO may want to reevaluate here to see if money can be saved by using the spare bookings
 		}
 	}
 	
@@ -234,7 +260,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 	private void updateBid(int day, boolean tt) {
 		try {
 			HotelAuction auc = agent.getHotelAuction(day, tt);
-			currentGame.setAskPrice(day, tt, auc.getAskPrice(), numClosed, false);
+			currentGame.setAskPrice(day, tt, auc.getAskPrice(), lastUpdateMinute[hashForIndex(day, tt)], false);
 			int dayHash = hashForIndex(day, tt);
 			if (auc.isClosed())
 				throw new AuctionClosedException();

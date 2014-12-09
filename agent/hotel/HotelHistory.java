@@ -24,7 +24,7 @@ public class HotelHistory extends ArrayList<HotelGame> {
 		for (int day = 0; day < 4; day++) {
 			pds[day] = prices[day+4] - prices[day];
 		}
-		return prices;
+		return pds;
 	}
 	
 }
