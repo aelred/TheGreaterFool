@@ -22,7 +22,6 @@ public class EntertainmentBuyer extends EntertainmentBidder {
     		AgentLogger logger) {
         super(entAgent, auction, logger);
         this.pkg = pkg;
-        auction.addWatcher(this);
         bid(bidPrice);
     }
 
@@ -35,10 +34,13 @@ public class EntertainmentBuyer extends EntertainmentBidder {
     }
 
     @Override
-    public void auctionTransaction(Auction<?> auction, List<Buyable> buyables) {
+    public void auctionBuySuccessful(Auction<?> auction, List<Buyable> buyables) {
         EntertainmentTicket ticket = (EntertainmentTicket)buyables.remove(buyables.size() - 1);
         pkg.setEntertainmentTicket(ticket);
         entAgent.ticketWon(this, ticket);
     }
+
+    @Override
+    public void auctionSellSuccessful(Auction<?> auction, int numSold) { }
 
 }

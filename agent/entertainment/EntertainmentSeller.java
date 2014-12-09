@@ -38,7 +38,10 @@ public class EntertainmentSeller extends EntertainmentBidder {
     }
 
     @Override
-    public void auctionTransaction(Auction<?> auction, List<Buyable> buyables) {
+    public void auctionBuySuccessful(Auction<?> auction, List<Buyable> buyables) { }
+
+    @Override
+    public void auctionSellSuccessful(Auction<?> auction, int numSold) {
         entAgent.ticketsSold(this, tickets);
     }
 }
