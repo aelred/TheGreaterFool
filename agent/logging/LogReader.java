@@ -115,13 +115,13 @@ public class LogReader {
 }
 
 class Tree {
-	public static final int NO_OUTPUT = 1000;
+	public static final int NONE = 1000;
 
 	public static int numTabs = 0;
 
 	public List<Tree> children = new ArrayList<Tree>();
-	public int importance = NO_OUTPUT;
-	public int descImportance = NO_OUTPUT;
+	public int importance = NONE;
+	public int descImportance = NONE;
 	public String name;
 	public Identity i;
 
@@ -160,12 +160,12 @@ class Tree {
 					this.importance = importance;
 			} else {
 				updateChild(path.substring(nameLength + 1), importance,
-						NO_OUTPUT);
+						NONE);
 			}
 		else if (path.equals("*")) {
 			if (this.importance > importance)
 				this.importance = importance;
-			updateChild(path, importance, NO_OUTPUT);
+			updateChild(path, importance, NONE);
 		} else {
 			System.out.println("References must either be '*' or begin with '"
 					+ name + ".'");
@@ -179,7 +179,9 @@ class Tree {
 		String[] split = path.split("\\.", 2);
 		if (split[0].equals("*")) {
 			descImportance = importance;
-			wipeHigherThan(importance);
+			this.importance = Math.min(this.importance,importance);
+			for (Tree child : children)
+				child.wipeHigherThan(importance);
 			return;
 		}
 		Tree requestedChild = null;
@@ -198,14 +200,15 @@ class Tree {
 					Math.min(defaultImportance, descImportance));
 	}
 
-	private void wipeHigherThan(int importance) {
-		if (importance < this.importance)
-			importance = NO_OUTPUT;
-		if (descImportance < importance)
+	private void wipeHigherThan(int impInherit) {
+		if (impInherit <= this.importance)
+			this.importance = NONE;
+		if (descImportance < impInherit)
 			return;
-		descImportance = NO_OUTPUT;
+		// else
+		descImportance = NONE; // Descendant inheritance of importance marked by ancestor now
 		for (Tree t : children) {
-			t.wipeHigherThan(importance);
+			t.wipeHigherThan(impInherit);
 			if (t.children.isEmpty() && t.descImportance == 0
 					&& t.importance == 0)
 				children.remove(t);

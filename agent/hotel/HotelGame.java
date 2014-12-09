@@ -18,7 +18,7 @@ public class HotelGame {
 		askPrices[hotelInd][timeInd] = price;
 		if (closed) {
 			closedOn[hotelInd] = elapsedMinutes;
-			for (++timeInd; timeInd < 8; timeInd++) {
+			for (++timeInd; timeInd <= 8; timeInd++) {
 				askPrices[hotelInd][timeInd] = price;
 			}
 		}
