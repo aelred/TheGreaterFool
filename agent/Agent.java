@@ -149,8 +149,9 @@ public class Agent extends AgentImpl {
             int[] departStock,
             int[] ttStock,
             int[] ssStock) {
-        float prob = 1f;
-        float cost = 0f;
+
+        float probFlight = 1f;
+        float costFlight = 0f;
 
         // If a ticket or booking is already stocked, prob=1 and cost=0 so
         // we can skip it.
@@ -158,14 +159,14 @@ public class Agent extends AgentImpl {
         // Get flight probabilities
         int arrive = pack.getArrivalDay();
         if (arriveStock[arrive] <= 0) {
-            prob *= flightAgent.purchaseProbability(getFlightAuction(arrive, true));
-            cost += flightAgent.estimatedPrice(getFlightAuction(arrive, true));
+            probFlight *= flightAgent.purchaseProbability(getFlightAuction(arrive, true));
+            costFlight += flightAgent.estimatedPrice(getFlightAuction(arrive, true));
         }
 
         int depart = pack.getDepartureDay();
         if (departStock[depart] <= 0) {
-            prob *= flightAgent.purchaseProbability(getFlightAuction(depart, false));
-            cost += flightAgent.estimatedPrice(getFlightAuction(depart, false));
+            probFlight *= flightAgent.purchaseProbability(getFlightAuction(depart, false));
+            costFlight += flightAgent.estimatedPrice(getFlightAuction(depart, false));
         }
 
         // Get hotel probabilities
@@ -187,16 +188,22 @@ public class Agent extends AgentImpl {
             }
         }
         
-        prob *= probTT + probSS - (probTT * probSS);
-        cost += costTT * probTT + costSS * probSS - 
-            ((costTT + costSS) * probTT * probSS / 2f);
+        // Normalize probabilities. Assumes if both hotels are won, then each is
+        // chosen with 50/50 probabiliity.
+        float probHotel = probTT * probSS;
+        probTT -= probHotel / 2f;
+        probSS -= probHotel / 2f;
 
-        // Two outcomes: we buy the package at the estimated price
-        // OR we don't, but we still pay some cost for buying some things
+        // Three outcomes: we buy the package at the estimated price with TT or
+        // SS, OR we don't, but we still pay some cost for buying some things
         // (assume half cost of package).
-        float goodOutcome = pack.potentialUtility() - cost;
-        float badOutcome = -cost / 2f;
-        return prob * goodOutcome + (1f - prob) * badOutcome;
+        float ttOutcome = pack.potentialUtility(true) - costTT - costFlight;
+        float ssOutcome = pack.potentialUtility(false) - costSS - costFlight;
+        float badOutcome = - (costFlight + (costTT + costSS) / 2f) / 2f;
+        return 
+            probFlight * probTT * ttOutcome + 
+            probFlight * probSS * ssOutcome + 
+            (1f - probFlight) * (1f - probTT - probSS) * badOutcome;
     }
 
     private void createPackages() {
