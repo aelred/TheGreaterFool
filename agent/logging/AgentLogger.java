@@ -5,6 +5,9 @@ import java.util.Queue;
 
 public class AgentLogger {
 
+	private static volatile int messageNum = 0;
+	private int nextNum;
+	
 	public static final int INFO = 1;
 	public static final int WARNING = 2;
 	public static final int ERROR = 3;
@@ -18,6 +21,7 @@ public class AgentLogger {
 			root = LogFileManager.readFile(fileName);
 		else
 			root = new Identity("Agent",null);
+		messageNum = Math.max(messageNum, root.getMaxMessageNum());
 	}
 	
 	private AgentLogger(Identity root) {
@@ -44,8 +48,9 @@ public class AgentLogger {
 	}
 	
 	public void log(String message, int importance) {
+		nextNum = ++messageNum;
 		agent.Agent.logMessage(root.toString(), message);
-		LogEntry m = new LogEntry(message);
+		LogEntry m = new LogEntry(message,nextNum);
 		root.logMessage(m,importance);
 	}
 	

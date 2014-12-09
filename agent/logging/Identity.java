@@ -9,6 +9,15 @@ public class Identity implements Serializable {
 
 	private static final long serialVersionUID = 6961061800526377314L;
 
+	private int maxMessageNum;
+	protected int getMaxMessageNum() {
+		int mmn = maxMessageNum;
+		for (Identity child : children) {
+			mmn = Math.max(mmn, child.getMaxMessageNum());
+		}
+		return mmn;
+	}
+	
 	private final String name;
 	private Identity parent;
 	private List<Identity> children;
@@ -21,6 +30,7 @@ public class Identity implements Serializable {
 		infoLog = new ArrayList<LogEntry>();
 		warningLog = new ArrayList<LogEntry>();
 		errorLog = new ArrayList<LogEntry>();
+		maxMessageNum = 0;
 	}
 
 	@Override
@@ -116,6 +126,7 @@ public class Identity implements Serializable {
 			warningLog.add(m);
 		else
 			errorLog.add(m);
+		maxMessageNum = Math.max(m.getMessageNum(),maxMessageNum);
 	}
 
 	public void setParent(Identity i) {

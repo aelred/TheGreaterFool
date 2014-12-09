@@ -11,12 +11,18 @@ public class LogEntry implements Comparable<LogEntry>, Serializable {
 	public static final SimpleDateFormat formatter = new SimpleDateFormat("EE dd-MMM-yy HH:mm:ss");
 	
 	private Date timeOfMessage;
+	private int messageNum;
 	private String message;
 	private Identity author;
 	
-	public LogEntry(String message) {
+	public LogEntry(String message, int messageNum) {
 		timeOfMessage = new Date();
 		this.message = message;
+		this.messageNum = messageNum;
+	}
+	
+	protected int getMessageNum() {
+		return messageNum;
 	}
 	
 	public void setAuthor(Identity a) {
@@ -29,7 +35,7 @@ public class LogEntry implements Comparable<LogEntry>, Serializable {
 	
 	@Override
 	public int compareTo(LogEntry lm2) {
-		return timeOfMessage.compareTo(lm2.getDate());
+		return messageNum - lm2.messageNum;
 	}
 	
 	public String getMessage() {
