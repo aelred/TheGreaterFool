@@ -13,7 +13,7 @@ public class LogReader {
 	public static final int EXPECTING_IMPORTANCE = 2;
 	public static final int PRINT_IDS = 3;
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws NoSuchChildException {
 		int state = STANDARD;
 		int importance = 1;
 		String fileName = "Agent.log";
@@ -74,40 +74,68 @@ public class LogReader {
 		Identity i = LogFileManager.readFile(fileName);
 		switch (state) {
 		case PRINT_IDS:
-			System.out.println(i.getIDTreeString());
+			i.printIDTreeString();
 			break;
 		default:
-			
+			root.i = i;
+			ArrayList<LogEntry> log;
+			log = root.getLogs();
+			String message;
+			for (LogEntry le : log) {
+				message = le.getTimeString() + "\t";
+				message += le.getAuthorString() + "\t";
+				message += le.getMessage();
+				System.out.println(message);
+			}
 			break;
-		}
-		
-		
-		ArrayList<LogEntry> fullLog = i.getLog();
-		Collections.sort(fullLog);
-		String message;
-		for (LogEntry le : fullLog) {
-			message = "";
-			message += le.getTimeString() + "\t";
-			message += le.getAuthorString() + "\t";
-			message += le.getMessage();
-			System.out.println(message);
-		}
+		}		
 	}
 	
 }
 
 class Tree {
+	public static final int NO_OUTPUT = 1000;
+	
+	public static int numTabs = 0;
+	
 	public List<Tree> children = new ArrayList<Tree>();
-	public int importance = 100;
-	public int descImportance = 100;
+	public int importance = NO_OUTPUT;
+	public int descImportance = NO_OUTPUT;
 	public String name;
+	public Identity i;
 	
 	public Tree(String name) {
 		this.name = name;
 	}
 	
+	public ArrayList<LogEntry> getLogs() throws NoSuchChildException {
+		System.out.println("Getting logs from:");
+		System.out.println(name);
+		ArrayList<LogEntry> log = getLogs_();
+		Collections.sort(log);
+		return log;
+	}
+	
+	private ArrayList<LogEntry> getLogs_() throws NoSuchChildException {
+		ArrayList<LogEntry> log = new ArrayList<LogEntry>();
+		if (importance <= AgentLogger.MAX_IMPORTANCE)
+			log.addAll(i.getOwnLogs(importance));
+		if (descImportance <= AgentLogger.MAX_IMPORTANCE)
+			log.addAll(i.getDescLogs(importance));
+		numTabs++;
+		for (Tree child : children) {
+			for (int nt = 1; nt <= numTabs; nt++) System.out.print("\t");
+			System.out.println();
+			System.out.println(name);
+			child.i = i.getDescendent(child.name);
+			log.addAll(child.getLogs_());
+		}
+		numTabs--;
+		return log;
+	}
+	
 	public void updateChild(String path, int importance) {
-		updateChild(path, importance, 100);
+		updateChild(path, importance, NO_OUTPUT);
 	}
 	
 	private void updateChild(String path, int importance, int defaultImportance) {
@@ -136,7 +164,7 @@ class Tree {
 	
 	private void wipeHigherThan(int importance) {
 		if (importance < this.importance)
-			importance = 100;
+			importance = NO_OUTPUT;
 		if (descImportance < importance)
 			return;
 		descImportance = 0;

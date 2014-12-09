@@ -9,6 +9,7 @@ public class AgentLogger {
 	public static final int WARNING = 2;
 	public static final int ERROR = 3;
 	public static final String fileName = "Agent.log";
+	public static final int MAX_IMPORTANCE = 3;
 	
 	private Identity root;
 	

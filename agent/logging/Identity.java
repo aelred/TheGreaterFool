@@ -128,9 +128,19 @@ public class Identity implements Serializable {
 		return log;
 	}
 
-	public String getIDTreeString() {
-		// TODO Auto-generated method stub
-		return null;
+	public void printIDTreeString() {
+		System.out.println("Printing tree of Identity objects:");
+		printIDTTreeString_(0);
+		System.out.println("Tree complete");
+	}
+	
+	private void printIDTTreeString_(int numTabs) {
+		for (int nt = 1; nt <= numTabs; nt++) System.out.print("\t");
+		System.out.println();
+		System.out.println(name);
+		for (Identity child : children) {
+			child.printIDTTreeString_(numTabs + 1);
+		}
 	}
 
 	public ArrayList<LogEntry> getDescLogs(int importance) {
@@ -143,11 +153,11 @@ public class Identity implements Serializable {
 	
 	public ArrayList<LogEntry> getOwnLogs(int importance) {
 		ArrayList<LogEntry> log = new ArrayList<LogEntry>();
-		if (importance >= AgentLogger.INFO)
+		if (importance <= AgentLogger.INFO)
 			log.addAll(infoLog);
-		if (importance >= AgentLogger.WARNING)
+		if (importance <= AgentLogger.WARNING)
 			log.addAll(warningLog);
-		if (importance >= AgentLogger.ERROR)
+		if (importance <= AgentLogger.ERROR)
 			log.addAll(errorLog);
 		return log;
 	}
