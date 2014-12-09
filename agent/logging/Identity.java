@@ -107,6 +107,9 @@ public class Identity implements Serializable {
 
 	public void logMessage(LogEntry m, int importance) {
 		m.setAuthor(this);
+		String message = m.getMessage();
+		message = message.replaceAll("\n", "\n\t");
+		m.setMessage(message);
 		if (importance < 2)
 			infoLog.add(m);
 		else if (importance == 2)
@@ -136,7 +139,6 @@ public class Identity implements Serializable {
 	
 	private void printIDTTreeString_(int numTabs) {
 		for (int nt = 1; nt <= numTabs; nt++) System.out.print("\t");
-		System.out.println();
 		System.out.println(name);
 		for (Identity child : children) {
 			child.printIDTTreeString_(numTabs + 1);

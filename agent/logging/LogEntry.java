@@ -36,6 +36,10 @@ public class LogEntry implements Comparable<LogEntry>, Serializable {
 		return message;
 	}
 	
+	protected void setMessage(String message) {
+		this.message = message;
+	}
+	
 	protected Date getDate() {
 		return timeOfMessage;
 	}

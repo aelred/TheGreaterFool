@@ -53,7 +53,7 @@ public class AgentLogger {
 		StackTraceElement[] stack = Thread.getAllStackTraces().get(Thread.currentThread());
 		String message = "Stack dump:";
 		for (StackTraceElement ste : stack) {
-			message += "\n" + ste.toString() ;
+			message += "\n\t" + ste.toString() ;
 		}
 		log(message,importance);
 	}
@@ -62,7 +62,7 @@ public class AgentLogger {
 		StackTraceElement[] stack = e.getStackTrace();
 		String message = "Exception stack dump:";
 		for (StackTraceElement ste : stack) {
-			message += "\n" + ste.toString() ;
+			message += "\n\t" + ste.toString() ;
 		}
 		log(message,importance);
 	}
