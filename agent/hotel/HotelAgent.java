@@ -197,8 +197,12 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		return 7 + day + (tt ? 4 : 0);
 	}
 
-	@Override
 	public void fulfillPackages(List<Package> packages) {
+		if (!fulfillPackages_(packages))
+			agent.alertInfeasible();
+	}
+	
+	public boolean fulfillPackages_(List<Package> packages) {
 		AgentLogger fine = pmLogger.getSublogger("fine");
 		boolean[] intendedHotel = new boolean[8];
 		int[] allocated = new int[8];
@@ -272,7 +276,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 				pmLogger.log("Package " + Integer.toString(cliNum)
 						+ " infeasible, requesting package update",
 						AgentLogger.WARNING);
-				agent.alertInfeasible();
+				return false;
 			}
 		}
 		// updateBids(); // Bids are updated individually as initial quote
@@ -293,6 +297,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 			}
 			pmLogger.log(message, AgentLogger.INFO);
 		}
+		return true;
 	}
 
 	private void updateBids() {
