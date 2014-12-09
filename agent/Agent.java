@@ -108,12 +108,13 @@ public class Agent extends AgentImpl {
 
     public void gameStopped() {
         mainLogger.log("Game stopped", AgentLogger.INFO);
-        mainLogger.save();
-
+        
         // Tell subagents to stop
         flightAgent.gameStopped();
         hotelAgent.gameStopped();
         entertainmentAgent.gameStopped();
+        
+        mainLogger.save();
     }
 
     /**

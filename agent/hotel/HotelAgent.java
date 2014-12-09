@@ -284,6 +284,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 
 	@Override
 	public float purchaseProbability(Auction<?> auction) {
+		//TODO make this actually probabilistic
 		int day = auction.getDay();
 		boolean tt = ((HotelAuction)auction).isTT();
 		return auctionsClosed[hashForIndex(day, tt)] ? 0 : 1;
@@ -291,7 +292,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 
 	@Override
 	public float estimatedPrice(Auction<?> auction) {
-	    // Lie, optimistically
+	    //TODO implement
 	    return 50f;
 	}
 
