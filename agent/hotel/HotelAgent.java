@@ -199,6 +199,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 
 	@Override
 	public void fulfillPackages(List<Package> packages) {
+		AgentLogger fine = pmLogger.getSublogger("fine");
 		boolean[] intendedHotel = new boolean[8];
 		int[] allocated = new int[8];
 		mostRecentPackages = packages;
@@ -236,12 +237,15 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 				for (day = arrive; day < depart; day++) {
 					i = hashForIndex(day, tt);
 					if (!auctionsClosed[i]) {
+						fine.log("Adding temporary intention for " + i);
 						tempIntentions[i]++;
 					} else {
 						if (allocated[i] < held[i]) {
 							tempAllocations[i]++;
+							fine.log("Adding temporary allocation for " + i);
 						} else {
 							// infeasible package, try other hotel
+							fine.log("Hotel infeasible for this time period, temporary intentions and allocations reset");
 							errCount++;
 							err = true;
 							tt = !tt;
@@ -253,11 +257,15 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 			if (!err) {
 				// store hotel intention
 				intendedHotel[cliNum - 1] = tt;
+				String allocIntent = "\n\t\t0\t1\t2\t3\t4\t5\t6\t7\n", alloc = "allocated", intent = "intentions:";
 				// push changes to main intention and allocation arrays
 				for (i = 0; i <= 7; i++) {
 					allocated[i] = allocated[i] + tempAllocations[i];
+					alloc += "\t" + Integer.toString(allocated[i]);
 					intentions[i] = intentions[i] + tempIntentions[i];
+					intent += "\t" + Integer.toString(intentions[i]);
 				}
+				pmLogger.log(allocIntent + alloc + "\n" + intent);
 			} else {
 				// failed to find a feasible solution to this package on
 				// specified days
