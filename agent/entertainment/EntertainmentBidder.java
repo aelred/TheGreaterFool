@@ -19,6 +19,9 @@ public abstract class EntertainmentBidder implements EntertainmentAuction.Watche
     protected float bidPrice;
     protected final AgentLogger logger;
 
+    private enum BidState { SUCCESSFUL, WAITING_TO_BID, WAITING_TO_CLEAR }
+    private BidState bidState = BidState.SUCCESSFUL;
+
     public EntertainmentBidder(EntertainmentAgent entAgent, EntertainmentAuction auction, AgentLogger logger) {
         this.entAgent = entAgent;
         this.auction = auction;
@@ -36,25 +39,40 @@ public abstract class EntertainmentBidder implements EntertainmentAuction.Watche
     protected abstract void removeBid() throws BidInUseException;
 
     public void bid(float bidPrice) {
+        this.bidPrice = bidPrice;
         try {
             addBid();
             auction.submitBid();
-            this.bidPrice = bidPrice;
-        } catch (BidInUseException ex) { handleBidInUseException(ex); }
+            bidState = BidState.SUCCESSFUL;
+        } catch (BidInUseException ex) {
+            bidState = BidState.WAITING_TO_BID;
+        }
     }
 
     public void cancelBid() {
         try {
             removeBid();
             auction.submitBid();
-        } catch (BidInUseException ex) { handleBidInUseException(ex); }
+            bidState = BidState.SUCCESSFUL;
+        } catch (BidInUseException ex) {
+            bidState = BidState.WAITING_TO_CLEAR;
+        }
     }
 
     @Override
     public void auctionQuoteUpdated(Auction<?> auction, Quote quote) {  }
 
     @Override
-    public void auctionBidUpdated(Auction<?> auction, BidString bidString) {  }
+    public void auctionBidUpdated(Auction<?> auction, BidString bidString) {
+        switch (bidState) {
+            case WAITING_TO_BID:
+                bid(this.bidPrice);
+                break;
+            case WAITING_TO_CLEAR:
+                cancelBid();
+                break;
+        }
+    }
 
     @Override
     public void auctionBidRejected(Auction<?> auction, BidString bidString) {  }
