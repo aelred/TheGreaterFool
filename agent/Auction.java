@@ -86,7 +86,7 @@ public abstract class Auction<T extends Buyable> {
 
     private void fireSellSuccessful(Transaction transaction) {
         for (Watcher watcher : watchers) {
-            watcher.auctionSellSuccessful(this, transaction.getQuantity());
+            watcher.auctionSellSuccessful(this, -transaction.getQuantity());
         }
     }
 

@@ -1,19 +1,16 @@
 package agent.entertainment;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Logger;
-
-import agent.Agent;
 import agent.Auction;
 import agent.BidInUseException;
 import agent.Buyable;
 import agent.logging.AgentLogger;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class EntertainmentSeller extends EntertainmentBidder {
 
     private final List<EntertainmentTicket> tickets = new ArrayList<EntertainmentTicket>(4);
-    private float sellPrice;
 
     public EntertainmentSeller(EntertainmentAgent entAgent, List<EntertainmentTicket> tickets, float bidPrice, 
     		AgentLogger logger) {
@@ -42,7 +39,11 @@ public class EntertainmentSeller extends EntertainmentBidder {
 
     @Override
     public void auctionSellSuccessful(Auction<?> auction, int numSold) {
-        List<EntertainmentTicket> soldTickets = tickets.subList(tickets.size() - numSold, tickets.size());
+        List<EntertainmentTicket> soldTickets = new ArrayList<EntertainmentTicket>(numSold);
+        logger.log("auctionSellSuccessful: numSold = " + numSold + ", tickets.size() = " + tickets.size());
+        for (int i = 0; i < numSold; i++) {
+            soldTickets.add(tickets.remove(tickets.size() - 1));
+        }
         tickets.removeAll(soldTickets);
         entAgent.ticketsSold(this, soldTickets);
     }
