@@ -230,7 +230,7 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
     @Override
     public float estimatedPrice(Auction<?> auction) {
         // Unused in top agent
-        return 1;
+        return 100;
     }
 
     // Static test methods //
