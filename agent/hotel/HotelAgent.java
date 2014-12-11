@@ -329,13 +329,13 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 			HotelAuction auc = agent.getHotelAuction(day, tt);
 			currentGame.setAskPrice(day, tt, auc.getAskPrice(),
 					lastUpdateMinute[hashForIndex(day, tt)], false);
+			if (auc.isClosed())
+				throw new AuctionClosedException();
 			hotelHist.setEstNextPrice(day, tt);
 			float estNextPrice = hotelHist.getEstNextPrice(day,tt);
 			float proposedBid = (float) (estNextPrice * bidProportions[lastUpdateMinute[aucID]]);
 			proposedBid = Math.max(proposedBid,auc.getAskPrice()+50);
 			int dayHash = hashForIndex(day, tt);
-			if (auc.isClosed())
-				throw new AuctionClosedException();
 			int hqw = auc.getHQW();
 			auc.wipeBid();
 			/*
