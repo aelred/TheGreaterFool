@@ -68,8 +68,6 @@ public class FlightBidder implements Auction.Watcher {
 
     public void auctionQuoteUpdated(Auction<?> auction, Quote quote) {
         // Update price monitor with new prices information
-        // TODO: Make sure this only happens every 10 seconds when the price perturbs!
-        logger.log("Quote updated at " + getTimeStep() + ": " + quote.getAskPrice());
         monitor.addQuote((double)quote.getAskPrice(), getTimeStep());
 
         // only refresh bid at 20 second intervals to avoid duplicate bid problems
@@ -81,7 +79,6 @@ public class FlightBidder implements Auction.Watcher {
     public void auctionBidUpdated(Auction<?> auction, BidString bidString) {
         // If this is called when a bid is accepted,
         // then this checks if we have a waiting bid to submit
-        logger.log("Bid updated");
         if (bidDirtyFlag) {
             refreshBid();
         }
@@ -147,7 +144,6 @@ public class FlightBidder implements Auction.Watcher {
                 auction.modifyBidPoint(quantity, price);
             }
 
-            logger.log("Submitting bid (" + packages.size() + ", " + price + ")");
             auction.submitBid();
         } catch (BidInUseException e) {
             // return early, don't unset bidDirtyFlag
@@ -168,8 +164,6 @@ public class FlightBidder implements Auction.Watcher {
         List<Double> dist = monitor.priceCumulativeDist(getTimeStep());
 
         double confidence = monitor.getConfidence();
-        logger.log("Confidence: " + confidence);
-        logger.log("Min: " + monitor.predictMinimumPrice(getTimeStep()));
         int min = (int)FlightAgent.PRICE_MIN, max = (int)FlightAgent.PRICE_MAX;
 
         // Don't bid if no ask price yet
