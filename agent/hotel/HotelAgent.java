@@ -16,6 +16,7 @@ import java.util.List;
 import agent.Agent;
 import agent.Auction;
 import agent.BidInUseException;
+import agent.BidMap;
 import agent.Buyable;
 import agent.Client;
 import agent.Package;
@@ -28,7 +29,8 @@ import se.sics.tac.aw.Quote;
 public class HotelAgent extends SubAgent<HotelBooking> {
 
 	private static final boolean DEBUG = true;
-	private static final double[] bidProportions = {1.5, 1.1, 1.1, 1.1, 1.2, 1.3, 1.4, 1.5, 0};
+	private static final double[] bidProportions = { 1.5, 1.1, 1.1, 1.1, 1.2,
+			1.3, 1.4, 1.5, 0 };
 	private int[] lastUpdateMinute;
 	private Auction.Watcher watcher = new Auction.Watcher() {
 		AgentLogger aucWatcher = logger.getSublogger("auctionWatcher");
@@ -36,8 +38,8 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		@Override
 		public void auctionQuoteUpdated(Auction<?> auction, Quote quote) {
 			HotelAuction a = ((HotelAuction) auction);
-			aucWatcher.log("Updating " + auction.toString(),AgentLogger.INFO);
-			lastUpdateMinute[hashForIndex(auction.getDay(),a.isTT())]++;
+			aucWatcher.log("Updating " + auction.toString(), AgentLogger.INFO);
+			lastUpdateMinute[hashForIndex(auction.getDay(), a.isTT())]++;
 			updateBid(auction.getDay(), ((HotelAuction) auction).isTT());
 		}
 
@@ -70,7 +72,8 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		}
 
 		@Override
-        public void auctionBuySuccessful(Auction<?> auction, List<Buyable> buyables) {
+		public void auctionBuySuccessful(Auction<?> auction,
+				List<Buyable> buyables) {
 			aucWatcher.log("Won " + buyables.size() + " rooms in "
 					+ (((HotelBooking) buyables.get(0)).towers ? "TT" : "SS")
 					+ " for day " + buyables.get(0).getDay()
@@ -78,8 +81,10 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 					AgentLogger.INFO);
 		}
 
-        @Override
-        public void auctionSellSuccessful(Auction<?> auction, int numSold) { }
+		@Override
+		public void auctionSellSuccessful(Auction<?> auction, int numSold) {
+		}
+
 		@Override
 		public void auctionClosed(Auction<?> auction) {
 			aucWatcher.log("Auction for "
@@ -107,13 +112,16 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		super(agent, hotelStock, logger);
 		subscribeAll();
 		auctionsClosed = new boolean[8];
-        for (int day = 1; day < 5; day++) {
-            Quote quoteTT = agent.getTACAgent().getQuote(getAuctionID(true, day));
-            auctionsClosed[hashForIndex(day, true)] = quoteTT.isAuctionClosed();
-            Quote quoteSS = agent.getTACAgent().getQuote(getAuctionID(false, day));
-            auctionsClosed[hashForIndex(day, false)] = quoteSS.isAuctionClosed();
-        }
-		
+		for (int day = 1; day < 5; day++) {
+			Quote quoteTT = agent.getTACAgent().getQuote(
+					getAuctionID(true, day));
+			auctionsClosed[hashForIndex(day, true)] = quoteTT.isAuctionClosed();
+			Quote quoteSS = agent.getTACAgent().getQuote(
+					getAuctionID(false, day));
+			auctionsClosed[hashForIndex(day, false)] = quoteSS
+					.isAuctionClosed();
+		}
+
 		pmLogger = logger.getSublogger("packageManager");
 		buLogger = logger.getSublogger("bidUpdate");
 
@@ -122,16 +130,18 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 				InputStream buffer = new BufferedInputStream(file);
 				ObjectInput input = new ObjectInputStream(buffer);) {
 			hotelHist = (HotelHistory) input.readObject();
-			logger.log("Hotel history loaded with " + hotelHist.getNumGames() + " games");
+			logger.log("Hotel history loaded with " + hotelHist.getNumGames()
+					+ " games");
 		} catch (Exception e) {
 			logger.log("Unable to read past history file", AgentLogger.WARNING);
-			//logger.logExceptionStack(e, AgentLogger.ERROR);
+			// logger.logExceptionStack(e, AgentLogger.ERROR);
 		}
 		currentGame = new HotelGame(logger.getSublogger("historyRecorder"));
 		hotelHist.setCurrentGame(currentGame);
-		
+
 		if (agent.getTime() > 55000) {
-			logger.log("Suspected late start, history marked dirty. Time=" + agent.getTime(), AgentLogger.WARNING);
+			logger.log("Suspected late start, history marked dirty. Time="
+					+ agent.getTime(), AgentLogger.WARNING);
 			dirtyHistory = true;
 		}
 
@@ -151,7 +161,9 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		if (!dirtyHistory)
 			hotelHist.save();
 		else {
-			logger.getSublogger("historyRecorder").log("Agent entered game after 55 seconds in, so history will be dirty and will not be saved");;
+			logger.getSublogger("historyRecorder")
+					.log("Agent entered game after 55 seconds in, so history will be dirty and will not be saved");
+			;
 			hotelHist.discard();
 		}
 		currentGame.dumpToConsole();
@@ -216,9 +228,9 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		if (!fulfillPackages_(packages))
 			agent.alertInfeasible();
 	}
-	
+
 	public boolean fulfillPackages_(List<Package> packages) {
-		//AgentLogger fine = pmLogger.getSublogger("fine");
+		// AgentLogger fine = pmLogger.getSublogger("fine");
 		boolean[] intendedHotel = new boolean[8];
 		int[] allocated = new int[8];
 		mostRecentPackages = packages;
@@ -229,7 +241,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		Client c;
 		int cliNum = 0;
 		float[] estDifs = hotelHist.getEstHotelPriceDifs();
-		
+
 		for (Package p : packages) {
 			cliNum++;
 			pmLogger.log("Sorting preferences for package " + cliNum
@@ -247,7 +259,9 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 				expectedExtra += estDifs[day - 1];
 			}
 			tt = hotelPremium > expectedExtra;
-			pmLogger.log("HP:" + hotelPremium + ", expected difference in cost:" + expectedExtra + ", so getting " + (tt?"TT":"SS"));
+			pmLogger.log("HP:" + hotelPremium
+					+ ", expected difference in cost:" + expectedExtra
+					+ ", so getting " + (tt ? "TT" : "SS"));
 			errCount = 0;
 			do {
 				err = false;
@@ -256,15 +270,15 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 				for (day = arrive; day < depart; day++) {
 					i = hashForIndex(day, tt);
 					if (!auctionsClosed[i]) {
-						//fine.log("Adding temporary intention for " + i);
+						// fine.log("Adding temporary intention for " + i);
 						tempIntentions[i]++;
 					} else {
 						if (allocated[i] < held[i]) {
 							tempAllocations[i]++;
-							//fine.log("Adding temporary allocation for " + i);
+							// fine.log("Adding temporary allocation for " + i);
 						} else {
 							// infeasible package, try other hotel
-							//fine.log("Hotel infeasible for this time period, temporary intentions and allocations reset");
+							// fine.log("Hotel infeasible for this time period, temporary intentions and allocations reset");
 							errCount++;
 							err = true;
 							tt = !tt;
@@ -335,30 +349,37 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 			if (auc.isClosed())
 				throw new AuctionClosedException();
 			hotelHist.setEstNextPrice(day, tt);
-			float estNextPrice = hotelHist.getEstNextPrice(day,tt);
-			estNextPrice = Math.max(estNextPrice,auc.getAskPrice()+75);
+			float estNextPrice = hotelHist.getEstNextPrice(day, tt);
+			estNextPrice = Math.max(estNextPrice, auc.getAskPrice() + 75);
 			float proposedBid = (float) (estNextPrice * bidProportions[lastUpdateMinute[aucID]]);
 			int dayHash = hashForIndex(day, tt);
 			int hqw = auc.getHQW();
+			float maxBid = 0;
+			if (auc.getActiveBids() != null)
+				for (float bid : auc.getActiveBids().keySet())
+					maxBid = Math.max(maxBid, bid);
 			auc.wipeBid();
 			/*
 			 * if (auc.getAskPrice() < 1) { auc.modifyBidPoint(16 -
 			 * intentions[dayHash] - 1, (float)1.01); }
 			 */
 			int numIntentions = intentions[dayHash];
-			int oppositeIntentions = intentions[hashForIndex(day, !tt)];
-			buLogger.log("Day:" + day + " TT:" + tt + " Intent:" + numIntentions + " Opposite:"
-					+ oppositeIntentions + " HQW:" + hqw);
-			if (numIntentions < hqw) { // on target to win surplus to
-												// requirement
-				auc.modifyBidPoint(hqw - numIntentions,
-						auc.getAskPrice() + 1);
-			} else if (auc.getAskPrice() < 1 && oppositeIntentions > 0) {
-				auc.modifyBidPoint(oppositeIntentions, (float) 1.01);
+			boolean submit = false;
+			if (numIntentions < hqw) {
+				// on target to win surplus to requirement
+				auc.modifyBidPoint(hqw - numIntentions, auc.getAskPrice() + 1);
+				if (maxBid > auc.getAskPrice() + 1 || auc.getAskPrice() < 3)
+					submit = true;
 			}
-			if (numIntentions > 0)
+			if (auc.getAskPrice() < 1) {
+				auc.modifyBidPoint(15 - numIntentions, (float) 1.01);
+				submit = true;
+			}
+			if (numIntentions > 0) {
 				auc.modifyBidPoint(numIntentions, proposedBid);
-			if (numIntentions + oppositeIntentions + hqw > 0)
+				submit = true;
+			}
+			if (submit)
 				auc.submitBid(true);
 		} catch (AuctionClosedException e) {
 			logger.log("Attempted to update "
@@ -397,46 +418,47 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		updateBids();
 	}
 
-    public boolean isAuctionClosed(HotelAuction auction) {
-        int day = auction.getDay();
-        boolean tt = auction.isTT();
-        return auctionsClosed[hashForIndex(day, tt)];
-    }
+	public boolean isAuctionClosed(HotelAuction auction) {
+		int day = auction.getDay();
+		boolean tt = auction.isTT();
+		return auctionsClosed[hashForIndex(day, tt)];
+	}
 
 	@Override
 	public float purchaseProbability(Auction<?> auction) {
-        // Assume 8 agents and 8 clients
-        int numClients = 8 * 8;
+		// Assume 8 agents and 8 clients
+		int numClients = 8 * 8;
 
-        // Estimate demand
+		// Estimate demand
 		int day = auction.getDay();
-        float probDay = (day == 1 || day == 4) ? 0.4f : 0.6f;
-        float demand = (float)numClients * probDay;
-        
-        // Work out how many bookings are available to buy
-		boolean tt = ((HotelAuction) auction).isTT();
-        boolean thisClosed = auctionsClosed[hashForIndex(day, tt)];
-        boolean otherClosed = auctionsClosed[hashForIndex(day, !tt)];
-        int supply = 0;
-        if (!thisClosed) {
-            supply += 16;
-        } else {
-            demand -= 16;
-        }
-        if (!otherClosed) {
-            supply += 16;
-        } else {
-            demand -= 16;
-        }
+		float probDay = (day == 1 || day == 4) ? 0.4f : 0.6f;
+		float demand = (float) numClients * probDay;
 
-        // Calculate probability from supply and demand
-        float prob;
-        if (demand > 0f) {
-            prob = (float)supply / demand;
-        } else {
-            prob = (supply > 0) ? 1f : 0f;
-        }
-        if (prob > 1f) prob = 1f;
+		// Work out how many bookings are available to buy
+		boolean tt = ((HotelAuction) auction).isTT();
+		boolean thisClosed = auctionsClosed[hashForIndex(day, tt)];
+		boolean otherClosed = auctionsClosed[hashForIndex(day, !tt)];
+		int supply = 0;
+		if (!thisClosed) {
+			supply += 16;
+		} else {
+			demand -= 16;
+		}
+		if (!otherClosed) {
+			supply += 16;
+		} else {
+			demand -= 16;
+		}
+
+		// Calculate probability from supply and demand
+		float prob;
+		if (demand > 0f) {
+			prob = (float) supply / demand;
+		} else {
+			prob = (supply > 0) ? 1f : 0f;
+		}
+		if (prob > 1f)
+			prob = 1f;
 		return auctionsClosed[hashForIndex(day, tt)] ? 0 : prob;
 	}
 

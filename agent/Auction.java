@@ -200,15 +200,3 @@ public abstract class Auction<T extends Buyable> {
         return mostRecentQuote;
     }
 }
-
-class BidMap extends HashMap<Float,Integer> {
-    public static final long serialVersionUID = 1L;
-
-    public BidMap(BidMap workingBids) {
-        super(workingBids);
-    }
-
-    public BidMap() {
-        super();
-    }
-}
