@@ -234,6 +234,12 @@ public class HotelHistory implements Serializable {
 			float currentAskPrice = currentGame.askPrices[aucID][currentGame.mostRecentInfo];
 			float avgAskPrice = avgPrices[aucID][currentGame.mostRecentInfo - 1];
 			float avgNextPrice = avgPrices[aucID][currentGame.mostRecentInfo];
+			if (avgAskPrice == 0) {
+				int mostRecentMinute = currentGame.mostRecentInfo;
+				float pricePerMinute = currentAskPrice / mostRecentMinute;
+				double avgMinRemaining = (8.0 - mostRecentMinute) / 2;
+				estNextPrices[aucID] = (float) (pricePerMinute * (mostRecentMinute + avgMinRemaining));
+			}
 			estNextPrices[aucID] = avgNextPrice * currentAskPrice / avgAskPrice;
 		} else
 			estNextPrices[aucID] = avgPrices[aucID][0];
