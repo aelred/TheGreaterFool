@@ -216,7 +216,9 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
 
     @Override
     public float purchaseProbability(Auction<?> auction) {
-        return 1;
+        // Assume 8 x 8 clients staying 2 days on average and 12 x 8 tickets
+        // are available in total.
+        return 0.75f;
     }
 
     @Override
