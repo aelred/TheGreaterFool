@@ -239,8 +239,8 @@ public class HotelHistory implements Serializable {
 				float pricePerMinute = currentAskPrice / mostRecentMinute;
 				double avgMinRemaining = (8.0 - mostRecentMinute) / 2;
 				estNextPrices[aucID] = (float) (pricePerMinute * (mostRecentMinute + avgMinRemaining));
-			}
-			estNextPrices[aucID] = avgNextPrice * currentAskPrice / avgAskPrice;
+			} else
+				estNextPrices[aucID] = avgNextPrice * currentAskPrice / avgAskPrice;
 		} else
 			estNextPrices[aucID] = avgPrices[aucID][0];
 	}
