@@ -146,7 +146,7 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
      * @param tickets A {@link java.util.List} of the {@link agent.entertainment.EntertainmentTicket}s sold.
      */
     public void ticketsSold(EntertainmentSeller seller, List<EntertainmentTicket> tickets) {
-        logger.log("Sold tickets.");
+        logger.log("Sold " + tickets.size() + " tickets (" + tickets.get(0) + ").");
         this.stock.removeAll(tickets);
     }
 
@@ -175,32 +175,31 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
     private void sellUnusedTickets() {
         Map<EntertainmentType, List<List<EntertainmentTicket>>> unusedTickets =
                 new HashMap<EntertainmentType, List<List<EntertainmentTicket>>>();
-                // Stores lists of tickets to be sold by entertainment type and day
+                // Stores lists of tickets to be sold by entertainment type and (zero-based) day
         for (EntertainmentType type : EntertainmentType.values()) {
             unusedTickets.put(type, new ArrayList<List<EntertainmentTicket>>(Agent.NUM_DAYS));
-            for (int day = 0; day < Agent.NUM_DAYS; day++) {
+            for (int zbDay = 0; zbDay < Agent.NUM_DAYS; zbDay++) {
                 unusedTickets.get(type).add(new ArrayList<EntertainmentTicket>(4));
             }
         }
-
-        Set<List<EntertainmentTicket>> ticketLists = new HashSet<List<EntertainmentTicket>>();
-                // Keeps track of which lists of tickets have anything in them
 
         for (EntertainmentTicket ticket : stock) {
             if (ticket.getAssociatedPackage() == null) {
                 List<EntertainmentTicket> ticketList = unusedTickets.get(ticket.getType()).get(ticket.getDay() - 1);
                 ticketList.add(ticket);
-                ticketLists.add(ticketList);
             }
         }
 
-        for (List<EntertainmentTicket> ticketList : ticketLists) {
-            EntertainmentTicket firstTicket = ticketList.get(0);
-            logger.log("Selling " + ticketList.size() + " tickets to " + firstTicket.getType() + " on day " +
-                    firstTicket.getDay());
-            EntertainmentSeller seller = new EntertainmentSeller(this, ticketList, TICKET_SELL_PRICE, 
-            		logger.getSublogger("seller"));
-            sellers.add(seller);
+        for (EntertainmentType type : EntertainmentType.values()) {
+            for (int zbDay = 0; zbDay < Agent.NUM_DAYS; zbDay++) {
+                List<EntertainmentTicket> ticketList = unusedTickets.get(type).get(zbDay);
+                if (ticketList.size() == 0) continue;
+
+                logger.log("Selling " + ticketList.size() + " x " + ticketList.get(0));
+                EntertainmentSeller seller = new EntertainmentSeller(this, ticketList, TICKET_SELL_PRICE,
+                        logger.getSublogger("seller"));
+                sellers.add(seller);
+            }
         }
     }
 

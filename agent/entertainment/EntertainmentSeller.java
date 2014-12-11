@@ -42,6 +42,8 @@ public class EntertainmentSeller extends EntertainmentBidder {
 
     @Override
     public void auctionSellSuccessful(Auction<?> auction, int numSold) {
-        entAgent.ticketsSold(this, tickets);
+        List<EntertainmentTicket> soldTickets = tickets.subList(tickets.size() - numSold, tickets.size());
+        tickets.removeAll(soldTickets);
+        entAgent.ticketsSold(this, soldTickets);
     }
 }
