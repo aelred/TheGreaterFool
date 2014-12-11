@@ -179,7 +179,7 @@ public class Agent extends AgentImpl {
         }
 
         float probSS = 1f;
-        float costSS = 0f;
+        float costSS = -getClient().getHotelPremium();
         for (int day = arrive; day < depart; day++) {
             if (ssStock[day] <= 0) {
                 probSS *= hotelAgent.purchaseProbability(getHotelAuction(day, false));
