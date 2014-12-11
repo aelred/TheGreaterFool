@@ -23,6 +23,7 @@ public class HotelHistory implements Serializable {
 	private float[][] avgPrices;
 	private float[] estHotelPriceDifs;
 	private float[] estPrices;
+	private float[] estNextPrices;
 
 	public HotelHistory() {
 		history = new ArrayList<HotelGame>();
@@ -217,6 +218,24 @@ public class HotelHistory implements Serializable {
 
 	public int getNumGames() {
 		return history.size();
+	}
+
+	
+	public float getEstNextPrice(int day, boolean tt) {
+		return estNextPrices[day - 1 + (tt ? 4 : 0)];
+	}
+	
+
+	public void setEstNextPrice(int day, boolean tt) {
+		int aucID = day - 1 + (tt ? 4 : 0);
+		if (currentGame.closedOn[aucID] > 0) {
+			estNextPrices[aucID] = currentGame.askPrices[aucID][currentGame.closedOn[aucID]];
+		} else {
+			float currentAskPrice = currentGame.askPrices[aucID][currentGame.mostRecentInfo];
+			float avgAskPrice = avgPriceRises[aucID][currentGame.mostRecentInfo - 1];
+			float avgNextPrice = avgPriceRises[aucID][currentGame.mostRecentInfo];
+			estNextPrices[aucID] = avgNextPrice * currentAskPrice / avgAskPrice;
+		}
 	}
 
 }

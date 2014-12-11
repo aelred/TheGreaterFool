@@ -28,6 +28,7 @@ import se.sics.tac.aw.Quote;
 public class HotelAgent extends SubAgent<HotelBooking> {
 
 	private static final boolean DEBUG = true;
+	private static final double[] bidProportions = {1.5, 1.1, 1.1, 1.1, 1.2, 1.3, 1.4, 1.5, 0};
 	private int[] lastUpdateMinute;
 	private Auction.Watcher watcher = new Auction.Watcher() {
 		AgentLogger aucWatcher = logger.getSublogger("auctionWatcher");
@@ -218,7 +219,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		int[] tempIntentions, tempAllocations;
 		Client c;
 		int cliNum = 0;
-		float[] avgDifs = hotelHist.getEstHotelPriceDifs();
+		float[] estDifs = hotelHist.getEstHotelPriceDifs();
 		
 		for (Package p : packages) {
 			cliNum++;
@@ -234,7 +235,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 			// worth aiming for
 			int expectedExtra = 0; // expected extra for TT
 			for (day = arrive; day < depart; day++) {
-				expectedExtra += avgDifs[day - 1];
+				expectedExtra += estDifs[day - 1];
 			}
 			tt = hotelPremium > expectedExtra;
 			pmLogger.log("HP:" + hotelPremium + ", expected difference in cost:" + expectedExtra + ", so getting " + (tt?"TT":"SS"));
@@ -318,9 +319,14 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 
 	private void updateBid(int day, boolean tt) {
 		try {
+			int aucID = hashForIndex(day, tt);
 			HotelAuction auc = agent.getHotelAuction(day, tt);
 			currentGame.setAskPrice(day, tt, auc.getAskPrice(),
 					lastUpdateMinute[hashForIndex(day, tt)], false);
+			hotelHist.setEstNextPrice(day, tt);
+			float estNextPrice = hotelHist.getEstNextPrice(day,tt);
+			float proposedBid = (float) (estNextPrice * bidProportions[lastUpdateMinute[aucID]]);
+			proposedBid = Math.max(proposedBid,auc.getAskPrice()+50);
 			int dayHash = hashForIndex(day, tt);
 			if (auc.isClosed())
 				throw new AuctionClosedException();
@@ -338,7 +344,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 				auc.modifyBidPoint(intentions[hashForIndex(day, !tt)],
 						(float) 1.01);
 			}
-			auc.modifyBidPoint(intentions[dayHash], auc.getAskPrice() + 50);
+			auc.modifyBidPoint(intentions[dayHash], proposedBid);
 			auc.submitBid(true);
 		} catch (AuctionClosedException e) {
 			logger.log("Attempted to update "
