@@ -11,6 +11,7 @@ public class HotelGame implements Serializable {
 	protected float[][] askPrices = new float[8][9];
 	protected int[] closedOn = new int[8];
 	protected Date start = new Date();
+	protected int mostRecentInfo = 0;
 	private static AgentLogger histLogger;
 	
 	public HotelGame(AgentLogger l) {
@@ -27,6 +28,7 @@ public class HotelGame implements Serializable {
 				askPrices[hotelInd][timeInd] = price;
 			}
 		}
+		mostRecentInfo = elapsedMinutes;
 	}
 	
 	public float getClosePrice(int aucID) {
