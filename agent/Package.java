@@ -1,8 +1,6 @@
 package agent;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 import agent.entertainment.EntertainmentTicket;
 import agent.entertainment.EntertainmentType;
@@ -74,6 +72,36 @@ public class Package {
         this.departureDay = departureDay;
 
         clearItinerary();
+    }
+
+    public class UnfilledEntertainmentSlot implements Comparable<UnfilledEntertainmentSlot> {
+        public final EntertainmentType type;
+        public final int premium;
+
+        public UnfilledEntertainmentSlot(EntertainmentType type, int premium) {
+            this.type = type;
+            this.premium = premium;
+        }
+
+        @Override
+        public int compareTo(UnfilledEntertainmentSlot unfilledEntertainmentSlot) {
+            return Integer.compare(this.premium, unfilledEntertainmentSlot.premium);
+        }
+    }
+
+    /** @return a {@link java.util.List} of {@link agent.Package.UnfilledEntertainmentSlot}s for the package, sorted
+     *          in descending order of client premium.
+     */
+    public List<UnfilledEntertainmentSlot> unfilledEntertainmentSlots() {
+        List<UnfilledEntertainmentSlot> slots = new ArrayList<UnfilledEntertainmentSlot>(3);
+        for (EntertainmentType type : EntertainmentType.values()) {
+            if (getEntertainmentTicket(type) == null) {
+                slots.add(new UnfilledEntertainmentSlot(type, client.getEntertainmentPremium(type)));
+            }
+        }
+        Collections.sort(slots);
+        Collections.reverse(slots);
+        return slots;
     }
 
     // TODO: `validate` function

@@ -1,7 +1,6 @@
 package agent.entertainment;
 
 import java.util.*;
-import java.util.logging.Logger;
 
 import agent.Agent;
 import agent.Auction;
@@ -9,7 +8,6 @@ import agent.Client;
 import agent.Package;
 import agent.RandomClient;
 import agent.SubAgent;
-import agent.Package.PackageFullException;
 import agent.logging.AgentLogger;
 
 /**
@@ -160,13 +158,10 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
     private void bidForUnfilledSlots() {
         for (Package pkg : packages) {
             try {
-                // TODO: fill more valuable slots first
-                for (EntertainmentType type : EntertainmentType.values()) {
-                    if (pkg.getEntertainmentTicket(type) == null) {
-                        int day = pkg.reserveDay();
-                        float bidPrice = pkg.getClient().getEntertainmentPremium(type) * (1 - PROFIT_FACTOR);
-                        bidFor(pkg, day, type, bidPrice);
-                    }
+                for (Package.UnfilledEntertainmentSlot slot : pkg.unfilledEntertainmentSlots()) {
+                    int day = pkg.reserveDay();
+                    float bidPrice = slot.premium * (1 - PROFIT_FACTOR);
+                    bidFor(pkg, day, slot.type, bidPrice);
                 }
             } catch (Package.PackageFullException ex) { }  // We can't fit anything else in the package, so move on
         }
