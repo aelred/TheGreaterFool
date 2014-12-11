@@ -161,6 +161,7 @@ public class Agent extends AgentImpl {
                 for (EntertainmentType[] alloc : newAllocs) {
                     alloc[day] = type;
                 }
+                allocs.addAll(newAllocs);
             }
         } else {
             allocs.add(new EntertainmentType[NUM_DAYS + 1]);
@@ -207,7 +208,7 @@ public class Agent extends AgentImpl {
         }
 
         // Get entertainment probabilities
-        float costEnt = 0f;
+        float costEnt = Float.MAX_VALUE;
 
         // Get all possible ticket allocations
         Set<Integer> days = new HashSet<Integer>();
@@ -235,7 +236,7 @@ public class Agent extends AgentImpl {
             }
             
             float outcome = probThis * costThis;
-            if (outcome > costEnt) {
+            if (outcome < costEnt) {
                 costEnt = outcome;
             }
         }
