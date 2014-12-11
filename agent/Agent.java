@@ -201,6 +201,10 @@ public class Agent extends AgentImpl {
         float probHotel = 1f;
         float costHotel = 0f;
         for (int day = arrive; day < depart; day++) {
+            if (hotelAgent.isAuctionClosed(getHotelAuction(day, towers))) {
+                // This is impossible, return loss
+                return -1f;
+            }
             if (hotelStock[day] <= 0) {
                 probHotel *= hotelAgent.purchaseProbability(getHotelAuction(day, towers));
                 costHotel += hotelAgent.estimatedPrice(getHotelAuction(day, towers));
@@ -298,17 +302,17 @@ public class Agent extends AgentImpl {
         mainLogger.log("Stock:");
         mainLogger.log("Type\tIn\tout\tTT\t\tSS\t\tE1\tE2\tE3");
         for (int day = 1; day <= NUM_DAYS; day ++) {
-            float ttOpen, ssOpen;
+            boolean ttClosed, ssClosed;
             if (day < 5) {
-                ttOpen = hotelAgent.purchaseProbability(getHotelAuction(day, true));
-                ssOpen = hotelAgent.purchaseProbability(getHotelAuction(day, false));
+                ttClosed = hotelAgent.isAuctionClosed(getHotelAuction(day, true));
+                ssClosed = hotelAgent.isAuctionClosed(getHotelAuction(day, false));
             } else {
-                ttOpen = 0f;
-                ssOpen = 0f;
+                ttClosed = true;
+                ssClosed = true;
             }
             mainLogger.log(""+day+"\t"+arriveStock[day]+"\t"+departStock[day]+
-                "\t"+ttStock[day]+"\t"+(ttOpen!=0f ? "open" : "close")+
-                "\t"+ssStock[day]+"\t"+(ssOpen!=0f ? "open" : "close")+"\t"+
+                "\t"+ttStock[day]+"\t"+(ttClosed ? "closed" : "open")+
+                "\t"+ssStock[day]+"\t"+(ssClosed ? "closed" : "open")+"\t"+
                 entStock.get(EntertainmentType.fromValue(1))[day]+"\t"+
                 entStock.get(EntertainmentType.fromValue(2))[day]+"\t"+
                 entStock.get(EntertainmentType.fromValue(3))[day]);

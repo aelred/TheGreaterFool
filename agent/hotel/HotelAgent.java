@@ -107,6 +107,12 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		super(agent, hotelStock, logger);
 		subscribeAll();
 		auctionsClosed = new boolean[8];
+        for (int day = 1; day < 5; day++) {
+            Quote quoteTT = agent.getTACAgent().getQuote(getAuctionID(true, day));
+            auctionsClosed[hashForIndex(day, true)] = quoteTT.isAuctionClosed();
+            Quote quoteSS = agent.getTACAgent().getQuote(getAuctionID(false, day));
+            auctionsClosed[hashForIndex(day, false)] = quoteSS.isAuctionClosed();
+        }
 		
 		pmLogger = logger.getSublogger("packageManager");
 
@@ -382,6 +388,12 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		intentions = new int[8];
 		updateBids();
 	}
+
+    public boolean isAuctionClosed(HotelAuction auction) {
+        int day = auction.getDay();
+        boolean tt = auction.isTT();
+        return auctionsClosed[hashForIndex(day, tt)];
+    }
 
 	@Override
 	public float purchaseProbability(Auction<?> auction) {
