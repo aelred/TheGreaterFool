@@ -188,7 +188,9 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		hotelHist.update();
 		if (held[i] < intentions[i]) {
 			// did not achieve ideal scenario, need to reassess
-			fulfillPackages(mostRecentPackages);
+			if (!fulfillPackages_(mostRecentPackages))
+				agent.alertInfeasible();
+			updateBids();
 		} else if (held[i] > intentions[i]) {
 			// TODO may want to reevaluate here to see if money can be saved by
 			// using the spare bookings
@@ -333,8 +335,8 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 				throw new AuctionClosedException();
 			hotelHist.setEstNextPrice(day, tt);
 			float estNextPrice = hotelHist.getEstNextPrice(day,tt);
+			estNextPrice = Math.max(estNextPrice,auc.getAskPrice()+75);
 			float proposedBid = (float) (estNextPrice * bidProportions[lastUpdateMinute[aucID]]);
-			proposedBid = Math.max(proposedBid,auc.getAskPrice()+50);
 			int dayHash = hashForIndex(day, tt);
 			int hqw = auc.getHQW();
 			auc.wipeBid();
