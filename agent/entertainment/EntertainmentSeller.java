@@ -40,7 +40,6 @@ public class EntertainmentSeller extends EntertainmentBidder {
     @Override
     public void auctionSellSuccessful(Auction<?> auction, int numSold) {
         List<EntertainmentTicket> soldTickets = new ArrayList<EntertainmentTicket>(numSold);
-        logger.log("auctionSellSuccessful: numSold = " + numSold + ", tickets.size() = " + tickets.size());
         for (int i = 0; i < numSold; i++) {
             soldTickets.add(tickets.remove(tickets.size() - 1));
         }
