@@ -30,6 +30,7 @@ public class HotelHistory implements Serializable {
 		setAvgHotelPriceDifs();
 		setAvgPriceRises();
 		setAvgPrices();
+		estNextPrices = new float[8];
 	}
 
 	public void update() {
