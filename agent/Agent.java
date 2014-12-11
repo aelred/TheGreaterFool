@@ -144,24 +144,26 @@ public class Agent extends AgentImpl {
 
     // Return list of possible entertainment ticket allocations
     private List<EntertainmentType[]> getTicketAllocations(
-        Set<Integer> days, List<EntertainmentType> types) {
+        Set<Integer> days, Set<EntertainmentType> types) {
         List<EntertainmentType[]> allocs = new ArrayList<EntertainmentType[]>();
 
-        if (types.size() > 0) {
+        if (types.size() > 0 && days.size() > 0) {
             // For a ticket type, allocate it each possible day
-            List<EntertainmentType> lessTypes = 
-                new ArrayList<EntertainmentType>(types);
-            EntertainmentType type = lessTypes.remove(0);
-            for (int day : days) {
-                Set<Integer> lessDays = new HashSet<Integer>(days);
-                lessDays.remove(day);
-                List<EntertainmentType[]> newAllocs = 
-                    getTicketAllocations(lessDays, lessTypes);
-                
-                for (EntertainmentType[] alloc : newAllocs) {
-                    alloc[day] = type;
+            for (EntertainmentType type : types) {
+                Set<EntertainmentType> lessTypes = 
+                    new HashSet<EntertainmentType>(types);
+                lessTypes.remove(type);
+                for (int day : days) {
+                    Set<Integer> lessDays = new HashSet<Integer>(days);
+                    lessDays.remove(day);
+                    List<EntertainmentType[]> newAllocs = 
+                        getTicketAllocations(lessDays, lessTypes);
+                    
+                    for (EntertainmentType[] alloc : newAllocs) {
+                        alloc[day] = type;
+                    }
+                    allocs.addAll(newAllocs);
                 }
-                allocs.addAll(newAllocs);
             }
         } else {
             allocs.add(new EntertainmentType[NUM_DAYS + 1]);
@@ -212,48 +214,63 @@ public class Agent extends AgentImpl {
         }
 
         // Get entertainment probabilities
-        float costEnt = Float.MAX_VALUE;
+        float funBonus = 0f;
 
         // Get all possible ticket allocations
         Set<Integer> days = new HashSet<Integer>();
-        for (int day = 1; day <= NUM_DAYS; day ++) {
+        for (int day = arrive; day < depart; day ++) {
             days.add(day);
         }
-        List<EntertainmentType> types = new ArrayList<EntertainmentType>();
+        Set<EntertainmentType> types = new HashSet<EntertainmentType>();
         for (EntertainmentType type : EntertainmentType.values()) {
             types.add(type);
         }
         List<EntertainmentType[]> allocs = getTicketAllocations(days, types);
 
         for (EntertainmentType[] alloc : allocs) {
-            float probThis = 1f;
-            float costThis = 0f;
+            float valueThis = 0f;
             for (int day = 1; day <= NUM_DAYS; day++) {
                 if (alloc[day] != null) {
-                    if (entStock.get(alloc[day])[day] <= 0) {
-                        costThis += entertainmentAgent.estimatedPrice(
-                            getEntertainmentAuction(day, alloc[day]));
-                        probThis *= entertainmentAgent.purchaseProbability(
+                    float price = entertainmentAgent.estimatedPrice(
+                        getEntertainmentAuction(day, alloc[day]));
+                    float bonus = pack.getClient().getEntertainmentPremium(alloc[day]);
+
+                    // If in stock, costs nothing
+                    boolean inStock = entStock.get(alloc[day])[day] > 0;
+                    float prob;
+                    if (inStock) {
+                        price = 0f;
+                        prob = 1f;
+                    } else {
+                        prob = entertainmentAgent.purchaseProbability(
                             getEntertainmentAuction(day, alloc[day]));
                     }
+
+                    // Only buy this ticket if it benefits us
+                    if (bonus > price) {
+                        valueThis += (bonus - price) * prob;
+                    }
+
                 }
             }
             
-            float outcome = probThis * costThis;
-            if (outcome < costEnt) {
-                costEnt = outcome;
+            if (valueThis > funBonus) {
+                funBonus = valueThis;
             }
         }
 
         // Three outcomes: we buy the package at the estimated price with TT or
         // SS, OR we don't, but we still pay some cost for buying some things
         // (assume half cost of package).
-        float profit = pack.potentialUtility(towers);
-        float cost = costHotel + costFlight + costEnt;
+        // Extra penalty for using days outside wanted holiday.
+        // This is to deal with problems with clients 'stealing' one another's
+        // booking and tickets.
+        float profit = pack.potentialUtility(towers, 300) + funBonus;
+        float cost = costHotel + costFlight;
 
         float outcome = 
-            probFlight * probHotel * (profit - cost) + 
-            (1f - probFlight) * (1f - probHotel) * (-cost) / 2f;
+            probFlight * probHotel * (profit - cost) - 
+            (1f - probFlight) * (1f - probHotel) * cost / 2f;
         return outcome;
     }
 

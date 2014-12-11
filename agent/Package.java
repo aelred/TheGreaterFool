@@ -138,9 +138,13 @@ public class Package {
 
     // Utility calculation //
 
-    public int travelPenalty() {
-        return 100 * (  Math.abs(arrivalDay   - client.getPreferredArrivalDay())
+    public int travelPenalty(int penalty) {
+        return penalty * (  Math.abs(arrivalDay   - client.getPreferredArrivalDay())
                       + Math.abs(departureDay - client.getPreferredDepartureDay()));
+    }
+
+    public int travelPenalty() {
+        return travelPenalty(100);
     }
 
     public int hotelBonus() {
@@ -155,17 +159,8 @@ public class Package {
         return funBonus;
     }
 
-    public int potentialUtility(boolean towers) {
-        int funBonus = 0;
-        for (EntertainmentType type : EntertainmentType.values()) {
-            funBonus += client.getEntertainmentPremium(type);
-        }
-        // If less than three days, we can't have the whole fun bonus
-        if (departureDay - arrivalDay < 3) {
-            funBonus *= (float)(departureDay - arrivalDay) / 3f;
-        }
-
-        return 1000 - travelPenalty() + (towers ? client.getHotelPremium() : 0) + funBonus;
+    public int potentialUtility(boolean towers, int penalty) {
+        return 1000 - travelPenalty(penalty) + (towers ? client.getHotelPremium() : 0);
     }
 
     public int clientUtility() {
