@@ -325,9 +325,14 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 			}
 			pmLogger.log(message, AgentLogger.INFO);
 		}
+		considerAlternatives();
 		return true;
 	}
 
+	private void considerAlternatives() {
+		
+	}
+	
 	private void updateBids() {
 		updateBids(true);
 		updateBids(false);
