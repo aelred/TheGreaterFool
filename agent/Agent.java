@@ -173,8 +173,8 @@ public class Agent extends AgentImpl {
     private float getPackageOutcome(Package pack, 
             int[] arriveStock,
             int[] departStock,
-            int[] ttStock,
-            int[] ssStock,
+            boolean towers,
+            int[] hotelStock,
             Map<EntertainmentType, int[]> entStock) {
 
         float probFlight = 1f;
@@ -197,32 +197,17 @@ public class Agent extends AgentImpl {
         }
 
         // Get hotel probabilities
-        float probTT = 1f;
-        float costTT = 0f;
+        float probHotel = 1f;
+        float costHotel = 0f;
         for (int day = arrive; day < depart; day++) {
-            if (ttStock[day] <= 0) {
-                probTT *= hotelAgent.purchaseProbability(getHotelAuction(day, true));
-                costTT += hotelAgent.estimatedPrice(getHotelAuction(day, true));
+            if (hotelStock[day] <= 0) {
+                probHotel *= hotelAgent.purchaseProbability(getHotelAuction(day, towers));
+                costHotel += hotelAgent.estimatedPrice(getHotelAuction(day, towers));
             }
         }
-
-        float probSS = 1f;
-        float costSS = -pack.getClient().getHotelPremium();
-        for (int day = arrive; day < depart; day++) {
-            if (ssStock[day] <= 0) {
-                probSS *= hotelAgent.purchaseProbability(getHotelAuction(day, false));
-                costSS += hotelAgent.estimatedPrice(getHotelAuction(day, false));
-            }
-        }
-        
-        // Normalize probabilities. Assumes if both hotels are won, then each is
-        // chosen with 50/50 probabiliity.
-        float probHotel = probTT * probSS;
-        probTT -= probHotel / 2f;
-        probSS -= probHotel / 2f;
 
         // Get entertainment probabilities
-        float entOutcome = 0f;
+        float costEnt = 0f;
 
         // Get all possible ticket allocations
         Set<Integer> days = new HashSet<Integer>();
@@ -246,27 +231,25 @@ public class Agent extends AgentImpl {
                         probThis *= entertainmentAgent.purchaseProbability(
                             getEntertainmentAuction(day, alloc[day]));
                     }
-                    costThis -= 
-                        pack.getClient().getEntertainmentPremium(alloc[day]);
                 }
             }
             
             float outcome = probThis * costThis;
-            if (outcome > entOutcome) {
-                entOutcome = outcome;
+            if (outcome > costEnt) {
+                costEnt = outcome;
             }
         }
 
         // Three outcomes: we buy the package at the estimated price with TT or
         // SS, OR we don't, but we still pay some cost for buying some things
         // (assume half cost of package).
-        float ttOutcome = pack.potentialUtility(true) - costTT - costFlight;
-        float ssOutcome = pack.potentialUtility(false) - costSS - costFlight;
-        float badOutcome = - (costFlight + (costTT + costSS) / 2f) / 2f;
-        return 
-            probFlight * probTT * (ttOutcome + entOutcome) + 
-            probFlight * probSS * (ssOutcome + entOutcome) + 
-            (1f - probFlight) * (1f - probTT - probSS) * badOutcome;
+        float profit = pack.potentialUtility(towers);
+        float cost = costHotel + costFlight + costEnt;
+
+        float outcome = 
+            probFlight * probHotel * (profit - cost) + 
+            (1f - probFlight) * (1f - probHotel) * (-cost) / 2f;
+        return outcome;
     }
 
     private void createPackages() {
@@ -308,30 +291,75 @@ public class Agent extends AgentImpl {
         for (EntertainmentTicket ticket : entertainmentTickets) {
             entStock.get(ticket.getType())[ticket.getDay()] += 1;
         }
-        
+
+        mainLogger.log("Creating packages:");
+
+        mainLogger.log("Stock:");
+        mainLogger.log("Type\tIn\tout\tTT\t\tSS\t\tE1\tE2\tE3");
+        for (int day = 1; day <= NUM_DAYS; day ++) {
+            float ttOpen, ssOpen;
+            if (day < 5) {
+                ttOpen = hotelAgent.purchaseProbability(getHotelAuction(day, true));
+                ssOpen = hotelAgent.purchaseProbability(getHotelAuction(day, false));
+            } else {
+                ttOpen = 0f;
+                ssOpen = 0f;
+            }
+            mainLogger.log(""+day+"\t"+arriveStock[day]+"\t"+departStock[day]+
+                "\t"+ttStock[day]+"\t"+(ttOpen!=0f ? "open" : "close")+
+                "\t"+ssStock[day]+"\t"+(ssOpen!=0f ? "open" : "close")+"\t"+
+                entStock.get(EntertainmentType.fromValue(1))[day]+"\t"+
+                entStock.get(EntertainmentType.fromValue(2))[day]+"\t"+
+                entStock.get(EntertainmentType.fromValue(3))[day]);
+        }
+
+        mainLogger.log("Allocations:");
+        mainLogger.log("id\tHotel\tE1\tE2\tE3\tIn\tOut\tSetIn\tSetOut\tOutcome");
+
         for (int i = 0; i < clients.length; i++) {
             // Select viable packages with highest expected outcome
             Package bestPackage = null;
             float bestOutcome = 0;
+            boolean bestTowers = false;
 
             for (int arrive = 1; arrive <= NUM_DAYS-1; arrive++) {
                 for (int depart = arrive + 1; depart <= NUM_DAYS; depart++) {
                     Package pack = new Package(clients[i], arrive, depart);
 
                     // Calculate expected outcome of package
-                    float outcome = getPackageOutcome(pack, 
-                        arriveStock, departStock, ttStock, ssStock, entStock);
+                    // With good hotel
+                    float outcomeTT = getPackageOutcome(pack, 
+                        arriveStock, departStock, true, ttStock, entStock);
 
-                    if (outcome > bestOutcome) {
-                        bestOutcome = outcome;
+                    if (outcomeTT > bestOutcome) {
+                        bestOutcome = outcomeTT;
                         bestPackage = pack;
+                        bestTowers = true;
+                    }
+
+                    // With cheap hotel
+                    float outcomeSS = getPackageOutcome(pack,
+                        arriveStock, departStock, false, ssStock, entStock);
+
+                    if (outcomeSS > bestOutcome) {
+                        bestOutcome = outcomeSS;
+                        bestPackage = pack;
+                        bestTowers = false;
                     }
                 }
             }
 
             // If package is null, no good package can be found,
             // so we forget this client.
-            if (bestPackage != null) {
+            String setIn;
+            String setOut;
+            if (bestPackage == null) {
+                setIn = "_";
+                setOut = "_";
+            } else {
+                setIn = Integer.toString(bestPackage.getArrivalDay());
+                setOut = Integer.toString(bestPackage.getDepartureDay());
+
                 packages.add(bestPackage);
 
                 // Remove any used stock
@@ -340,15 +368,7 @@ public class Agent extends AgentImpl {
                 arriveStock[arrive] -= 1;
                 departStock[depart] -= 1;
 
-                // Work out whether to remove from TT or SS stock
-                int ttSum = 0;
-                int ssSum = 0;
-                for (int day = arrive; day < depart; day++) {
-                    if (ttStock[day] > 0) ttSum += 1;
-                    if (ssStock[day] > 0) ssSum += 1;
-                }
-
-                int[] stock = (ttSum > ssSum) ? ttStock : ssStock;
+                int[] stock = bestTowers ? ttStock : ssStock;
                 for (int day = arrive; day < depart; day++) {
                     stock[day] -= 1;
                 }
@@ -364,13 +384,29 @@ public class Agent extends AgentImpl {
                     }
                 }
             }
+
+            mainLogger.log(""+i+"\t"+clients[i].getHotelPremium()+"\t"+
+                clients[i].getEntertainmentPremium(EntertainmentType.fromValue(1))+"\t"+
+                clients[i].getEntertainmentPremium(EntertainmentType.fromValue(2))+"\t"+
+                clients[i].getEntertainmentPremium(EntertainmentType.fromValue(3))+"\t"+
+                clients[i].getPreferredArrivalDay()+"\t"+
+                clients[i].getPreferredDepartureDay()+"\t"+
+                setIn+"\t"+ setOut+"\t"+bestOutcome);
         }
+
     }
 
     private void fulfillPackages() {
-        flightAgent.fulfillPackages(packages);
-        hotelAgent.fulfillPackages(packages);
-        entertainmentAgent.fulfillPackages(packages);
+        // Only tell subagents to fulfill packages if the hotel agent approves
+        // and agrees the packages are feasible!
+        if (hotelAgent.fulfillPackages_(packages)) {
+            flightAgent.fulfillPackages(packages);
+            entertainmentAgent.fulfillPackages(packages);
+        } else {
+            // Re-try but this is bad
+            alertInfeasible();
+            throw new RuntimeException("Created an invalid set of packages");
+        }
     }
 
     private void createAuctions() {
