@@ -97,7 +97,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 	private HotelHistory hotelHist;
 	private HotelGame currentGame;
 	private boolean dirtyHistory = false;
-	private AgentLogger pmLogger;
+	private AgentLogger pmLogger, buLogger;
 
 	@SuppressWarnings("unused")
 	private boolean[] intendedHotel;
@@ -115,6 +115,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
         }
 		
 		pmLogger = logger.getSublogger("packageManager");
+		buLogger = logger.getSublogger("bidUpdate");
 
 		hotelHist = new HotelHistory();
 		try (InputStream file = new FileInputStream("hotelHistory.hist");
@@ -346,6 +347,8 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 			 */
 			int numIntentions = intentions[dayHash];
 			int oppositeIntentions = intentions[hashForIndex(day, !tt)];
+			buLogger.log("Day:" + day + " TT:" + tt + " Intent:" + numIntentions + " Opposite:"
+					+ oppositeIntentions + " HQW:" + hqw);
 			if (numIntentions < hqw) { // on target to win surplus to
 												// requirement
 				auc.modifyBidPoint(hqw - numIntentions,

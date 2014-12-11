@@ -34,7 +34,10 @@ public class HotelAuction extends Auction<HotelBooking> {
     }
 	
 	public int getHQW() {
-		return hqw;
+		if (hqw < 0)
+			return 0;
+		else
+			return hqw;
 	}
 	
 	public boolean isClosed() {
