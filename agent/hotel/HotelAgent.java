@@ -102,7 +102,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 	private HotelHistory hotelHist;
 	private HotelGame currentGame;
 	private boolean dirtyHistory = false;
-	private AgentLogger pmLogger, buLogger;
+	private AgentLogger pmLogger;
 
 	@SuppressWarnings("unused")
 	private boolean[] intendedHotel;
@@ -123,7 +123,6 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		}
 
 		pmLogger = logger.getSublogger("packageManager");
-		buLogger = logger.getSublogger("bidUpdate");
 
 		hotelHist = new HotelHistory();
 		try (InputStream file = new FileInputStream("hotelHistory.hist");
