@@ -342,16 +342,19 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 			 * if (auc.getAskPrice() < 1) { auc.modifyBidPoint(16 -
 			 * intentions[dayHash] - 1, (float)1.01); }
 			 */
-			if (intentions[dayHash] < hqw) { // on target to win surplus to
+			int numIntentions = intentions[dayHash];
+			int oppositeIntentions = intentions[hashForIndex(day, !tt)];
+			if (numIntentions < hqw) { // on target to win surplus to
 												// requirement
-				auc.modifyBidPoint(hqw - intentions[dayHash],
+				auc.modifyBidPoint(hqw - numIntentions,
 						auc.getAskPrice() + 1);
-			} else if (auc.getAskPrice() < 1) {
-				auc.modifyBidPoint(intentions[hashForIndex(day, !tt)],
-						(float) 1.01);
+			} else if (auc.getAskPrice() < 1 && oppositeIntentions > 0) {
+				auc.modifyBidPoint(oppositeIntentions, (float) 1.01);
 			}
-			auc.modifyBidPoint(intentions[dayHash], proposedBid);
-			auc.submitBid(true);
+			if (numIntentions > 0)
+				auc.modifyBidPoint(numIntentions, proposedBid);
+			if (numIntentions + oppositeIntentions > 0)
+				auc.submitBid(true);
 		} catch (AuctionClosedException e) {
 			logger.log("Attempted to update "
 					+ agent.getHotelAuction(day, tt).toString()
