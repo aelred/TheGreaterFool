@@ -22,3 +22,5 @@ hs_err_pid*
 *.lck
 /games/
 /agent.conf
+
+hotelHistory.hist
