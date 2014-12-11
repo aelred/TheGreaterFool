@@ -354,7 +354,7 @@ public class Agent extends AgentImpl {
                 }
 
                 // Remove from first ticket type with stock left
-                int numDays = Math.max(depart - arrive, 3);
+                int numDays = Math.min(depart - arrive, 3);
                 for (int day = 0; day < numDays; day++) {
                     for (int[] ent : entStock.values()) {
                         if (ent[arrive+day] > 0) {
