@@ -207,13 +207,18 @@ public class FlightPriceMonitor {
             last = prices[t];
         } else {
             // Predict initial price
-            last = (START_MAX - START_MIN) / 2d;
+            last = (double)START_MIN + (double)(START_MAX - START_MIN) / 2d;
         }
 
         double[] futPrices = new double[FlightAgent.MAX_TIME-t];
         futPrices[0] = last; // Include the most recent real price
         for (int i = t+1; i < FlightAgent.MAX_TIME; i ++) {
             double price = last + averagePriceDiff(x, i);
+            if (price < FlightAgent.PRICE_MIN) {
+                price = FlightAgent.PRICE_MIN;
+            } else if (price > FlightAgent.PRICE_MAX) {
+                price = FlightAgent.PRICE_MAX;
+            }
             futPrices[i-t] = price;
             last = price;
         }
