@@ -60,11 +60,6 @@ public abstract class EntertainmentBidder implements EntertainmentAuction.Watche
         }
     }
 
-    public void deregister() {
-        cancelBid();
-        auction.removeWatcher(this);
-    }
-
     @Override
     public void auctionQuoteUpdated(Auction<?> auction, Quote quote) {  }
 
