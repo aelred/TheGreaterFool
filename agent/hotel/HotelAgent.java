@@ -353,7 +353,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 			}
 			if (numIntentions > 0)
 				auc.modifyBidPoint(numIntentions, proposedBid);
-			if (numIntentions + oppositeIntentions > 0)
+			if (numIntentions + oppositeIntentions + hqw > 0)
 				auc.submitBid(true);
 		} catch (AuctionClosedException e) {
 			logger.log("Attempted to update "
