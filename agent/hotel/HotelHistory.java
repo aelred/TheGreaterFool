@@ -231,12 +231,13 @@ public class HotelHistory implements Serializable {
 		int aucID = day - 1 + (tt ? 4 : 0);
 		if (currentGame.closedOn[aucID] > 0) {
 			estNextPrices[aucID] = currentGame.askPrices[aucID][currentGame.closedOn[aucID]];
-		} else {
+		} else if (currentGame.mostRecentInfo > 0) {
 			float currentAskPrice = currentGame.askPrices[aucID][currentGame.mostRecentInfo];
-			float avgAskPrice = avgPriceRises[aucID][currentGame.mostRecentInfo - 1];
-			float avgNextPrice = avgPriceRises[aucID][currentGame.mostRecentInfo];
+			float avgAskPrice = avgPrices[aucID][currentGame.mostRecentInfo - 1];
+			float avgNextPrice = avgPrices[aucID][currentGame.mostRecentInfo];
 			estNextPrices[aucID] = avgNextPrice * currentAskPrice / avgAskPrice;
-		}
+		} else
+			estNextPrices[aucID] = avgPrices[aucID][0];
 	}
 
 }
