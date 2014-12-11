@@ -379,10 +379,39 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 
 	@Override
 	public float purchaseProbability(Auction<?> auction) {
-		// TODO make this actually probabilistic
+        // Assume 8 agents and 8 clients
+        int numClients = 8 * 8;
+
+        // Estimate demand
 		int day = auction.getDay();
+        float probDay = (day == 1 || day == 4) ? 0.4f : 0.6f;
+        float demand = (float)numClients * probDay;
+        
+        // Work out how many bookings are available to buy
 		boolean tt = ((HotelAuction) auction).isTT();
-		return (float) (auctionsClosed[hashForIndex(day, tt)] ? 0 : 0.75);
+        boolean thisClosed = auctionsClosed[hashForIndex(day, tt)];
+        boolean otherClosed = auctionsClosed[hashForIndex(day, !tt)];
+        int supply = 0;
+        if (!thisClosed) {
+            supply += 16;
+        } else {
+            demand -= 16;
+        }
+        if (!otherClosed) {
+            supply += 16;
+        } else {
+            demand -= 16;
+        }
+
+        // Calculate probability from supply and demand
+        float prob;
+        if (demand > 0f) {
+            prob = (float)supply / demand;
+        } else {
+            prob = (supply > 0) ? 1f : 0f;
+        }
+        if (prob > 1f) prob = 1f;
+		return auctionsClosed[hashForIndex(day, tt)] ? 0 : prob;
 	}
 
 	@Override
