@@ -23,14 +23,13 @@ public class HotelHistory implements Serializable {
 	private float[][] avgPrices;
 	private float[] estHotelPriceDifs;
 	private float[] estPrices;
-	private float[] estNextPrices;
+	private float[] estNextPrices = new float[8];
 
 	public HotelHistory() {
 		history = new ArrayList<HotelGame>();
 		setAvgHotelPriceDifs();
 		setAvgPriceRises();
 		setAvgPrices();
-		estNextPrices = new float[8];
 	}
 
 	public void update() {
