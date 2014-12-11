@@ -130,10 +130,10 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
 
     /** Called by an {@link agent.entertainment.EntertainmentBuyer} when it obtains a ticket from an auction.
      *
-     * @param bidder The {@link agent.entertainment.EntertainmentBuyer}.
+     * @param buyer The {@link agent.entertainment.EntertainmentBuyer}.
      * @param ticket The {@link agent.entertainment.EntertainmentTicket} that was bought.
      */
-    public void ticketWon(EntertainmentBuyer bidder, EntertainmentTicket ticket) {
+    public void ticketWon(EntertainmentBuyer buyer, EntertainmentTicket ticket) {
         logger.log("Won ticket: " + ticket);
         this.stock.add(ticket);
     }
@@ -144,13 +144,13 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
      * @param tickets A {@link java.util.List} of the {@link agent.entertainment.EntertainmentTicket}s sold.
      */
     public void ticketsSold(EntertainmentSeller seller, List<EntertainmentTicket> tickets) {
-        logger.log("Sold " + tickets.size() + " tickets (" + tickets.get(0) + ").");
+        logger.log("Sold " + tickets.size() + " x " + tickets.get(0));
         this.stock.removeAll(tickets);
     }
 
     private void bidFor(Package pkg, int day, EntertainmentType type, float bidPrice) {
-        EntertainmentAuction auction = agent.getEntertainmentAuction(day, type);
         logger.log("Bidding for a ticket to " + type + " on " + day);
+        EntertainmentAuction auction = agent.getEntertainmentAuction(day, type);
         EntertainmentBuyer buyer = new EntertainmentBuyer(this, auction, pkg, bidPrice, logger.getSublogger("bidder"));
         buyers.add(buyer);
     }
@@ -204,10 +204,8 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
         List<Allocation> allocations = possibleAllocations();
         List<Allocation> bestAllocations = chooseBestAllocations(allocations);
 
-        System.out.println("Best allocations:");
         for (Allocation allocation : bestAllocations) {
             allocation.perform();
-            System.out.printf("\t%s for $%d\n", allocation.ticket, allocation.getValue());
         }
         logger.log("Made " + bestAllocations.size() + " allocations out of a possible " + allocations.size() + ".");
 
