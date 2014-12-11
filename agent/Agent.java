@@ -142,12 +142,40 @@ public class Agent extends AgentImpl {
         return agent.getGameTime();
     }
 
+    // Return list of possible entertainment ticket allocations
+    private List<EntertainmentType[]> getTicketAllocations(
+        Set<Integer> days, List<EntertainmentType> types) {
+        List<EntertainmentType[]> allocs = new ArrayList<EntertainmentType[]>();
+
+        if (types.size() > 0) {
+            // For a ticket type, allocate it each possible day
+            List<EntertainmentType> lessTypes = 
+                new ArrayList<EntertainmentType>(types);
+            EntertainmentType type = lessTypes.remove(0);
+            for (int day : days) {
+                Set<Integer> lessDays = new HashSet<Integer>(days);
+                lessDays.remove(day);
+                List<EntertainmentType[]> newAllocs = 
+                    getTicketAllocations(lessDays, lessTypes);
+                
+                for (EntertainmentType[] alloc : newAllocs) {
+                    alloc[day] = type;
+                }
+            }
+        } else {
+            allocs.add(new EntertainmentType[NUM_DAYS + 1]);
+        }
+
+        return allocs;
+    }
+
     // Return expected profit on this package
     private float getPackageOutcome(Package pack, 
             int[] arriveStock,
             int[] departStock,
             int[] ttStock,
-            int[] ssStock) {
+            int[] ssStock,
+            Map<EntertainmentType, int[]> entStock) {
 
         float probFlight = 1f;
         float costFlight = 0f;
@@ -179,7 +207,7 @@ public class Agent extends AgentImpl {
         }
 
         float probSS = 1f;
-        float costSS = -getClient().getHotelPremium();
+        float costSS = -pack.getClient().getHotelPremium();
         for (int day = arrive; day < depart; day++) {
             if (ssStock[day] <= 0) {
                 probSS *= hotelAgent.purchaseProbability(getHotelAuction(day, false));
@@ -193,6 +221,42 @@ public class Agent extends AgentImpl {
         probTT -= probHotel / 2f;
         probSS -= probHotel / 2f;
 
+        // Get entertainment probabilities
+        float entOutcome = 0f;
+
+        // Get all possible ticket allocations
+        Set<Integer> days = new HashSet<Integer>();
+        for (int day = 1; day <= NUM_DAYS; day ++) {
+            days.add(day);
+        }
+        List<EntertainmentType> types = new ArrayList<EntertainmentType>();
+        for (EntertainmentType type : EntertainmentType.values()) {
+            types.add(type);
+        }
+        List<EntertainmentType[]> allocs = getTicketAllocations(days, types);
+
+        for (EntertainmentType[] alloc : allocs) {
+            float probThis = 1f;
+            float costThis = 0f;
+            for (int day = 1; day <= NUM_DAYS; day++) {
+                if (alloc[day] != null) {
+                    if (entStock.get(alloc[day])[day] <= 0) {
+                        costThis += entertainmentAgent.estimatedPrice(
+                            getEntertainmentAuction(day, alloc[day]));
+                        probThis *= entertainmentAgent.purchaseProbability(
+                            getEntertainmentAuction(day, alloc[day]));
+                    }
+                    costThis -= 
+                        pack.getClient().getEntertainmentPremium(alloc[day]);
+                }
+            }
+            
+            float outcome = probThis * costThis;
+            if (outcome > entOutcome) {
+                entOutcome = outcome;
+            }
+        }
+
         // Three outcomes: we buy the package at the estimated price with TT or
         // SS, OR we don't, but we still pay some cost for buying some things
         // (assume half cost of package).
@@ -200,8 +264,8 @@ public class Agent extends AgentImpl {
         float ssOutcome = pack.potentialUtility(false) - costSS - costFlight;
         float badOutcome = - (costFlight + (costTT + costSS) / 2f) / 2f;
         return 
-            probFlight * probTT * ttOutcome + 
-            probFlight * probSS * ssOutcome + 
+            probFlight * probTT * (ttOutcome + entOutcome) + 
+            probFlight * probSS * (ssOutcome + entOutcome) + 
             (1f - probFlight) * (1f - probTT - probSS) * badOutcome;
     }
 
@@ -214,12 +278,21 @@ public class Agent extends AgentImpl {
         int[] departStock = new int[NUM_DAYS + 1];
         int[] ttStock = new int[NUM_DAYS + 1];
         int[] ssStock = new int[NUM_DAYS + 1];
+        Map<EntertainmentType, int[]> entStock = 
+            new HashMap<EntertainmentType, int[]>();
+
+        for (EntertainmentType type : EntertainmentType.values()) {
+            entStock.put(type, new int[NUM_DAYS + 1]);
+        }
 
         for (int day = 0; day <= NUM_DAYS; day ++) {
             arriveStock[day] = 0;
             departStock[day] = 0;
             ttStock[day] = 0;
             ssStock[day] = 0;
+            for (EntertainmentType type : EntertainmentType.values()) {
+                entStock.get(type)[day] = 0;
+            }
         }
 
         for (FlightTicket ticket : flightTickets) {
@@ -230,6 +303,10 @@ public class Agent extends AgentImpl {
         for (HotelBooking booking : hotelBookings) {
             int[] stock = booking.towers ? ttStock : ssStock;
             stock[booking.getDay()] += 1;
+        }
+
+        for (EntertainmentTicket ticket : entertainmentTickets) {
+            entStock.get(ticket.getType())[ticket.getDay()] += 1;
         }
         
         for (int i = 0; i < clients.length; i++) {
@@ -242,8 +319,8 @@ public class Agent extends AgentImpl {
                     Package pack = new Package(clients[i], arrive, depart);
 
                     // Calculate expected outcome of package
-                    float outcome = getPackageOutcome(
-                            pack, arriveStock, departStock, ttStock, ssStock);
+                    float outcome = getPackageOutcome(pack, 
+                        arriveStock, departStock, ttStock, ssStock, entStock);
 
                     if (outcome > bestOutcome) {
                         bestOutcome = outcome;
@@ -274,6 +351,17 @@ public class Agent extends AgentImpl {
                 int[] stock = (ttSum > ssSum) ? ttStock : ssStock;
                 for (int day = arrive; day < depart; day++) {
                     stock[day] -= 1;
+                }
+
+                // Remove from first ticket type with stock left
+                int numDays = Math.max(depart - arrive, 3);
+                for (int day = 0; day < numDays; day++) {
+                    for (int[] ent : entStock.values()) {
+                        if (ent[arrive+day] > 0) {
+                            ent[arrive+day] -= 1;
+                            break;
+                        }
+                    }
                 }
             }
         }
