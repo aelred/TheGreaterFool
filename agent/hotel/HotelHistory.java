@@ -72,6 +72,16 @@ public class HotelHistory implements Serializable {
 			}
 			System.out.println(dump);
 		}
+		System.out.println("Average prices");
+		System.out.println("1\t2\t3\t4\t5\t6\t7\t8");
+		System.out.println();
+		java.text.DecimalFormat form = new java.text.DecimalFormat("#.##");
+		for (int aucID = 0; aucID < 8; aucID++) {
+			for (int minute = 1; minute <= 8; minute++) {
+				System.out.print(form.format(hotelHist.avgPrices[aucID][minute-1]) + "\t");
+			}
+			System.out.println();
+		}
 	}
 
 	public float[] getAvgHotelPriceDifs() {
