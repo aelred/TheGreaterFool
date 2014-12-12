@@ -25,6 +25,7 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
     public EntertainmentAgent(Agent agent, List<EntertainmentTicket> stock, AgentLogger logger) {
         super(agent, stock, logger);
         logger.log("EntertainmentAgent constructed.");
+        createConmen();
     }
 
     protected class Allocation implements Comparable<Allocation> {
@@ -225,6 +226,27 @@ public class EntertainmentAgent extends SubAgent<EntertainmentTicket> {
     public float estimatedPrice(Auction<?> auction) {
         // Unused in top agent
         return 100;
+    }
+
+    // Conmen //
+
+    private List<Conman> conmen = null;
+
+    private void createConmen() {
+        conmen = new ArrayList<Conman>();
+        try {
+            for (EntertainmentType type : EntertainmentType.values()) {
+                logger.log("Creating conmen for " + type + ".");
+                for (int day = 1; day <= Agent.NUM_DAYS - 1; day++) {
+                    EntertainmentAuction auction = agent.getEntertainmentAuction(day, type);
+                    Conman conman = new Conman(this, auction, logger.getSublogger("conman"));
+                    conmen.add(conman);
+                }
+            }
+        } catch (Exception ex) {
+            logger.log(ex.getClass().getName() + " in createConmen():");
+            logger.logExceptionStack(ex, AgentLogger.INFO);
+        }
     }
 
     // Static test methods //
