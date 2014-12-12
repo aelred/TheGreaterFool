@@ -265,7 +265,7 @@ public class Agent extends AgentImpl {
         // Extra penalty for using days outside wanted holiday.
         // This is to deal with problems with clients 'stealing' one another's
         // booking and tickets.
-        float profit = pack.potentialUtility(towers, 300) + funBonus;
+        float profit = pack.potentialUtility(towers, 200) + funBonus;
         float cost = costHotel + costFlight;
 
         float outcome = 
