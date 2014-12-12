@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
+import agent.logging.AgentLogger;
 import agent.logging.LogEntry;
 
 public class HotelHistory implements Serializable {
@@ -24,7 +25,12 @@ public class HotelHistory implements Serializable {
 	private float[] estHotelPriceDifs;
 	private float[] estPrices;
 	private float[] estNextPrices = new float[8];
+	private AgentLogger logger;
 
+	public void setLogger(AgentLogger logger) {
+		this.logger = logger;
+	}
+	
 	public HotelHistory() {
 		history = new ArrayList<HotelGame>();
 		setAvgHotelPriceDifs();
@@ -215,6 +221,7 @@ public class HotelHistory implements Serializable {
 						numSamples++;
 					}
 					avgClosePrice = avgClosePrice / numSamples;
+					logger.log(avgPrice + "\t" + avgClosePrice + "\t" + numSamples + "\t" + currentPrice);
 					if (avgPrice == 0) {
 						float pricePerMinute = currentPrice / mostRecentMinute;
 						double avgMinRemaining = (8.0 - mostRecentMinute) / 2;
