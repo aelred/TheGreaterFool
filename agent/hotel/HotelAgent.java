@@ -251,8 +251,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 			arrive = p.getArrivalDay();
 			depart = p.getDepartureDay();
 			hotelPremium = c.getHotelPremium();
-			// tt = hotelPremium / (depart - arrive) > 35; // identify if tt is
-			// worth aiming for
+			// identify if tt is worth aiming for
 			int expectedExtra = 0; // expected extra for TT
 			for (day = arrive; day < depart; day++) {
 				expectedExtra += estDifs[day - 1];
@@ -331,6 +330,142 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 
 	private void considerAlternatives() {
 		
+	}
+	
+	private boolean fulfillPackagesRecursive(List<Package> packages) {
+		// save packages
+		mostRecentPackages = packages;
+		// gather arrays
+		int len = packages.size(), packageNum = -1;
+		int[] startDays = new int[len], endDays = new int[len], hps = new int[len];
+		for (Package p : packages) {
+			packageNum++;
+			startDays[packageNum] = p.getArrivalDay();
+			endDays[packageNum] = p.getDepartureDay();
+			hps[packageNum] = p.getClient().getHotelPremium();
+		}
+		float[] predPrices = hotelHist.getEstPrices();
+		boolean[] isClosed = auctionsClosed.clone();
+		int[] stock = held.clone();
+		
+		// find best(ish) hotel strategy
+		Alloc result = bhsRecurse(0, startDays, endDays, hps, predPrices, isClosed, stock);
+		if (!result.feasible)
+			return false;
+		String outputStrategy = "";
+		for (int p = 0; p < len; p++)
+			outputStrategy += result.alloc[p] + " ";
+		pmLogger.log("Best hotel strategy found is: " + outputStrategy);
+		
+		// clear previous intentions
+		intentions = new int[len];
+		// generate intentions from the strategy
+		boolean tt;
+		int i;
+		for (int p = 0; p < len; p++) {
+			for (int day = startDays[p]-1; day < endDays[p]-1; day++) {
+				tt = result.alloc[p];
+				i = hashForIndex(day, tt);
+				if (isClosed[i]) {
+					stock[i]--;
+					if (stock[i] < 0)
+						pmLogger.log("### VERY BAD THINGS! ###", AgentLogger.ERROR);
+				} else
+					intentions[i]++;
+			}
+		}
+		return true;
+	}
+	
+	private class Alloc {
+		boolean[] alloc;
+		float netCost;
+		boolean feasible = true;
+	}
+	
+	/**
+	 * BestHotelSelectionRecursive
+	 * @param depth
+	 * @param startDays
+	 * @param endDays
+	 * @param hps
+	 * @param predPrices
+	 * @param isClosed
+	 * @param stock
+	 * @return
+	 */
+	private Alloc bhsRecurse(int depth, int[] startDays, int[] endDays, int[] hps, float[] predPrices, boolean[] isClosed, int[] stock) {
+		int startDay = startDays[depth], endDay = endDays[depth], hp = hps[depth];
+		int[] ttStock = stock.clone(), ssStock = stock.clone();
+		Alloc ttAlloc = new Alloc(), ssAlloc = new Alloc();
+		
+		// calculate cost for this depth package for both tt and ss possibilities
+		int ttDay;
+		for (int ssDay = startDay-1; ssDay < endDay-1; ssDay++) {
+			ttDay = ssDay + 4;
+			if (!isClosed[ttDay])
+				ttAlloc.netCost += predPrices[ttDay];
+			else if (ttStock[ttDay] > 0)
+				ttStock[ttDay]--;
+			else
+				ttAlloc.feasible = false;
+			if (!isClosed[ssDay])
+				ssAlloc.netCost += predPrices[ssDay];
+			else if (ssStock[ssDay] > 0)
+				ssStock[ssDay]--;
+			else
+				ssAlloc.feasible = false;
+		}
+		ttAlloc.alloc = new boolean[startDays.length-depth];
+		ttAlloc.alloc[0] = true;
+		ssAlloc.alloc = new boolean[startDays.length-depth];
+		ssAlloc.alloc[0] = false;
+		
+		// if not at maximum depth, recurse
+		if (depth < startDays.length-1) {
+			Alloc newTT, newSS;
+			newTT = ttAlloc.feasible ? bhsRecurse(depth+1,startDays,endDays,hps,predPrices,isClosed,ttStock) : ttAlloc;
+			newSS = ssAlloc.feasible ? bhsRecurse(depth+1,startDays,endDays,hps,predPrices,isClosed,ssStock) : ssAlloc;
+			if (!newTT.feasible && !newSS.feasible) {
+				return newTT;
+			}
+			Alloc head, tail;
+			if (newTT.feasible && newSS.feasible) {
+				ttAlloc.netCost += newTT.netCost;
+				ssAlloc.netCost += newSS.netCost;
+				if (ttAlloc.netCost < ssAlloc.netCost) {
+					head = ttAlloc;
+					tail = newTT;
+				} else {
+					head = ssAlloc;
+					tail = newSS;
+				}
+			} else if (newTT.feasible) {
+				ttAlloc.netCost += newTT.netCost;
+				head = ttAlloc;
+				tail = newTT;
+			} else {
+				ssAlloc.netCost += newSS.netCost;
+				head = ssAlloc;
+				tail = newSS;
+			}
+			for (int i = 0; i < tail.alloc.length; i++)
+				head.alloc[i+1] = tail.alloc[i];
+			return head;
+		} else {
+			// at maximum depth (final package) so just return the lowest cost of the two
+			if (!ttAlloc.feasible && !ssAlloc.feasible)
+				return ttAlloc;
+			if (ttAlloc.feasible && ssAlloc.feasible)
+				if (ttAlloc.netCost < ssAlloc.netCost)
+					return ttAlloc;
+				else
+					return ssAlloc;
+			else if (ttAlloc.feasible)
+				return ttAlloc;
+			else
+				return ssAlloc;
+		}
 	}
 	
 	private void updateBids() {
