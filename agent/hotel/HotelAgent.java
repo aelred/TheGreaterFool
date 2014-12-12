@@ -491,15 +491,14 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 			 */
 			int numIntentions = intentions[dayHash];
 			boolean submit = false;
-			if (numIntentions < hqw) {
+			if (auc.getAskPrice() < 1) {
+				auc.modifyBidPoint(8 - numIntentions, (float) 1.01);
+				submit = true;
+			} else if (numIntentions < hqw) {
 				// on target to win surplus to requirement
 				auc.modifyBidPoint(hqw - numIntentions, auc.getAskPrice() + 1);
 				if (maxBid > auc.getAskPrice() + 1 || auc.getAskPrice() < 3)
 					submit = true;
-			}
-			if (auc.getAskPrice() < 1) {
-				auc.modifyBidPoint(8 - numIntentions, (float) 1.01);
-				submit = true;
 			}
 			if (numIntentions > 0) {
 				auc.modifyBidPoint(numIntentions, proposedBid);
