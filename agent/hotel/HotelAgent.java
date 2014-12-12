@@ -29,8 +29,8 @@ import se.sics.tac.aw.Quote;
 public class HotelAgent extends SubAgent<HotelBooking> {
 
 	private static final boolean DEBUG = true;
-	private static final double[] bidProportions = { 1.5, 1.1, 1.1, 1.1, 1.2,
-			1.3, 1.4, 1.5, 0 };
+	private static final double[] bidProportions = { 1.2, 1, 1, 1, 1.1,
+			1.1, 1.2, 1.2, 0 };
 	private int[] lastUpdateMinute;
 	private Auction.Watcher watcher = new Auction.Watcher() {
 		AgentLogger aucWatcher = logger.getSublogger("auctionWatcher");
