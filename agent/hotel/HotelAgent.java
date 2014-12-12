@@ -138,7 +138,6 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 			// logger.logExceptionStack(e, AgentLogger.ERROR);
 		}
 		currentGame = new HotelGame(logger.getSublogger("historyRecorder"));
-		hotelHist.setLogger(logger.getSublogger("histLogger"));
 		hotelHist.setCurrentGame(currentGame);
 		
 

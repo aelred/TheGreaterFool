@@ -25,11 +25,6 @@ public class HotelHistory implements Serializable {
 	private float[] estHotelPriceDifs;
 	private float[] estPrices;
 	private float[] estNextPrices = new float[8];
-	private AgentLogger logger;
-
-	public void setLogger(AgentLogger logger) {
-		this.logger = logger;
-	}
 	
 	public HotelHistory() {
 		history = new ArrayList<HotelGame>();
@@ -131,9 +126,9 @@ public class HotelHistory implements Serializable {
 
 	private void setAvgPriceRises() {
 		if (history.isEmpty()) {
-			float[] ttMid = new float[] { 125, 75, 25, 25, 25, 25, 25, 25 };
+			float[] ttMid = new float[] { 90, 60, 25, 20, 20, 20, 20, 20 };
 			float[] ttOuter = new float[] { 70, 50, 15, 15, 15, 15, 15, 15 };
-			float[] ssMid = new float[] { 100, 50, 15, 15, 15, 15, 15, 15 };
+			float[] ssMid = new float[] { 65, 30, 15, 15, 15, 15, 15, 15 };
 			float[] ssOuter = new float[] { 50, 25, 10, 10, 10, 10, 10, 10 };
 			avgPriceRises = new float[][] { ssOuter, ssMid, ssMid, ssOuter, ttOuter, ttMid, ttMid, ttOuter };
 			return;
