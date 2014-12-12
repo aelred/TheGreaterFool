@@ -57,30 +57,38 @@ public class HotelHistory implements Serializable {
 			hotelHist = (HotelHistory) input.readObject();
 		} catch (Exception e) {
 		}
-		SimpleDateFormat f = LogEntry.formatter;
-		for (HotelGame g : hotelHist.history) {
-			String dump = "Date = " + f.format(g.start) + "\n";
-			dump += "hotelGame\taskPrices:\n";
-			dump += "hotelGame\taucID\t0min\t1min\t2min\t3min\t4min\t5min\t6min\t7min\t8min\tclosed on\n";
-			for (int aucID = 0; aucID < 8; aucID++) {
-				dump += "hotelGame\t" + Integer.toString(aucID) + "\t";
-				for (int close = 0; close < 9; close++) {
-					dump += Float.toString(g.askPrices[aucID][close]) + "\t";
+		if (args.length == 0) {
+			
+			SimpleDateFormat f = LogEntry.formatter;
+			for (HotelGame g : hotelHist.history) {
+				String dump = "Date = " + f.format(g.start) + "\n";
+				dump += "hotelGame\taskPrices:\n";
+				dump += "hotelGame\taucID\t0min\t1min\t2min\t3min\t4min\t5min\t6min\t7min\t8min\tclosed on\n";
+				for (int aucID = 0; aucID < 8; aucID++) {
+					dump += "hotelGame\t" + Integer.toString(aucID) + "\t";
+					for (int close = 0; close < 9; close++) {
+						dump += Float.toString(g.askPrices[aucID][close])
+								+ "\t";
+					}
+					dump += Integer.toString(g.closedOn[aucID]);
+					dump += "\n";
 				}
-				dump += Integer.toString(g.closedOn[aucID]);
-				dump += "\n";
+				System.out.println(dump);
 			}
-			System.out.println(dump);
-		}
-		System.out.println("Average prices");
-		System.out.println("1\t2\t3\t4\t5\t6\t7\t8");
-		System.out.println();
-		java.text.DecimalFormat form = new java.text.DecimalFormat("#.##");
-		for (int aucID = 0; aucID < 8; aucID++) {
-			for (int minute = 1; minute <= 8; minute++) {
-				System.out.print(form.format(hotelHist.avgPrices[aucID][minute-1]) + "\t");
-			}
+			System.out.println("Average prices");
+			System.out.println("1\t2\t3\t4\t5\t6\t7\t8");
 			System.out.println();
+			java.text.DecimalFormat form = new java.text.DecimalFormat("#.##");
+			for (int aucID = 0; aucID < 8; aucID++) {
+				for (int minute = 1; minute <= 8; minute++) {
+					System.out.print(form
+							.format(hotelHist.avgPrices[aucID][minute - 1])
+							+ "\t");
+				}
+				System.out.println();
+			}
+		} else {
+			
 		}
 	}
 
@@ -137,11 +145,11 @@ public class HotelHistory implements Serializable {
 		}
 		for (int aucID = 0; aucID < 8; aucID++) {
 			for (int minute = 1; minute <= 8; minute++) {
-				if (numInstances[aucID][minute-1] == 0)
-					newAPR[aucID][minute-1] = 0;
+				if (numInstances[aucID][minute - 1] == 0)
+					newAPR[aucID][minute - 1] = 0;
 				else
-					newAPR[aucID][minute-1] = newAPR[aucID][minute-1]
-							/ numInstances[aucID][minute-1];
+					newAPR[aucID][minute - 1] = newAPR[aucID][minute - 1]
+							/ numInstances[aucID][minute - 1];
 			}
 		}
 		avgPriceRises = newAPR;
@@ -217,7 +225,7 @@ public class HotelHistory implements Serializable {
 			} else { // mostRecentMinute == 0
 				avgPrice = 0;
 				for (int minute = 1; minute <= 8; minute++) {
-					avgPrice += avgPrices[aucID][minute-1];
+					avgPrice += avgPrices[aucID][minute - 1];
 				}
 				avgPrice = avgPrice / 8;
 				newEP[aucID] = avgPrice;
@@ -230,11 +238,9 @@ public class HotelHistory implements Serializable {
 		return history.size();
 	}
 
-	
 	public float getEstNextPrice(int day, boolean tt) {
 		return estNextPrices[day - 1 + (tt ? 4 : 0)];
 	}
-	
 
 	public void setEstNextPrice(int day, boolean tt) {
 		int aucID = day - 1 + (tt ? 4 : 0);
@@ -250,7 +256,8 @@ public class HotelHistory implements Serializable {
 				double avgMinRemaining = (8.0 - mostRecentMinute) / 2;
 				estNextPrices[aucID] = (float) (pricePerMinute * (mostRecentMinute + avgMinRemaining));
 			} else
-				estNextPrices[aucID] = avgNextPrice * currentAskPrice / avgAskPrice;
+				estNextPrices[aucID] = avgNextPrice * currentAskPrice
+						/ avgAskPrice;
 		} else
 			estNextPrices[aucID] = avgPrices[aucID][0];
 	}

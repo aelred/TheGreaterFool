@@ -320,6 +320,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 	}
 	
 	public boolean fulfillPackagesRecursive(List<Package> packages) {
+		numRecs = 0;
 		// save packages
 		mostRecentPackages = packages;
 		// gather arrays
@@ -337,12 +338,14 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		
 		// find best(ish) hotel strategy
 		Alloc result = bhsRecurse(0, startDays, endDays, hps, predPrices, isClosed, stock);
-		if (!result.feasible)
+		if (!result.feasible) {
+			pmLogger.log("Packages infeasible, requesting package update", AgentLogger.WARNING);
 			return false;
+		}
 		String outputStrategy = "";
 		for (int p = 0; p < len; p++)
 			outputStrategy += result.alloc[p] + " ";
-		pmLogger.log("Best hotel strategy found is: " + outputStrategy);
+		pmLogger.log("Best hotel strategy found is: " + outputStrategy + ", found after " + numRecs);
 		
 		// clear previous intentions
 		intentions = new int[8];
@@ -361,9 +364,15 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 					intentions[i]++;
 			}
 		}
+		String intentionString = "Intentions:";
+		for (int intention : intentions) {
+			intentionString += "\t" + intention;
+		}
 		updateBids();
 		return true;
 	}
+	
+	private int numRecs = 0;
 	
 	private class Alloc {
 		boolean[] alloc;
@@ -383,6 +392,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 	 * @return
 	 */
 	private Alloc bhsRecurse(int depth, int[] startDays, int[] endDays, int[] hps, float[] predPrices, boolean[] isClosed, int[] stock) {
+		numRecs++;
 		int startDay = startDays[depth], endDay = endDays[depth], hp = hps[depth];
 		int[] ttStock = stock.clone(), ssStock = stock.clone();
 		Alloc ttAlloc = new Alloc(), ssAlloc = new Alloc();
