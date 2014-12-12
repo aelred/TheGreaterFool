@@ -101,11 +101,15 @@ public class FlightBidder implements Auction.Watcher {
             // Fulfill packages one-by-one.
             // There should always be exactly the same number of tickets
             // as packages.
-            agent.Package pack = packages.remove(0);
-            if (this.auction.getArrival()) {
-                pack.setArrivalTicket(ticket);
+            if (packages.size() > 0) {
+                agent.Package pack = packages.remove(0);
+                if (this.auction.getArrival()) {
+                    pack.setArrivalTicket(ticket);
+                } else {
+                    pack.setDepartureTicket(ticket);
+                }
             } else {
-                pack.setDepartureTicket(ticket);
+                logger.log("WARNING: Got tickets for non-existant package.");
             }
         }
         refreshBid();
