@@ -469,16 +469,15 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 
 	private void updateBid(int day, boolean tt) {
 		try {
-			int aucID = hashForIndex(day, tt);
+			int lmu = Math.max(lastUpdateMinute[hashForIndex(day, tt)],0);
 			HotelAuction auc = agent.getHotelAuction(day, tt);
-			currentGame.setAskPrice(day, tt, auc.getAskPrice(),
-					lastUpdateMinute[hashForIndex(day, tt)], false);
+			currentGame.setAskPrice(day, tt, auc.getAskPrice(), lmu, false);
 			if (auc.isClosed())
 				throw new AuctionClosedException();
 			hotelHist.setEstNextPrice(day, tt);
 			float estNextPrice = hotelHist.getEstNextPrice(day, tt);
 			estNextPrice = Math.max(estNextPrice, auc.getAskPrice() + 75);
-			float proposedBid = (float) (estNextPrice * bidProportions[lastUpdateMinute[aucID]]);
+			float proposedBid = (float) (estNextPrice * bidProportions[lmu]);
 			int dayHash = hashForIndex(day, tt);
 			int hqw = auc.getHQW();
 			float maxBid = 0;
@@ -509,10 +508,10 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 			if (submit)
 				auc.submitBid(true);
 		} catch (AuctionClosedException e) {
-			logger.log("Attempted to update "
+			/*logger.log("Attempted to update "
 					+ agent.getHotelAuction(day, tt).toString()
 					+ " after it had CLOSED", AgentLogger.WARNING);
-			// e.printStackTrace();
+			*/// e.printStackTrace();
 		} catch (BidInUseException e) {
 			logger.log("Attempted to update "
 					+ agent.getHotelAuction(day, tt).toString()
