@@ -376,7 +376,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 					submit = true;
 			}
 			if (auc.getAskPrice() < 1) {
-				auc.modifyBidPoint(15 - numIntentions, (float) 1.01);
+				auc.modifyBidPoint(8 - numIntentions, (float) 1.01);
 				submit = true;
 			}
 			if (numIntentions > 0) {
