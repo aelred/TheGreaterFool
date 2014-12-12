@@ -365,10 +365,13 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 			}
 		}
 		String intentionString = "Intentions:";
+		String remStockString = "Remaining stock:";
 		for (i = 0; i < intentions.length; i++) {
 			intentionString += "\t" + (isClosed[i] ? "Closed" : intentions[i]);
+			remStockString += "\t" + stock[i] + "/" + held[i];
 		}
 		pmLogger.log(intentionString);
+		pmLogger.log(remStockString);
 		updateBids();
 		return true;
 	}
