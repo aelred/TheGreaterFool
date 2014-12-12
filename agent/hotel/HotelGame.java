@@ -12,11 +12,6 @@ public class HotelGame implements Serializable {
 	protected int[] closedOn = new int[8];
 	protected Date start = new Date();
 	protected int mostRecentInfo = 0;
-	private static AgentLogger histLogger;
-	
-	public HotelGame(AgentLogger l) {
-		histLogger = l.getSublogger("hotelGame");
-	}
 	
 	public void setAskPrice(int day, boolean tt, float price, int elapsedMinutes, boolean closed) {
 		int hotelInd = day + (tt ? 4 : 0) - 1;
@@ -36,7 +31,7 @@ public class HotelGame implements Serializable {
 		return askPrices[aucID][closedOn[aucID]];
 	}
 
-	public void dumpToConsole() {
+	public void dumpToConsole(AgentLogger histLogger) {
 		String dump = "\n";
 		dump += "hotelGame\taskPrices:\n";
 		dump += "hotelGame\taucID\t0min\t1min\t2min\t3min\t4min\t5min\t6min\t7min\t8min\tclosed on\n";

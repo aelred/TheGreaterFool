@@ -137,7 +137,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 			logger.log("Unable to read past history file", AgentLogger.WARNING);
 			// logger.logExceptionStack(e, AgentLogger.ERROR);
 		}
-		currentGame = new HotelGame(logger.getSublogger("historyRecorder"));
+		currentGame = new HotelGame();
 		hotelHist.setCurrentGame(currentGame);
 		
 
@@ -168,7 +168,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 			;
 			hotelHist.discard();
 		}
-		currentGame.dumpToConsole();
+		currentGame.dumpToConsole(logger.getSublogger("hotelGame"));
 
 		try (OutputStream file = new FileOutputStream("hotelHistory.hist");
 				OutputStream buffer = new BufferedOutputStream(file);
@@ -571,6 +571,13 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 
 	@Override
 	public float purchaseProbability(Auction<?> auction) {
+		if (auction.getDay()==2 || auction.getDay()==3)
+			return (float) 0.9;
+		return (float) 0.95;
+	}
+	
+	/*@Override
+	public float purchaseProbability(Auction<?> auction) {
 		// Assume 8 agents and 8 clients
 		int numClients = 8 * 8;
 
@@ -605,7 +612,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		if (prob > 1f)
 			prob = 1f;
 		return auctionsClosed[hashForIndex(day, tt)] ? 0 : prob;
-	}
+	}*/
 
 	@Override
 	public float estimatedPrice(Auction<?> auction) {
