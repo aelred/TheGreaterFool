@@ -29,7 +29,7 @@ public class HotelGame implements Serializable {
 			}
 		}
 		mostRecentInfo = elapsedMinutes;
-		histLogger.log("data for minute " + mostRecentInfo + " stored");
+		//histLogger.log("data for minute " + mostRecentInfo + " stored");
 	}
 	
 	public float getClosePrice(int aucID) {

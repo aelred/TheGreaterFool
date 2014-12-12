@@ -29,8 +29,8 @@ import se.sics.tac.aw.Quote;
 public class HotelAgent extends SubAgent<HotelBooking> {
 
 	private static final boolean DEBUG = true;
-	private static final double[] bidProportions = { 1.2, 1, 1, 1, 1.1,
-			1.1, 1.2, 1.2, 0 };
+	private static final double[] bidProportions = { 1.5, 1.1, 1.1, 1.1, 1.2,
+			1.3, 1.4, 1.5, 0 };
 	private int[] lastUpdateMinute;
 	private Auction.Watcher watcher = new Auction.Watcher() {
 		AgentLogger aucWatcher = logger.getSublogger("auctionWatcher");
@@ -40,6 +40,8 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 			HotelAuction a = ((HotelAuction) auction);
 			aucWatcher.log("Updating " + auction.toString(), AgentLogger.INFO);
 			lastUpdateMinute[hashForIndex(auction.getDay(), a.isTT())]++;
+			int lmu = lastUpdateMinute[hashForIndex(auction.getDay(), a.isTT())];
+			currentGame.setAskPrice(a.getDay(), a.isTT(), a.getAskPrice(), lmu, false);
 			//updateBid(auction.getDay(), ((HotelAuction) auction).isTT());
 		}
 
@@ -490,7 +492,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		try {
 			int lmu = Math.max(lastUpdateMinute[hashForIndex(day, tt)],0);
 			HotelAuction auc = agent.getHotelAuction(day, tt);
-			currentGame.setAskPrice(day, tt, auc.getAskPrice(), lmu, false);
+			//currentGame.setAskPrice(day, tt, auc.getAskPrice(), lmu, false);
 			if (auc.isClosed())
 				throw new AuctionClosedException();
 			hotelHist.setEstNextPrice(day, tt);

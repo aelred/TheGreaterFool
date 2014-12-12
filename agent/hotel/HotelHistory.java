@@ -131,9 +131,11 @@ public class HotelHistory implements Serializable {
 
 	private void setAvgPriceRises() {
 		if (history.isEmpty()) {
-			float[] tt = new float[] { 125, 75, 25, 25, 25, 25, 25, 25 };
-			float[] ss = new float[] { 100, 50, 15, 15, 15, 15, 15, 15 };
-			avgPriceRises = new float[][] { ss, ss, ss, ss, tt, tt, tt, tt };
+			float[] ttMid = new float[] { 125, 75, 25, 25, 25, 25, 25, 25 };
+			float[] ttOuter = new float[] { 70, 50, 15, 15, 15, 15, 15, 15 };
+			float[] ssMid = new float[] { 100, 50, 15, 15, 15, 15, 15, 15 };
+			float[] ssOuter = new float[] { 50, 25, 10, 10, 10, 10, 10, 10 };
+			avgPriceRises = new float[][] { ssOuter, ssMid, ssMid, ssOuter, ttOuter, ttMid, ttMid, ttOuter };
 			return;
 		}
 		float[][] newAPR = new float[8][8];
@@ -210,7 +212,7 @@ public class HotelHistory implements Serializable {
 		for (int aucID = 0; aucID < 8; aucID++) {
 			if (mostRecentMinute > 0) {
 				currentPrice = currentGame.askPrices[aucID][mostRecentMinute];
-				logger.log("trying to update based on minute " + mostRecentMinute);
+				//logger.log("trying to update based on minute " + mostRecentMinute);
 				if (currentGame.closedOn[aucID] != 0) {
 					newEP[aucID] = currentPrice;
 				} else {
@@ -222,7 +224,7 @@ public class HotelHistory implements Serializable {
 						numSamples++;
 					}
 					avgClosePrice = avgClosePrice / numSamples;
-					logger.log(avgPrice + "\t" + avgClosePrice + "\t" + numSamples + "\t" + currentPrice);
+					//logger.log(avgPrice + "\t" + avgClosePrice + "\t" + numSamples + "\t" + currentPrice);
 					if (avgPrice == 0) {
 						float pricePerMinute = currentPrice / mostRecentMinute;
 						double avgMinRemaining = (8.0 - mostRecentMinute) / 2;
