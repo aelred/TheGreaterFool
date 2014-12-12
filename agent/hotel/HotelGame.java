@@ -15,7 +15,7 @@ public class HotelGame implements Serializable {
 	private static AgentLogger histLogger;
 	
 	public HotelGame(AgentLogger l) {
-		histLogger = l;
+		histLogger = l.getSublogger("hotelGame");
 	}
 	
 	public void setAskPrice(int day, boolean tt, float price, int elapsedMinutes, boolean closed) {
@@ -29,6 +29,7 @@ public class HotelGame implements Serializable {
 			}
 		}
 		mostRecentInfo = elapsedMinutes;
+		histLogger.log("data for minute " + mostRecentInfo + " stored");
 	}
 	
 	public float getClosePrice(int aucID) {

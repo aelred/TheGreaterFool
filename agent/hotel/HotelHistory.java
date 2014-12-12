@@ -210,6 +210,7 @@ public class HotelHistory implements Serializable {
 		for (int aucID = 0; aucID < 8; aucID++) {
 			if (mostRecentMinute > 0) {
 				currentPrice = currentGame.askPrices[aucID][mostRecentMinute];
+				logger.log("trying to update based on minute " + mostRecentMinute);
 				if (currentGame.closedOn[aucID] != 0) {
 					newEP[aucID] = currentPrice;
 				} else {
