@@ -365,8 +365,8 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 			}
 		}
 		String intentionString = "Intentions:";
-		for (int intention : intentions) {
-			intentionString += "\t" + intention;
+		for (i = 0; i < intentions.length; i++) {
+			intentionString += "\t" + (isClosed[i] ? "Closed" : intentions[i]);
 		}
 		pmLogger.log(intentionString);
 		updateBids();
