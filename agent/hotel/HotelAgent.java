@@ -368,6 +368,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		for (int intention : intentions) {
 			intentionString += "\t" + intention;
 		}
+		pmLogger.log(intentionString);
 		updateBids();
 		return true;
 	}
