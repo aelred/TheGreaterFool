@@ -41,7 +41,7 @@ public class EntertainmentSeller extends EntertainmentBidder {
     public void auctionSellSuccessful(Auction<?> auction, int numSold) {
         List<EntertainmentTicket> soldTickets = new ArrayList<EntertainmentTicket>(numSold);
         for (int i = 0; i < numSold; i++) {
-            soldTickets.add(tickets.remove(tickets.size() - 1));
+            soldTickets.add(tickets.remove(0));
         }
         tickets.removeAll(soldTickets);
         entAgent.ticketsSold(this, soldTickets);
