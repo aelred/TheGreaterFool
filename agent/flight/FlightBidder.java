@@ -70,8 +70,8 @@ public class FlightBidder implements Auction.Watcher {
         // Update price monitor with new prices information
         monitor.addQuote((double)quote.getAskPrice(), getTimeStep());
 
-        // only refresh bid at 20 second intervals to avoid duplicate bid problems
-        if (getTimeStep() % 2 == 0) {
+        // only refresh bid at 30 second intervals to avoid duplicate bid problems
+        if (getTimeStep() % 3 == 0) {
             refreshBid();
         }
     }
