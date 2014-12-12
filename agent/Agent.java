@@ -421,7 +421,7 @@ public class Agent extends AgentImpl {
     private void fulfillPackages() {
         // Only tell subagents to fulfill packages if the hotel agent approves
         // and agrees the packages are feasible!
-        if (hotelAgent.fulfillPackages_(packages)) {
+        if (hotelAgent.fulfillPackagesRecursive(packages)) {
             flightAgent.fulfillPackages(packages);
             entertainmentAgent.fulfillPackages(packages);
         } else {

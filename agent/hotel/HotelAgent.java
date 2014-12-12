@@ -40,7 +40,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 			HotelAuction a = ((HotelAuction) auction);
 			aucWatcher.log("Updating " + auction.toString(), AgentLogger.INFO);
 			lastUpdateMinute[hashForIndex(auction.getDay(), a.isTT())]++;
-			updateBid(auction.getDay(), ((HotelAuction) auction).isTT());
+			//updateBid(auction.getDay(), ((HotelAuction) auction).isTT());
 		}
 
 		@Override
@@ -198,15 +198,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		currentGame.setAskPrice(day, tt, auction.getAskPrice(),
 				lastUpdateMinute[hashForIndex(day, tt)], true);
 		hotelHist.update();
-		if (held[i] < intentions[i]) {
-			// did not achieve ideal scenario, need to reassess
-			if (!fulfillPackages_(mostRecentPackages))
-				agent.alertInfeasible();
-			updateBids();
-		} else if (held[i] > intentions[i]) {
-			// TODO may want to reevaluate here to see if money can be saved by
-			// using the spare bookings
-		}
+		fulfillPackages(mostRecentPackages);
 	}
 
 	/**
@@ -224,11 +216,11 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 	}
 
 	public void fulfillPackages(List<Package> packages) {
-		if (!fulfillPackages_(packages))
+		if (!fulfillPackagesRecursive(packages))
 			agent.alertInfeasible();
 	}
 
-	public boolean fulfillPackages_(List<Package> packages) {
+	private boolean fulfillPackages_(List<Package> packages) {
 		// AgentLogger fine = pmLogger.getSublogger("fine");
 		boolean[] intendedHotel = new boolean[8];
 		int[] allocated = new int[8];
@@ -324,15 +316,10 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 			}
 			pmLogger.log(message, AgentLogger.INFO);
 		}
-		considerAlternatives();
 		return true;
 	}
-
-	private void considerAlternatives() {
-		
-	}
 	
-	private boolean fulfillPackagesRecursive(List<Package> packages) {
+	public boolean fulfillPackagesRecursive(List<Package> packages) {
 		// save packages
 		mostRecentPackages = packages;
 		// gather arrays
@@ -358,12 +345,12 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		pmLogger.log("Best hotel strategy found is: " + outputStrategy);
 		
 		// clear previous intentions
-		intentions = new int[len];
+		intentions = new int[8];
 		// generate intentions from the strategy
 		boolean tt;
 		int i;
 		for (int p = 0; p < len; p++) {
-			for (int day = startDays[p]-1; day < endDays[p]-1; day++) {
+			for (int day = startDays[p]; day < endDays[p]; day++) {
 				tt = result.alloc[p];
 				i = hashForIndex(day, tt);
 				if (isClosed[i]) {
@@ -374,12 +361,13 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 					intentions[i]++;
 			}
 		}
+		updateBids();
 		return true;
 	}
 	
 	private class Alloc {
 		boolean[] alloc;
-		float netCost;
+		float netCost = 0;
 		boolean feasible = true;
 	}
 	
@@ -398,7 +386,7 @@ public class HotelAgent extends SubAgent<HotelBooking> {
 		int startDay = startDays[depth], endDay = endDays[depth], hp = hps[depth];
 		int[] ttStock = stock.clone(), ssStock = stock.clone();
 		Alloc ttAlloc = new Alloc(), ssAlloc = new Alloc();
-		
+		ttAlloc.netCost -= hp;
 		// calculate cost for this depth package for both tt and ss possibilities
 		int ttDay;
 		for (int ssDay = startDay-1; ssDay < endDay-1; ssDay++) {
